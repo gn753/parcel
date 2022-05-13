@@ -2799,7 +2799,2432 @@ if ("development" === 'production') {
 } else {
   module.exports = require('./cjs/react.development.js');
 }
-},{"./cjs/react.development.js":"../node_modules/react/cjs/react.development.js"}],"../node_modules/react/cjs/react-jsx-dev-runtime.development.js":[function(require,module,exports) {
+},{"./cjs/react.development.js":"../node_modules/react/cjs/react.development.js"}],"../node_modules/@emotion/sheet/dist/emotion-sheet.browser.esm.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.StyleSheet = void 0;
+
+/*
+
+Based off glamor's StyleSheet, thanks Sunil ❤️
+
+high performance StyleSheet for css-in-js systems
+
+- uses multiple style tags behind the scenes for millions of rules
+- uses `insertRule` for appending in production for *much* faster performance
+
+// usage
+
+import { StyleSheet } from '@emotion/sheet'
+
+let styleSheet = new StyleSheet({ key: '', container: document.head })
+
+styleSheet.insert('#box { border: 1px solid red; }')
+- appends a css rule into the stylesheet
+
+styleSheet.flush()
+- empties the stylesheet of all its contents
+
+*/
+// $FlowFixMe
+function sheetForTag(tag) {
+  if (tag.sheet) {
+    // $FlowFixMe
+    return tag.sheet;
+  } // this weirdness brought to you by firefox
+
+  /* istanbul ignore next */
+
+
+  for (var i = 0; i < document.styleSheets.length; i++) {
+    if (document.styleSheets[i].ownerNode === tag) {
+      // $FlowFixMe
+      return document.styleSheets[i];
+    }
+  }
+}
+
+function createStyleElement(options) {
+  var tag = document.createElement('style');
+  tag.setAttribute('data-emotion', options.key);
+
+  if (options.nonce !== undefined) {
+    tag.setAttribute('nonce', options.nonce);
+  }
+
+  tag.appendChild(document.createTextNode(''));
+  tag.setAttribute('data-s', '');
+  return tag;
+}
+
+var StyleSheet = /*#__PURE__*/function () {
+  function StyleSheet(options) {
+    var _this = this;
+
+    this._insertTag = function (tag) {
+      var before;
+
+      if (_this.tags.length === 0) {
+        if (_this.insertionPoint) {
+          before = _this.insertionPoint.nextSibling;
+        } else if (_this.prepend) {
+          before = _this.container.firstChild;
+        } else {
+          before = _this.before;
+        }
+      } else {
+        before = _this.tags[_this.tags.length - 1].nextSibling;
+      }
+
+      _this.container.insertBefore(tag, before);
+
+      _this.tags.push(tag);
+    };
+
+    this.isSpeedy = options.speedy === undefined ? "development" === 'production' : options.speedy;
+    this.tags = [];
+    this.ctr = 0;
+    this.nonce = options.nonce; // key is the value of the data-emotion attribute, it's used to identify different sheets
+
+    this.key = options.key;
+    this.container = options.container;
+    this.prepend = options.prepend;
+    this.insertionPoint = options.insertionPoint;
+    this.before = null;
+  }
+
+  var _proto = StyleSheet.prototype;
+
+  _proto.hydrate = function hydrate(nodes) {
+    nodes.forEach(this._insertTag);
+  };
+
+  _proto.insert = function insert(rule) {
+    // the max length is how many rules we have per style tag, it's 65000 in speedy mode
+    // it's 1 in dev because we insert source maps that map a single rule to a location
+    // and you can only have one source map per style tag
+    if (this.ctr % (this.isSpeedy ? 65000 : 1) === 0) {
+      this._insertTag(createStyleElement(this));
+    }
+
+    var tag = this.tags[this.tags.length - 1];
+
+    if ("development" !== 'production') {
+      var isImportRule = rule.charCodeAt(0) === 64 && rule.charCodeAt(1) === 105;
+
+      if (isImportRule && this._alreadyInsertedOrderInsensitiveRule) {
+        // this would only cause problem in speedy mode
+        // but we don't want enabling speedy to affect the observable behavior
+        // so we report this error at all times
+        console.error("You're attempting to insert the following rule:\n" + rule + '\n\n`@import` rules must be before all other types of rules in a stylesheet but other rules have already been inserted. Please ensure that `@import` rules are before all other rules.');
+      }
+
+      this._alreadyInsertedOrderInsensitiveRule = this._alreadyInsertedOrderInsensitiveRule || !isImportRule;
+    }
+
+    if (this.isSpeedy) {
+      var sheet = sheetForTag(tag);
+
+      try {
+        // this is the ultrafast version, works across browsers
+        // the big drawback is that the css won't be editable in devtools
+        sheet.insertRule(rule, sheet.cssRules.length);
+      } catch (e) {
+        if ("development" !== 'production' && !/:(-moz-placeholder|-moz-focus-inner|-moz-focusring|-ms-input-placeholder|-moz-read-write|-moz-read-only|-ms-clear){/.test(rule)) {
+          console.error("There was a problem inserting the following rule: \"" + rule + "\"", e);
+        }
+      }
+    } else {
+      tag.appendChild(document.createTextNode(rule));
+    }
+
+    this.ctr++;
+  };
+
+  _proto.flush = function flush() {
+    // $FlowFixMe
+    this.tags.forEach(function (tag) {
+      return tag.parentNode && tag.parentNode.removeChild(tag);
+    });
+    this.tags = [];
+    this.ctr = 0;
+
+    if ("development" !== 'production') {
+      this._alreadyInsertedOrderInsensitiveRule = false;
+    }
+  };
+
+  return StyleSheet;
+}();
+
+exports.StyleSheet = StyleSheet;
+},{}],"../node_modules/stylis/dist/stylis.mjs":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.abs = exports.WEBKIT = exports.VIEWPORT = exports.SUPPORTS = exports.RULESET = exports.PAGE = exports.NAMESPACE = exports.MS = exports.MOZ = exports.MEDIA = exports.KEYFRAMES = exports.IMPORT = exports.FONT_FEATURE_VALUES = exports.FONT_FACE = exports.DOCUMENT = exports.DECLARATION = exports.COUNTER_STYLE = exports.COMMENT = exports.CHARSET = void 0;
+exports.alloc = U;
+exports.append = S;
+exports.assign = void 0;
+exports.caret = Q;
+exports.char = K;
+exports.characters = exports.character = void 0;
+exports.charat = z;
+exports.column = void 0;
+exports.combine = q;
+exports.comment = se;
+exports.commenter = re;
+exports.compile = ce;
+exports.copy = J;
+exports.dealloc = V;
+exports.declaration = ue;
+exports.delimit = W;
+exports.delimiter = ee;
+exports.escaping = _;
+exports.from = void 0;
+exports.hash = m;
+exports.identifier = ae;
+exports.indexof = C;
+exports.line = exports.length = void 0;
+exports.match = y;
+exports.middleware = le;
+exports.namespace = pe;
+exports.next = N;
+exports.node = I;
+exports.parse = ne;
+exports.peek = P;
+exports.position = void 0;
+exports.prefix = ie;
+exports.prefixer = he;
+exports.prev = L;
+exports.replace = j;
+exports.ruleset = te;
+exports.rulesheet = ve;
+exports.serialize = fe;
+exports.sizeof = M;
+exports.slice = R;
+exports.stringify = oe;
+exports.strlen = O;
+exports.substr = A;
+exports.token = T;
+exports.tokenize = X;
+exports.tokenizer = Z;
+exports.trim = x;
+exports.whitespace = Y;
+
+var _D, _B, _F, _F2, _D2, _B2;
+
+var e = "-ms-";
+exports.MS = e;
+var r = "-moz-";
+exports.MOZ = r;
+var a = "-webkit-";
+exports.WEBKIT = a;
+var c = "comm";
+exports.COMMENT = c;
+var n = "rule";
+exports.RULESET = n;
+var t = "decl";
+exports.DECLARATION = t;
+var s = "@page";
+exports.PAGE = s;
+var u = "@media";
+exports.MEDIA = u;
+var i = "@import";
+exports.IMPORT = i;
+var f = "@charset";
+exports.CHARSET = f;
+var o = "@viewport";
+exports.VIEWPORT = o;
+var l = "@supports";
+exports.SUPPORTS = l;
+var v = "@document";
+exports.DOCUMENT = v;
+var h = "@namespace";
+exports.NAMESPACE = h;
+var p = "@keyframes";
+exports.KEYFRAMES = p;
+var b = "@font-face";
+exports.FONT_FACE = b;
+var w = "@counter-style";
+exports.COUNTER_STYLE = w;
+var $ = "@font-feature-values";
+exports.FONT_FEATURE_VALUES = $;
+var k = Math.abs;
+exports.abs = k;
+var d = String.fromCharCode;
+exports.from = d;
+var g = Object.assign;
+exports.assign = g;
+
+function m(e, r) {
+  return (((r << 2 ^ z(e, 0)) << 2 ^ z(e, 1)) << 2 ^ z(e, 2)) << 2 ^ z(e, 3);
+}
+
+function x(e) {
+  return e.trim();
+}
+
+function y(e, r) {
+  return (e = r.exec(e)) ? e[0] : e;
+}
+
+function j(e, r, a) {
+  return e.replace(r, a);
+}
+
+function C(e, r) {
+  return e.indexOf(r);
+}
+
+function z(e, r) {
+  return e.charCodeAt(r) | 0;
+}
+
+function A(e, r, a) {
+  return e.slice(r, a);
+}
+
+function O(e) {
+  return e.length;
+}
+
+function M(e) {
+  return e.length;
+}
+
+function S(e, r) {
+  return r.push(e), e;
+}
+
+function q(e, r) {
+  return e.map(r).join("");
+}
+
+var B = 1;
+exports.line = B;
+var D = 1;
+exports.column = D;
+var E = 0;
+exports.length = E;
+var F = 0;
+exports.position = F;
+var G = 0;
+exports.character = G;
+var H = "";
+exports.characters = H;
+
+function I(e, r, a, c, n, t, s) {
+  return {
+    value: e,
+    root: r,
+    parent: a,
+    type: c,
+    props: n,
+    children: t,
+    line: B,
+    column: D,
+    length: s,
+    return: ""
+  };
+}
+
+function J(e, r) {
+  return g(I("", null, null, "", null, null, 0), e, {
+    length: -e.length
+  }, r);
+}
+
+function K() {
+  return G;
+}
+
+function L() {
+  exports.character = G = F > 0 ? z(H, exports.position = exports.position = --F) : 0;
+  if ((_D = D--, exports.column = D, _D), G === 10) exports.column = D = 1, (_B = B--, exports.line = B, _B);
+  return G;
+}
+
+function N() {
+  exports.character = G = F < E ? z(H, (_F = (_F2 = F++, exports.position = F, _F2), exports.position = F, _F)) : 0;
+  if ((_D2 = D++, exports.column = D, _D2), G === 10) exports.column = D = 1, (_B2 = B++, exports.line = B, _B2);
+  return G;
+}
+
+function P() {
+  return z(H, F);
+}
+
+function Q() {
+  return F;
+}
+
+function R(e, r) {
+  return A(H, e, r);
+}
+
+function T(e) {
+  switch (e) {
+    case 0:
+    case 9:
+    case 10:
+    case 13:
+    case 32:
+      return 5;
+
+    case 33:
+    case 43:
+    case 44:
+    case 47:
+    case 62:
+    case 64:
+    case 126:
+    case 59:
+    case 123:
+    case 125:
+      return 4;
+
+    case 58:
+      return 3;
+
+    case 34:
+    case 39:
+    case 40:
+    case 91:
+      return 2;
+
+    case 41:
+    case 93:
+      return 1;
+  }
+
+  return 0;
+}
+
+function U(e) {
+  return exports.line = B = exports.column = D = 1, exports.length = E = O(exports.characters = H = e), exports.position = F = 0, [];
+}
+
+function V(e) {
+  return exports.characters = H = "", e;
+}
+
+function W(e) {
+  return x(R(F - 1, ee(e === 91 ? e + 2 : e === 40 ? e + 1 : e)));
+}
+
+function X(e) {
+  return V(Z(U(e)));
+}
+
+function Y(e) {
+  while (exports.character = G = P()) if (G < 33) N();else break;
+
+  return T(e) > 2 || T(G) > 3 ? "" : " ";
+}
+
+function Z(e) {
+  while (N()) switch (T(G)) {
+    case 0:
+      S(ae(F - 1), e);
+      break;
+
+    case 2:
+      S(W(G), e);
+      break;
+
+    default:
+      S(d(G), e);
+  }
+
+  return e;
+}
+
+function _(e, r) {
+  while (--r && N()) if (G < 48 || G > 102 || G > 57 && G < 65 || G > 70 && G < 97) break;
+
+  return R(e, Q() + (r < 6 && P() == 32 && N() == 32));
+}
+
+function ee(e) {
+  while (N()) switch (G) {
+    case e:
+      return F;
+
+    case 34:
+    case 39:
+      if (e !== 34 && e !== 39) ee(G);
+      break;
+
+    case 40:
+      if (e === 41) ee(e);
+      break;
+
+    case 92:
+      N();
+      break;
+  }
+
+  return F;
+}
+
+function re(e, r) {
+  while (N()) if (e + G === 47 + 10) break;else if (e + G === 42 + 42 && P() === 47) break;
+
+  return "/*" + R(r, F - 1) + "*" + d(e === 47 ? e : N());
+}
+
+function ae(e) {
+  while (!T(P())) N();
+
+  return R(e, F);
+}
+
+function ce(e) {
+  return V(ne("", null, null, null, [""], e = U(e), 0, [0], e));
+}
+
+function ne(e, r, a, c, n, t, s, u, i) {
+  var f = 0;
+  var o = 0;
+  var l = s;
+  var v = 0;
+  var h = 0;
+  var p = 0;
+  var b = 1;
+  var w = 1;
+  var $ = 1;
+  var k = 0;
+  var g = "";
+  var m = n;
+  var x = t;
+  var y = c;
+  var z = g;
+
+  while (w) switch (p = k, k = N()) {
+    case 40:
+      if (p != 108 && z.charCodeAt(l - 1) == 58) {
+        if (C(z += j(W(k), "&", "&\f"), "&\f") != -1) $ = -1;
+        break;
+      }
+
+    case 34:
+    case 39:
+    case 91:
+      z += W(k);
+      break;
+
+    case 9:
+    case 10:
+    case 13:
+    case 32:
+      z += Y(p);
+      break;
+
+    case 92:
+      z += _(Q() - 1, 7);
+      continue;
+
+    case 47:
+      switch (P()) {
+        case 42:
+        case 47:
+          S(se(re(N(), Q()), r, a), i);
+          break;
+
+        default:
+          z += "/";
+      }
+
+      break;
+
+    case 123 * b:
+      u[f++] = O(z) * $;
+
+    case 125 * b:
+    case 59:
+    case 0:
+      switch (k) {
+        case 0:
+        case 125:
+          w = 0;
+
+        case 59 + o:
+          if (h > 0 && O(z) - l) S(h > 32 ? ue(z + ";", c, a, l - 1) : ue(j(z, " ", "") + ";", c, a, l - 2), i);
+          break;
+
+        case 59:
+          z += ";";
+
+        default:
+          S(y = te(z, r, a, f, o, n, u, g, m = [], x = [], l), t);
+          if (k === 123) if (o === 0) ne(z, r, y, y, m, t, l, u, x);else switch (v) {
+            case 100:
+            case 109:
+            case 115:
+              ne(e, y, y, c && S(te(e, y, y, 0, 0, n, u, g, n, m = [], l), x), n, x, l, u, c ? m : x);
+              break;
+
+            default:
+              ne(z, y, y, y, [""], x, 0, u, x);
+          }
+      }
+
+      f = o = h = 0, b = $ = 1, g = z = "", l = s;
+      break;
+
+    case 58:
+      l = 1 + O(z), h = p;
+
+    default:
+      if (b < 1) if (k == 123) --b;else if (k == 125 && b++ == 0 && L() == 125) continue;
+
+      switch (z += d(k), k * b) {
+        case 38:
+          $ = o > 0 ? 1 : (z += "\f", -1);
+          break;
+
+        case 44:
+          u[f++] = (O(z) - 1) * $, $ = 1;
+          break;
+
+        case 64:
+          if (P() === 45) z += W(N());
+          v = P(), o = l = O(g = z += ae(Q())), k++;
+          break;
+
+        case 45:
+          if (p === 45 && O(z) == 2) b = 0;
+      }
+
+  }
+
+  return t;
+}
+
+function te(e, r, a, c, t, s, u, i, f, o, l) {
+  var v = t - 1;
+  var h = t === 0 ? s : [""];
+  var p = M(h);
+
+  for (var b = 0, w = 0, $ = 0; b < c; ++b) for (var d = 0, g = A(e, v + 1, v = k(w = u[b])), m = e; d < p; ++d) if (m = x(w > 0 ? h[d] + " " + g : j(g, /&\f/g, h[d]))) f[$++] = m;
+
+  return I(e, r, a, t === 0 ? n : i, f, o, l);
+}
+
+function se(e, r, a) {
+  return I(e, r, a, c, d(K()), A(e, 2, -2), 0);
+}
+
+function ue(e, r, a, c) {
+  return I(e, r, a, t, A(e, 0, c), A(e, c + 1, -1), c);
+}
+
+function ie(c, n) {
+  switch (m(c, n)) {
+    case 5103:
+      return a + "print-" + c + c;
+
+    case 5737:
+    case 4201:
+    case 3177:
+    case 3433:
+    case 1641:
+    case 4457:
+    case 2921:
+    case 5572:
+    case 6356:
+    case 5844:
+    case 3191:
+    case 6645:
+    case 3005:
+    case 6391:
+    case 5879:
+    case 5623:
+    case 6135:
+    case 4599:
+    case 4855:
+    case 4215:
+    case 6389:
+    case 5109:
+    case 5365:
+    case 5621:
+    case 3829:
+      return a + c + c;
+
+    case 5349:
+    case 4246:
+    case 4810:
+    case 6968:
+    case 2756:
+      return a + c + r + c + e + c + c;
+
+    case 6828:
+    case 4268:
+      return a + c + e + c + c;
+
+    case 6165:
+      return a + c + e + "flex-" + c + c;
+
+    case 5187:
+      return a + c + j(c, /(\w+).+(:[^]+)/, a + "box-$1$2" + e + "flex-$1$2") + c;
+
+    case 5443:
+      return a + c + e + "flex-item-" + j(c, /flex-|-self/, "") + c;
+
+    case 4675:
+      return a + c + e + "flex-line-pack" + j(c, /align-content|flex-|-self/, "") + c;
+
+    case 5548:
+      return a + c + e + j(c, "shrink", "negative") + c;
+
+    case 5292:
+      return a + c + e + j(c, "basis", "preferred-size") + c;
+
+    case 6060:
+      return a + "box-" + j(c, "-grow", "") + a + c + e + j(c, "grow", "positive") + c;
+
+    case 4554:
+      return a + j(c, /([^-])(transform)/g, "$1" + a + "$2") + c;
+
+    case 6187:
+      return j(j(j(c, /(zoom-|grab)/, a + "$1"), /(image-set)/, a + "$1"), c, "") + c;
+
+    case 5495:
+    case 3959:
+      return j(c, /(image-set\([^]*)/, a + "$1" + "$`$1");
+
+    case 4968:
+      return j(j(c, /(.+:)(flex-)?(.*)/, a + "box-pack:$3" + e + "flex-pack:$3"), /s.+-b[^;]+/, "justify") + a + c + c;
+
+    case 4095:
+    case 3583:
+    case 4068:
+    case 2532:
+      return j(c, /(.+)-inline(.+)/, a + "$1$2") + c;
+
+    case 8116:
+    case 7059:
+    case 5753:
+    case 5535:
+    case 5445:
+    case 5701:
+    case 4933:
+    case 4677:
+    case 5533:
+    case 5789:
+    case 5021:
+    case 4765:
+      if (O(c) - 1 - n > 6) switch (z(c, n + 1)) {
+        case 109:
+          if (z(c, n + 4) !== 45) break;
+
+        case 102:
+          return j(c, /(.+:)(.+)-([^]+)/, "$1" + a + "$2-$3" + "$1" + r + (z(c, n + 3) == 108 ? "$3" : "$2-$3")) + c;
+
+        case 115:
+          return ~C(c, "stretch") ? ie(j(c, "stretch", "fill-available"), n) + c : c;
+      }
+      break;
+
+    case 4949:
+      if (z(c, n + 1) !== 115) break;
+
+    case 6444:
+      switch (z(c, O(c) - 3 - (~C(c, "!important") && 10))) {
+        case 107:
+          return j(c, ":", ":" + a) + c;
+
+        case 101:
+          return j(c, /(.+:)([^;!]+)(;|!.+)?/, "$1" + a + (z(c, 14) === 45 ? "inline-" : "") + "box$3" + "$1" + a + "$2$3" + "$1" + e + "$2box$3") + c;
+      }
+
+      break;
+
+    case 5936:
+      switch (z(c, n + 11)) {
+        case 114:
+          return a + c + e + j(c, /[svh]\w+-[tblr]{2}/, "tb") + c;
+
+        case 108:
+          return a + c + e + j(c, /[svh]\w+-[tblr]{2}/, "tb-rl") + c;
+
+        case 45:
+          return a + c + e + j(c, /[svh]\w+-[tblr]{2}/, "lr") + c;
+      }
+
+      return a + c + e + c + c;
+  }
+
+  return c;
+}
+
+function fe(e, r) {
+  var a = "";
+  var c = M(e);
+
+  for (var n = 0; n < c; n++) a += r(e[n], n, e, r) || "";
+
+  return a;
+}
+
+function oe(e, r, a, s) {
+  switch (e.type) {
+    case i:
+    case t:
+      return e.return = e.return || e.value;
+
+    case c:
+      return "";
+
+    case p:
+      return e.return = e.value + "{" + fe(e.children, s) + "}";
+
+    case n:
+      e.value = e.props.join(",");
+  }
+
+  return O(a = fe(e.children, s)) ? e.return = e.value + "{" + a + "}" : "";
+}
+
+function le(e) {
+  var r = M(e);
+  return function (a, c, n, t) {
+    var s = "";
+
+    for (var u = 0; u < r; u++) s += e[u](a, c, n, t) || "";
+
+    return s;
+  };
+}
+
+function ve(e) {
+  return function (r) {
+    if (!r.root) if (r = r.return) e(r);
+  };
+}
+
+function he(c, s, u, i) {
+  if (c.length > -1) if (!c.return) switch (c.type) {
+    case t:
+      c.return = ie(c.value, c.length);
+      break;
+
+    case p:
+      return fe([J(c, {
+        value: j(c.value, "@", "@" + a)
+      })], i);
+
+    case n:
+      if (c.length) return q(c.props, function (n) {
+        switch (y(n, /(::plac\w+|:read-\w+)/)) {
+          case ":read-only":
+          case ":read-write":
+            return fe([J(c, {
+              props: [j(n, /:(read-\w+)/, ":" + r + "$1")]
+            })], i);
+
+          case "::placeholder":
+            return fe([J(c, {
+              props: [j(n, /:(plac\w+)/, ":" + a + "input-$1")]
+            }), J(c, {
+              props: [j(n, /:(plac\w+)/, ":" + r + "$1")]
+            }), J(c, {
+              props: [j(n, /:(plac\w+)/, e + "input-$1")]
+            })], i);
+        }
+
+        return "";
+      });
+  }
+}
+
+function pe(e) {
+  switch (e.type) {
+    case n:
+      e.props = e.props.map(function (r) {
+        return q(X(r), function (r, a, c) {
+          switch (z(r, 0)) {
+            case 12:
+              return A(r, 1, O(r));
+
+            case 0:
+            case 40:
+            case 43:
+            case 62:
+            case 126:
+              return r;
+
+            case 58:
+              if (c[++a] === "global") c[a] = "", c[++a] = "\f" + A(c[a], a = 1, -1);
+
+            case 32:
+              return a === 1 ? "" : r;
+
+            default:
+              switch (a) {
+                case 0:
+                  e = r;
+                  return M(c) > 1 ? "" : r;
+
+                case a = M(c) - 1:
+                case 2:
+                  return a === 2 ? r + e + e : r + e;
+
+                default:
+                  return r;
+              }
+
+          }
+        });
+      });
+  }
+}
+},{}],"../node_modules/@emotion/weak-memoize/dist/weak-memoize.browser.esm.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var weakMemoize = function weakMemoize(func) {
+  // $FlowFixMe flow doesn't include all non-primitive types as allowed for weakmaps
+  var cache = new WeakMap();
+  return function (arg) {
+    if (cache.has(arg)) {
+      // $FlowFixMe
+      return cache.get(arg);
+    }
+
+    var ret = func(arg);
+    cache.set(arg, ret);
+    return ret;
+  };
+};
+
+var _default = weakMemoize;
+exports.default = _default;
+},{}],"../node_modules/@emotion/memoize/dist/emotion-memoize.browser.esm.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+function memoize(fn) {
+  var cache = Object.create(null);
+  return function (arg) {
+    if (cache[arg] === undefined) cache[arg] = fn(arg);
+    return cache[arg];
+  };
+}
+
+var _default = memoize;
+exports.default = _default;
+},{}],"../node_modules/@emotion/cache/dist/emotion-cache.browser.esm.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _sheet = require("@emotion/sheet");
+
+var _stylis = require("stylis");
+
+require("@emotion/weak-memoize");
+
+require("@emotion/memoize");
+
+var last = function last(arr) {
+  return arr.length ? arr[arr.length - 1] : null;
+}; // based on https://github.com/thysultan/stylis.js/blob/e6843c373ebcbbfade25ebcc23f540ed8508da0a/src/Tokenizer.js#L239-L244
+
+
+var identifierWithPointTracking = function identifierWithPointTracking(begin, points, index) {
+  var previous = 0;
+  var character = 0;
+
+  while (true) {
+    previous = character;
+    character = (0, _stylis.peek)(); // &\f
+
+    if (previous === 38 && character === 12) {
+      points[index] = 1;
+    }
+
+    if ((0, _stylis.token)(character)) {
+      break;
+    }
+
+    (0, _stylis.next)();
+  }
+
+  return (0, _stylis.slice)(begin, _stylis.position);
+};
+
+var toRules = function toRules(parsed, points) {
+  // pretend we've started with a comma
+  var index = -1;
+  var character = 44;
+
+  do {
+    switch ((0, _stylis.token)(character)) {
+      case 0:
+        // &\f
+        if (character === 38 && (0, _stylis.peek)() === 12) {
+          // this is not 100% correct, we don't account for literal sequences here - like for example quoted strings
+          // stylis inserts \f after & to know when & where it should replace this sequence with the context selector
+          // and when it should just concatenate the outer and inner selectors
+          // it's very unlikely for this sequence to actually appear in a different context, so we just leverage this fact here
+          points[index] = 1;
+        }
+
+        parsed[index] += identifierWithPointTracking(_stylis.position - 1, points, index);
+        break;
+
+      case 2:
+        parsed[index] += (0, _stylis.delimit)(character);
+        break;
+
+      case 4:
+        // comma
+        if (character === 44) {
+          // colon
+          parsed[++index] = (0, _stylis.peek)() === 58 ? '&\f' : '';
+          points[index] = parsed[index].length;
+          break;
+        }
+
+      // fallthrough
+
+      default:
+        parsed[index] += (0, _stylis.from)(character);
+    }
+  } while (character = (0, _stylis.next)());
+
+  return parsed;
+};
+
+var getRules = function getRules(value, points) {
+  return (0, _stylis.dealloc)(toRules((0, _stylis.alloc)(value), points));
+}; // WeakSet would be more appropriate, but only WeakMap is supported in IE11
+
+
+var fixedElements = /* #__PURE__ */new WeakMap();
+
+var compat = function compat(element) {
+  if (element.type !== 'rule' || !element.parent || // positive .length indicates that this rule contains pseudo
+  // negative .length indicates that this rule has been already prefixed
+  element.length < 1) {
+    return;
+  }
+
+  var value = element.value,
+      parent = element.parent;
+  var isImplicitRule = element.column === parent.column && element.line === parent.line;
+
+  while (parent.type !== 'rule') {
+    parent = parent.parent;
+    if (!parent) return;
+  } // short-circuit for the simplest case
+
+
+  if (element.props.length === 1 && value.charCodeAt(0) !== 58
+  /* colon */
+  && !fixedElements.get(parent)) {
+    return;
+  } // if this is an implicitly inserted rule (the one eagerly inserted at the each new nested level)
+  // then the props has already been manipulated beforehand as they that array is shared between it and its "rule parent"
+
+
+  if (isImplicitRule) {
+    return;
+  }
+
+  fixedElements.set(element, true);
+  var points = [];
+  var rules = getRules(value, points);
+  var parentRules = parent.props;
+
+  for (var i = 0, k = 0; i < rules.length; i++) {
+    for (var j = 0; j < parentRules.length; j++, k++) {
+      element.props[k] = points[i] ? rules[i].replace(/&\f/g, parentRules[j]) : parentRules[j] + " " + rules[i];
+    }
+  }
+};
+
+var removeLabel = function removeLabel(element) {
+  if (element.type === 'decl') {
+    var value = element.value;
+
+    if ( // charcode for l
+    value.charCodeAt(0) === 108 && // charcode for b
+    value.charCodeAt(2) === 98) {
+      // this ignores label
+      element["return"] = '';
+      element.value = '';
+    }
+  }
+};
+
+var ignoreFlag = 'emotion-disable-server-rendering-unsafe-selector-warning-please-do-not-use-this-the-warning-exists-for-a-reason';
+
+var isIgnoringComment = function isIgnoringComment(element) {
+  return !!element && element.type === 'comm' && element.children.indexOf(ignoreFlag) > -1;
+};
+
+var createUnsafeSelectorsAlarm = function createUnsafeSelectorsAlarm(cache) {
+  return function (element, index, children) {
+    if (element.type !== 'rule') return;
+    var unsafePseudoClasses = element.value.match(/(:first|:nth|:nth-last)-child/g);
+
+    if (unsafePseudoClasses && cache.compat !== true) {
+      var prevElement = index > 0 ? children[index - 1] : null;
+
+      if (prevElement && isIgnoringComment(last(prevElement.children))) {
+        return;
+      }
+
+      unsafePseudoClasses.forEach(function (unsafePseudoClass) {
+        console.error("The pseudo class \"" + unsafePseudoClass + "\" is potentially unsafe when doing server-side rendering. Try changing it to \"" + unsafePseudoClass.split('-child')[0] + "-of-type\".");
+      });
+    }
+  };
+};
+
+var isImportRule = function isImportRule(element) {
+  return element.type.charCodeAt(1) === 105 && element.type.charCodeAt(0) === 64;
+};
+
+var isPrependedWithRegularRules = function isPrependedWithRegularRules(index, children) {
+  for (var i = index - 1; i >= 0; i--) {
+    if (!isImportRule(children[i])) {
+      return true;
+    }
+  }
+
+  return false;
+}; // use this to remove incorrect elements from further processing
+// so they don't get handed to the `sheet` (or anything else)
+// as that could potentially lead to additional logs which in turn could be overhelming to the user
+
+
+var nullifyElement = function nullifyElement(element) {
+  element.type = '';
+  element.value = '';
+  element["return"] = '';
+  element.children = '';
+  element.props = '';
+};
+
+var incorrectImportAlarm = function incorrectImportAlarm(element, index, children) {
+  if (!isImportRule(element)) {
+    return;
+  }
+
+  if (element.parent) {
+    console.error("`@import` rules can't be nested inside other rules. Please move it to the top level and put it before regular rules. Keep in mind that they can only be used within global styles.");
+    nullifyElement(element);
+  } else if (isPrependedWithRegularRules(index, children)) {
+    console.error("`@import` rules can't be after other rules. Please put your `@import` rules before your other rules.");
+    nullifyElement(element);
+  }
+};
+
+var defaultStylisPlugins = [_stylis.prefixer];
+
+var createCache = function createCache(options) {
+  var key = options.key;
+
+  if ("development" !== 'production' && !key) {
+    throw new Error("You have to configure `key` for your cache. Please make sure it's unique (and not equal to 'css') as it's used for linking styles to your cache.\n" + "If multiple caches share the same key they might \"fight\" for each other's style elements.");
+  }
+
+  if (key === 'css') {
+    var ssrStyles = document.querySelectorAll("style[data-emotion]:not([data-s])"); // get SSRed styles out of the way of React's hydration
+    // document.head is a safe place to move them to(though note document.head is not necessarily the last place they will be)
+    // note this very very intentionally targets all style elements regardless of the key to ensure
+    // that creating a cache works inside of render of a React component
+
+    Array.prototype.forEach.call(ssrStyles, function (node) {
+      // we want to only move elements which have a space in the data-emotion attribute value
+      // because that indicates that it is an Emotion 11 server-side rendered style elements
+      // while we will already ignore Emotion 11 client-side inserted styles because of the :not([data-s]) part in the selector
+      // Emotion 10 client-side inserted styles did not have data-s (but importantly did not have a space in their data-emotion attributes)
+      // so checking for the space ensures that loading Emotion 11 after Emotion 10 has inserted some styles
+      // will not result in the Emotion 10 styles being destroyed
+      var dataEmotionAttribute = node.getAttribute('data-emotion');
+
+      if (dataEmotionAttribute.indexOf(' ') === -1) {
+        return;
+      }
+
+      document.head.appendChild(node);
+      node.setAttribute('data-s', '');
+    });
+  }
+
+  var stylisPlugins = options.stylisPlugins || defaultStylisPlugins;
+
+  if ("development" !== 'production') {
+    // $FlowFixMe
+    if (/[^a-z-]/.test(key)) {
+      throw new Error("Emotion key must only contain lower case alphabetical characters and - but \"" + key + "\" was passed");
+    }
+  }
+
+  var inserted = {}; // $FlowFixMe
+
+  var container;
+  var nodesToHydrate = [];
+  {
+    container = options.container || document.head;
+    Array.prototype.forEach.call( // this means we will ignore elements which don't have a space in them which
+    // means that the style elements we're looking at are only Emotion 11 server-rendered style elements
+    document.querySelectorAll("style[data-emotion^=\"" + key + " \"]"), function (node) {
+      var attrib = node.getAttribute("data-emotion").split(' '); // $FlowFixMe
+
+      for (var i = 1; i < attrib.length; i++) {
+        inserted[attrib[i]] = true;
+      }
+
+      nodesToHydrate.push(node);
+    });
+  }
+
+  var _insert;
+
+  var omnipresentPlugins = [compat, removeLabel];
+
+  if ("development" !== 'production') {
+    omnipresentPlugins.push(createUnsafeSelectorsAlarm({
+      get compat() {
+        return cache.compat;
+      }
+
+    }), incorrectImportAlarm);
+  }
+
+  {
+    var currentSheet;
+    var finalizingPlugins = [_stylis.stringify, "development" !== 'production' ? function (element) {
+      if (!element.root) {
+        if (element["return"]) {
+          currentSheet.insert(element["return"]);
+        } else if (element.value && element.type !== _stylis.COMMENT) {
+          // insert empty rule in non-production environments
+          // so @emotion/jest can grab `key` from the (JS)DOM for caches without any rules inserted yet
+          currentSheet.insert(element.value + "{}");
+        }
+      }
+    } : (0, _stylis.rulesheet)(function (rule) {
+      currentSheet.insert(rule);
+    })];
+    var serializer = (0, _stylis.middleware)(omnipresentPlugins.concat(stylisPlugins, finalizingPlugins));
+
+    var stylis = function stylis(styles) {
+      return (0, _stylis.serialize)((0, _stylis.compile)(styles), serializer);
+    };
+
+    _insert = function insert(selector, serialized, sheet, shouldCache) {
+      currentSheet = sheet;
+
+      if ("development" !== 'production' && serialized.map !== undefined) {
+        currentSheet = {
+          insert: function insert(rule) {
+            sheet.insert(rule + serialized.map);
+          }
+        };
+      }
+
+      stylis(selector ? selector + "{" + serialized.styles + "}" : serialized.styles);
+
+      if (shouldCache) {
+        cache.inserted[serialized.name] = true;
+      }
+    };
+  }
+  var cache = {
+    key: key,
+    sheet: new _sheet.StyleSheet({
+      key: key,
+      container: container,
+      nonce: options.nonce,
+      speedy: options.speedy,
+      prepend: options.prepend,
+      insertionPoint: options.insertionPoint
+    }),
+    nonce: options.nonce,
+    inserted: inserted,
+    registered: {},
+    insert: _insert
+  };
+  cache.sheet.hydrate(nodesToHydrate);
+  return cache;
+};
+
+var _default = createCache;
+exports.default = _default;
+},{"@emotion/sheet":"../node_modules/@emotion/sheet/dist/emotion-sheet.browser.esm.js","stylis":"../node_modules/stylis/dist/stylis.mjs","@emotion/weak-memoize":"../node_modules/@emotion/weak-memoize/dist/weak-memoize.browser.esm.js","@emotion/memoize":"../node_modules/@emotion/memoize/dist/emotion-memoize.browser.esm.js"}],"../node_modules/@babel/runtime/helpers/esm/extends.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = _extends;
+
+function _extends() {
+  exports.default = _extends = Object.assign || function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  };
+
+  return _extends.apply(this, arguments);
+}
+},{}],"../node_modules/hoist-non-react-statics/node_modules/react-is/cjs/react-is.development.js":[function(require,module,exports) {
+/** @license React v16.13.1
+ * react-is.development.js
+ *
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ */
+'use strict';
+
+if ("development" !== "production") {
+  (function () {
+    'use strict'; // The Symbol used to tag the ReactElement-like types. If there is no native Symbol
+    // nor polyfill, then a plain number is used for performance.
+
+    var hasSymbol = typeof Symbol === 'function' && Symbol.for;
+    var REACT_ELEMENT_TYPE = hasSymbol ? Symbol.for('react.element') : 0xeac7;
+    var REACT_PORTAL_TYPE = hasSymbol ? Symbol.for('react.portal') : 0xeaca;
+    var REACT_FRAGMENT_TYPE = hasSymbol ? Symbol.for('react.fragment') : 0xeacb;
+    var REACT_STRICT_MODE_TYPE = hasSymbol ? Symbol.for('react.strict_mode') : 0xeacc;
+    var REACT_PROFILER_TYPE = hasSymbol ? Symbol.for('react.profiler') : 0xead2;
+    var REACT_PROVIDER_TYPE = hasSymbol ? Symbol.for('react.provider') : 0xeacd;
+    var REACT_CONTEXT_TYPE = hasSymbol ? Symbol.for('react.context') : 0xeace; // TODO: We don't use AsyncMode or ConcurrentMode anymore. They were temporary
+    // (unstable) APIs that have been removed. Can we remove the symbols?
+
+    var REACT_ASYNC_MODE_TYPE = hasSymbol ? Symbol.for('react.async_mode') : 0xeacf;
+    var REACT_CONCURRENT_MODE_TYPE = hasSymbol ? Symbol.for('react.concurrent_mode') : 0xeacf;
+    var REACT_FORWARD_REF_TYPE = hasSymbol ? Symbol.for('react.forward_ref') : 0xead0;
+    var REACT_SUSPENSE_TYPE = hasSymbol ? Symbol.for('react.suspense') : 0xead1;
+    var REACT_SUSPENSE_LIST_TYPE = hasSymbol ? Symbol.for('react.suspense_list') : 0xead8;
+    var REACT_MEMO_TYPE = hasSymbol ? Symbol.for('react.memo') : 0xead3;
+    var REACT_LAZY_TYPE = hasSymbol ? Symbol.for('react.lazy') : 0xead4;
+    var REACT_BLOCK_TYPE = hasSymbol ? Symbol.for('react.block') : 0xead9;
+    var REACT_FUNDAMENTAL_TYPE = hasSymbol ? Symbol.for('react.fundamental') : 0xead5;
+    var REACT_RESPONDER_TYPE = hasSymbol ? Symbol.for('react.responder') : 0xead6;
+    var REACT_SCOPE_TYPE = hasSymbol ? Symbol.for('react.scope') : 0xead7;
+
+    function isValidElementType(type) {
+      return typeof type === 'string' || typeof type === 'function' || // Note: its typeof might be other than 'symbol' or 'number' if it's a polyfill.
+      type === REACT_FRAGMENT_TYPE || type === REACT_CONCURRENT_MODE_TYPE || type === REACT_PROFILER_TYPE || type === REACT_STRICT_MODE_TYPE || type === REACT_SUSPENSE_TYPE || type === REACT_SUSPENSE_LIST_TYPE || typeof type === 'object' && type !== null && (type.$$typeof === REACT_LAZY_TYPE || type.$$typeof === REACT_MEMO_TYPE || type.$$typeof === REACT_PROVIDER_TYPE || type.$$typeof === REACT_CONTEXT_TYPE || type.$$typeof === REACT_FORWARD_REF_TYPE || type.$$typeof === REACT_FUNDAMENTAL_TYPE || type.$$typeof === REACT_RESPONDER_TYPE || type.$$typeof === REACT_SCOPE_TYPE || type.$$typeof === REACT_BLOCK_TYPE);
+    }
+
+    function typeOf(object) {
+      if (typeof object === 'object' && object !== null) {
+        var $$typeof = object.$$typeof;
+
+        switch ($$typeof) {
+          case REACT_ELEMENT_TYPE:
+            var type = object.type;
+
+            switch (type) {
+              case REACT_ASYNC_MODE_TYPE:
+              case REACT_CONCURRENT_MODE_TYPE:
+              case REACT_FRAGMENT_TYPE:
+              case REACT_PROFILER_TYPE:
+              case REACT_STRICT_MODE_TYPE:
+              case REACT_SUSPENSE_TYPE:
+                return type;
+
+              default:
+                var $$typeofType = type && type.$$typeof;
+
+                switch ($$typeofType) {
+                  case REACT_CONTEXT_TYPE:
+                  case REACT_FORWARD_REF_TYPE:
+                  case REACT_LAZY_TYPE:
+                  case REACT_MEMO_TYPE:
+                  case REACT_PROVIDER_TYPE:
+                    return $$typeofType;
+
+                  default:
+                    return $$typeof;
+                }
+
+            }
+
+          case REACT_PORTAL_TYPE:
+            return $$typeof;
+        }
+      }
+
+      return undefined;
+    } // AsyncMode is deprecated along with isAsyncMode
+
+
+    var AsyncMode = REACT_ASYNC_MODE_TYPE;
+    var ConcurrentMode = REACT_CONCURRENT_MODE_TYPE;
+    var ContextConsumer = REACT_CONTEXT_TYPE;
+    var ContextProvider = REACT_PROVIDER_TYPE;
+    var Element = REACT_ELEMENT_TYPE;
+    var ForwardRef = REACT_FORWARD_REF_TYPE;
+    var Fragment = REACT_FRAGMENT_TYPE;
+    var Lazy = REACT_LAZY_TYPE;
+    var Memo = REACT_MEMO_TYPE;
+    var Portal = REACT_PORTAL_TYPE;
+    var Profiler = REACT_PROFILER_TYPE;
+    var StrictMode = REACT_STRICT_MODE_TYPE;
+    var Suspense = REACT_SUSPENSE_TYPE;
+    var hasWarnedAboutDeprecatedIsAsyncMode = false; // AsyncMode should be deprecated
+
+    function isAsyncMode(object) {
+      {
+        if (!hasWarnedAboutDeprecatedIsAsyncMode) {
+          hasWarnedAboutDeprecatedIsAsyncMode = true; // Using console['warn'] to evade Babel and ESLint
+
+          console['warn']('The ReactIs.isAsyncMode() alias has been deprecated, ' + 'and will be removed in React 17+. Update your code to use ' + 'ReactIs.isConcurrentMode() instead. It has the exact same API.');
+        }
+      }
+      return isConcurrentMode(object) || typeOf(object) === REACT_ASYNC_MODE_TYPE;
+    }
+
+    function isConcurrentMode(object) {
+      return typeOf(object) === REACT_CONCURRENT_MODE_TYPE;
+    }
+
+    function isContextConsumer(object) {
+      return typeOf(object) === REACT_CONTEXT_TYPE;
+    }
+
+    function isContextProvider(object) {
+      return typeOf(object) === REACT_PROVIDER_TYPE;
+    }
+
+    function isElement(object) {
+      return typeof object === 'object' && object !== null && object.$$typeof === REACT_ELEMENT_TYPE;
+    }
+
+    function isForwardRef(object) {
+      return typeOf(object) === REACT_FORWARD_REF_TYPE;
+    }
+
+    function isFragment(object) {
+      return typeOf(object) === REACT_FRAGMENT_TYPE;
+    }
+
+    function isLazy(object) {
+      return typeOf(object) === REACT_LAZY_TYPE;
+    }
+
+    function isMemo(object) {
+      return typeOf(object) === REACT_MEMO_TYPE;
+    }
+
+    function isPortal(object) {
+      return typeOf(object) === REACT_PORTAL_TYPE;
+    }
+
+    function isProfiler(object) {
+      return typeOf(object) === REACT_PROFILER_TYPE;
+    }
+
+    function isStrictMode(object) {
+      return typeOf(object) === REACT_STRICT_MODE_TYPE;
+    }
+
+    function isSuspense(object) {
+      return typeOf(object) === REACT_SUSPENSE_TYPE;
+    }
+
+    exports.AsyncMode = AsyncMode;
+    exports.ConcurrentMode = ConcurrentMode;
+    exports.ContextConsumer = ContextConsumer;
+    exports.ContextProvider = ContextProvider;
+    exports.Element = Element;
+    exports.ForwardRef = ForwardRef;
+    exports.Fragment = Fragment;
+    exports.Lazy = Lazy;
+    exports.Memo = Memo;
+    exports.Portal = Portal;
+    exports.Profiler = Profiler;
+    exports.StrictMode = StrictMode;
+    exports.Suspense = Suspense;
+    exports.isAsyncMode = isAsyncMode;
+    exports.isConcurrentMode = isConcurrentMode;
+    exports.isContextConsumer = isContextConsumer;
+    exports.isContextProvider = isContextProvider;
+    exports.isElement = isElement;
+    exports.isForwardRef = isForwardRef;
+    exports.isFragment = isFragment;
+    exports.isLazy = isLazy;
+    exports.isMemo = isMemo;
+    exports.isPortal = isPortal;
+    exports.isProfiler = isProfiler;
+    exports.isStrictMode = isStrictMode;
+    exports.isSuspense = isSuspense;
+    exports.isValidElementType = isValidElementType;
+    exports.typeOf = typeOf;
+  })();
+}
+},{}],"../node_modules/hoist-non-react-statics/node_modules/react-is/index.js":[function(require,module,exports) {
+'use strict';
+
+if ("development" === 'production') {
+  module.exports = require('./cjs/react-is.production.min.js');
+} else {
+  module.exports = require('./cjs/react-is.development.js');
+}
+},{"./cjs/react-is.development.js":"../node_modules/hoist-non-react-statics/node_modules/react-is/cjs/react-is.development.js"}],"../node_modules/hoist-non-react-statics/dist/hoist-non-react-statics.cjs.js":[function(require,module,exports) {
+'use strict';
+
+var reactIs = require('react-is');
+
+/**
+ * Copyright 2015, Yahoo! Inc.
+ * Copyrights licensed under the New BSD License. See the accompanying LICENSE file for terms.
+ */
+var REACT_STATICS = {
+  childContextTypes: true,
+  contextType: true,
+  contextTypes: true,
+  defaultProps: true,
+  displayName: true,
+  getDefaultProps: true,
+  getDerivedStateFromError: true,
+  getDerivedStateFromProps: true,
+  mixins: true,
+  propTypes: true,
+  type: true
+};
+var KNOWN_STATICS = {
+  name: true,
+  length: true,
+  prototype: true,
+  caller: true,
+  callee: true,
+  arguments: true,
+  arity: true
+};
+var FORWARD_REF_STATICS = {
+  '$$typeof': true,
+  render: true,
+  defaultProps: true,
+  displayName: true,
+  propTypes: true
+};
+var MEMO_STATICS = {
+  '$$typeof': true,
+  compare: true,
+  defaultProps: true,
+  displayName: true,
+  propTypes: true,
+  type: true
+};
+var TYPE_STATICS = {};
+TYPE_STATICS[reactIs.ForwardRef] = FORWARD_REF_STATICS;
+TYPE_STATICS[reactIs.Memo] = MEMO_STATICS;
+
+function getStatics(component) {
+  // React v16.11 and below
+  if (reactIs.isMemo(component)) {
+    return MEMO_STATICS;
+  } // React v16.12 and above
+
+
+  return TYPE_STATICS[component['$$typeof']] || REACT_STATICS;
+}
+
+var defineProperty = Object.defineProperty;
+var getOwnPropertyNames = Object.getOwnPropertyNames;
+var getOwnPropertySymbols = Object.getOwnPropertySymbols;
+var getOwnPropertyDescriptor = Object.getOwnPropertyDescriptor;
+var getPrototypeOf = Object.getPrototypeOf;
+var objectPrototype = Object.prototype;
+function hoistNonReactStatics(targetComponent, sourceComponent, blacklist) {
+  if (typeof sourceComponent !== 'string') {
+    // don't hoist over string (html) components
+    if (objectPrototype) {
+      var inheritedComponent = getPrototypeOf(sourceComponent);
+
+      if (inheritedComponent && inheritedComponent !== objectPrototype) {
+        hoistNonReactStatics(targetComponent, inheritedComponent, blacklist);
+      }
+    }
+
+    var keys = getOwnPropertyNames(sourceComponent);
+
+    if (getOwnPropertySymbols) {
+      keys = keys.concat(getOwnPropertySymbols(sourceComponent));
+    }
+
+    var targetStatics = getStatics(targetComponent);
+    var sourceStatics = getStatics(sourceComponent);
+
+    for (var i = 0; i < keys.length; ++i) {
+      var key = keys[i];
+
+      if (!KNOWN_STATICS[key] && !(blacklist && blacklist[key]) && !(sourceStatics && sourceStatics[key]) && !(targetStatics && targetStatics[key])) {
+        var descriptor = getOwnPropertyDescriptor(sourceComponent, key);
+
+        try {
+          // Avoid failures from read-only properties
+          defineProperty(targetComponent, key, descriptor);
+        } catch (e) {}
+      }
+    }
+  }
+
+  return targetComponent;
+}
+
+module.exports = hoistNonReactStatics;
+
+},{"react-is":"../node_modules/hoist-non-react-statics/node_modules/react-is/index.js"}],"../node_modules/@emotion/react/_isolated-hnrs/dist/emotion-react-_isolated-hnrs.browser.esm.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+var _hoistNonReactStatics = _interopRequireDefault(require("hoist-non-react-statics"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// this file isolates this package that is not tree-shakeable
+// and if this module doesn't actually contain any logic of its own
+// then Rollup just use 'hoist-non-react-statics' directly in other chunks
+var hoistNonReactStatics = function (targetComponent, sourceComponent) {
+  return (0, _hoistNonReactStatics.default)(targetComponent, sourceComponent);
+};
+
+var _default = hoistNonReactStatics;
+exports.default = _default;
+},{"hoist-non-react-statics":"../node_modules/hoist-non-react-statics/dist/hoist-non-react-statics.cjs.js"}],"../node_modules/@emotion/utils/dist/emotion-utils.browser.esm.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getRegisteredStyles = getRegisteredStyles;
+exports.registerStyles = exports.insertStyles = void 0;
+var isBrowser = "object" !== 'undefined';
+
+function getRegisteredStyles(registered, registeredStyles, classNames) {
+  var rawClassName = '';
+  classNames.split(' ').forEach(function (className) {
+    if (registered[className] !== undefined) {
+      registeredStyles.push(registered[className] + ";");
+    } else {
+      rawClassName += className + " ";
+    }
+  });
+  return rawClassName;
+}
+
+var registerStyles = function registerStyles(cache, serialized, isStringTag) {
+  var className = cache.key + "-" + serialized.name;
+
+  if ( // we only need to add the styles to the registered cache if the
+  // class name could be used further down
+  // the tree but if it's a string tag, we know it won't
+  // so we don't have to add it to registered cache.
+  // this improves memory usage since we can avoid storing the whole style string
+  (isStringTag === false || // we need to always store it if we're in compat mode and
+  // in node since emotion-server relies on whether a style is in
+  // the registered cache to know whether a style is global or not
+  // also, note that this check will be dead code eliminated in the browser
+  isBrowser === false) && cache.registered[className] === undefined) {
+    cache.registered[className] = serialized.styles;
+  }
+};
+
+exports.registerStyles = registerStyles;
+
+var insertStyles = function insertStyles(cache, serialized, isStringTag) {
+  registerStyles(cache, serialized, isStringTag);
+  var className = cache.key + "-" + serialized.name;
+
+  if (cache.inserted[serialized.name] === undefined) {
+    var current = serialized;
+
+    do {
+      var maybeStyles = cache.insert(serialized === current ? "." + className : '', current, cache.sheet, true);
+      current = current.next;
+    } while (current !== undefined);
+  }
+};
+
+exports.insertStyles = insertStyles;
+},{}],"../node_modules/@emotion/hash/dist/hash.browser.esm.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+
+/* eslint-disable */
+// Inspired by https://github.com/garycourt/murmurhash-js
+// Ported from https://github.com/aappleby/smhasher/blob/61a0530f28277f2e850bfc39600ce61d02b518de/src/MurmurHash2.cpp#L37-L86
+function murmur2(str) {
+  // 'm' and 'r' are mixing constants generated offline.
+  // They're not really 'magic', they just happen to work well.
+  // const m = 0x5bd1e995;
+  // const r = 24;
+  // Initialize the hash
+  var h = 0; // Mix 4 bytes at a time into the hash
+
+  var k,
+      i = 0,
+      len = str.length;
+
+  for (; len >= 4; ++i, len -= 4) {
+    k = str.charCodeAt(i) & 0xff | (str.charCodeAt(++i) & 0xff) << 8 | (str.charCodeAt(++i) & 0xff) << 16 | (str.charCodeAt(++i) & 0xff) << 24;
+    k =
+    /* Math.imul(k, m): */
+    (k & 0xffff) * 0x5bd1e995 + ((k >>> 16) * 0xe995 << 16);
+    k ^=
+    /* k >>> r: */
+    k >>> 24;
+    h =
+    /* Math.imul(k, m): */
+    (k & 0xffff) * 0x5bd1e995 + ((k >>> 16) * 0xe995 << 16) ^
+    /* Math.imul(h, m): */
+    (h & 0xffff) * 0x5bd1e995 + ((h >>> 16) * 0xe995 << 16);
+  } // Handle the last few bytes of the input array
+
+
+  switch (len) {
+    case 3:
+      h ^= (str.charCodeAt(i + 2) & 0xff) << 16;
+
+    case 2:
+      h ^= (str.charCodeAt(i + 1) & 0xff) << 8;
+
+    case 1:
+      h ^= str.charCodeAt(i) & 0xff;
+      h =
+      /* Math.imul(h, m): */
+      (h & 0xffff) * 0x5bd1e995 + ((h >>> 16) * 0xe995 << 16);
+  } // Do a few final mixes of the hash to ensure the last few
+  // bytes are well-incorporated.
+
+
+  h ^= h >>> 13;
+  h =
+  /* Math.imul(h, m): */
+  (h & 0xffff) * 0x5bd1e995 + ((h >>> 16) * 0xe995 << 16);
+  return ((h ^ h >>> 15) >>> 0).toString(36);
+}
+
+var _default = murmur2;
+exports.default = _default;
+},{}],"../node_modules/@emotion/unitless/dist/unitless.browser.esm.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = void 0;
+var unitlessKeys = {
+  animationIterationCount: 1,
+  borderImageOutset: 1,
+  borderImageSlice: 1,
+  borderImageWidth: 1,
+  boxFlex: 1,
+  boxFlexGroup: 1,
+  boxOrdinalGroup: 1,
+  columnCount: 1,
+  columns: 1,
+  flex: 1,
+  flexGrow: 1,
+  flexPositive: 1,
+  flexShrink: 1,
+  flexNegative: 1,
+  flexOrder: 1,
+  gridRow: 1,
+  gridRowEnd: 1,
+  gridRowSpan: 1,
+  gridRowStart: 1,
+  gridColumn: 1,
+  gridColumnEnd: 1,
+  gridColumnSpan: 1,
+  gridColumnStart: 1,
+  msGridRow: 1,
+  msGridRowSpan: 1,
+  msGridColumn: 1,
+  msGridColumnSpan: 1,
+  fontWeight: 1,
+  lineHeight: 1,
+  opacity: 1,
+  order: 1,
+  orphans: 1,
+  tabSize: 1,
+  widows: 1,
+  zIndex: 1,
+  zoom: 1,
+  WebkitLineClamp: 1,
+  // SVG-related properties
+  fillOpacity: 1,
+  floodOpacity: 1,
+  stopOpacity: 1,
+  strokeDasharray: 1,
+  strokeDashoffset: 1,
+  strokeMiterlimit: 1,
+  strokeOpacity: 1,
+  strokeWidth: 1
+};
+var _default = unitlessKeys;
+exports.default = _default;
+},{}],"../node_modules/@emotion/serialize/dist/emotion-serialize.browser.esm.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.serializeStyles = void 0;
+
+var _hash = _interopRequireDefault(require("@emotion/hash"));
+
+var _unitless = _interopRequireDefault(require("@emotion/unitless"));
+
+var _memoize = _interopRequireDefault(require("@emotion/memoize"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var ILLEGAL_ESCAPE_SEQUENCE_ERROR = "You have illegal escape sequence in your template literal, most likely inside content's property value.\nBecause you write your CSS inside a JavaScript string you actually have to do double escaping, so for example \"content: '\\00d7';\" should become \"content: '\\\\00d7';\".\nYou can read more about this here:\nhttps://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#ES2018_revision_of_illegal_escape_sequences";
+var UNDEFINED_AS_OBJECT_KEY_ERROR = "You have passed in falsy value as style object's key (can happen when in example you pass unexported component as computed key).";
+var hyphenateRegex = /[A-Z]|^ms/g;
+var animationRegex = /_EMO_([^_]+?)_([^]*?)_EMO_/g;
+
+var isCustomProperty = function isCustomProperty(property) {
+  return property.charCodeAt(1) === 45;
+};
+
+var isProcessableValue = function isProcessableValue(value) {
+  return value != null && typeof value !== 'boolean';
+};
+
+var processStyleName = /* #__PURE__ */(0, _memoize.default)(function (styleName) {
+  return isCustomProperty(styleName) ? styleName : styleName.replace(hyphenateRegex, '-$&').toLowerCase();
+});
+
+var processStyleValue = function processStyleValue(key, value) {
+  switch (key) {
+    case 'animation':
+    case 'animationName':
+      {
+        if (typeof value === 'string') {
+          return value.replace(animationRegex, function (match, p1, p2) {
+            cursor = {
+              name: p1,
+              styles: p2,
+              next: cursor
+            };
+            return p1;
+          });
+        }
+      }
+  }
+
+  if (_unitless.default[key] !== 1 && !isCustomProperty(key) && typeof value === 'number' && value !== 0) {
+    return value + 'px';
+  }
+
+  return value;
+};
+
+if ("development" !== 'production') {
+  var contentValuePattern = /(var|attr|counters?|url|(((repeating-)?(linear|radial))|conic)-gradient)\(|(no-)?(open|close)-quote/;
+  var contentValues = ['normal', 'none', 'initial', 'inherit', 'unset'];
+  var oldProcessStyleValue = processStyleValue;
+  var msPattern = /^-ms-/;
+  var hyphenPattern = /-(.)/g;
+  var hyphenatedCache = {};
+
+  processStyleValue = function processStyleValue(key, value) {
+    if (key === 'content') {
+      if (typeof value !== 'string' || contentValues.indexOf(value) === -1 && !contentValuePattern.test(value) && (value.charAt(0) !== value.charAt(value.length - 1) || value.charAt(0) !== '"' && value.charAt(0) !== "'")) {
+        throw new Error("You seem to be using a value for 'content' without quotes, try replacing it with `content: '\"" + value + "\"'`");
+      }
+    }
+
+    var processed = oldProcessStyleValue(key, value);
+
+    if (processed !== '' && !isCustomProperty(key) && key.indexOf('-') !== -1 && hyphenatedCache[key] === undefined) {
+      hyphenatedCache[key] = true;
+      console.error("Using kebab-case for css properties in objects is not supported. Did you mean " + key.replace(msPattern, 'ms-').replace(hyphenPattern, function (str, _char) {
+        return _char.toUpperCase();
+      }) + "?");
+    }
+
+    return processed;
+  };
+}
+
+function handleInterpolation(mergedProps, registered, interpolation) {
+  if (interpolation == null) {
+    return '';
+  }
+
+  if (interpolation.__emotion_styles !== undefined) {
+    if ("development" !== 'production' && interpolation.toString() === 'NO_COMPONENT_SELECTOR') {
+      throw new Error('Component selectors can only be used in conjunction with @emotion/babel-plugin.');
+    }
+
+    return interpolation;
+  }
+
+  switch (typeof interpolation) {
+    case 'boolean':
+      {
+        return '';
+      }
+
+    case 'object':
+      {
+        if (interpolation.anim === 1) {
+          cursor = {
+            name: interpolation.name,
+            styles: interpolation.styles,
+            next: cursor
+          };
+          return interpolation.name;
+        }
+
+        if (interpolation.styles !== undefined) {
+          var next = interpolation.next;
+
+          if (next !== undefined) {
+            // not the most efficient thing ever but this is a pretty rare case
+            // and there will be very few iterations of this generally
+            while (next !== undefined) {
+              cursor = {
+                name: next.name,
+                styles: next.styles,
+                next: cursor
+              };
+              next = next.next;
+            }
+          }
+
+          var styles = interpolation.styles + ";";
+
+          if ("development" !== 'production' && interpolation.map !== undefined) {
+            styles += interpolation.map;
+          }
+
+          return styles;
+        }
+
+        return createStringFromObject(mergedProps, registered, interpolation);
+      }
+
+    case 'function':
+      {
+        if (mergedProps !== undefined) {
+          var previousCursor = cursor;
+          var result = interpolation(mergedProps);
+          cursor = previousCursor;
+          return handleInterpolation(mergedProps, registered, result);
+        } else if ("development" !== 'production') {
+          console.error('Functions that are interpolated in css calls will be stringified.\n' + 'If you want to have a css call based on props, create a function that returns a css call like this\n' + 'let dynamicStyle = (props) => css`color: ${props.color}`\n' + 'It can be called directly with props or interpolated in a styled call like this\n' + "let SomeComponent = styled('div')`${dynamicStyle}`");
+        }
+
+        break;
+      }
+
+    case 'string':
+      if ("development" !== 'production') {
+        var matched = [];
+        var replaced = interpolation.replace(animationRegex, function (match, p1, p2) {
+          var fakeVarName = "animation" + matched.length;
+          matched.push("const " + fakeVarName + " = keyframes`" + p2.replace(/^@keyframes animation-\w+/, '') + "`");
+          return "${" + fakeVarName + "}";
+        });
+
+        if (matched.length) {
+          console.error('`keyframes` output got interpolated into plain string, please wrap it with `css`.\n\n' + 'Instead of doing this:\n\n' + [].concat(matched, ["`" + replaced + "`"]).join('\n') + '\n\nYou should wrap it with `css` like this:\n\n' + ("css`" + replaced + "`"));
+        }
+      }
+
+      break;
+  } // finalize string values (regular strings and functions interpolated into css calls)
+
+
+  if (registered == null) {
+    return interpolation;
+  }
+
+  var cached = registered[interpolation];
+  return cached !== undefined ? cached : interpolation;
+}
+
+function createStringFromObject(mergedProps, registered, obj) {
+  var string = '';
+
+  if (Array.isArray(obj)) {
+    for (var i = 0; i < obj.length; i++) {
+      string += handleInterpolation(mergedProps, registered, obj[i]) + ";";
+    }
+  } else {
+    for (var _key in obj) {
+      var value = obj[_key];
+
+      if (typeof value !== 'object') {
+        if (registered != null && registered[value] !== undefined) {
+          string += _key + "{" + registered[value] + "}";
+        } else if (isProcessableValue(value)) {
+          string += processStyleName(_key) + ":" + processStyleValue(_key, value) + ";";
+        }
+      } else {
+        if (_key === 'NO_COMPONENT_SELECTOR' && "development" !== 'production') {
+          throw new Error('Component selectors can only be used in conjunction with @emotion/babel-plugin.');
+        }
+
+        if (Array.isArray(value) && typeof value[0] === 'string' && (registered == null || registered[value[0]] === undefined)) {
+          for (var _i = 0; _i < value.length; _i++) {
+            if (isProcessableValue(value[_i])) {
+              string += processStyleName(_key) + ":" + processStyleValue(_key, value[_i]) + ";";
+            }
+          }
+        } else {
+          var interpolated = handleInterpolation(mergedProps, registered, value);
+
+          switch (_key) {
+            case 'animation':
+            case 'animationName':
+              {
+                string += processStyleName(_key) + ":" + interpolated + ";";
+                break;
+              }
+
+            default:
+              {
+                if ("development" !== 'production' && _key === 'undefined') {
+                  console.error(UNDEFINED_AS_OBJECT_KEY_ERROR);
+                }
+
+                string += _key + "{" + interpolated + "}";
+              }
+          }
+        }
+      }
+    }
+  }
+
+  return string;
+}
+
+var labelPattern = /label:\s*([^\s;\n{]+)\s*(;|$)/g;
+var sourceMapPattern;
+
+if ("development" !== 'production') {
+  sourceMapPattern = /\/\*#\ssourceMappingURL=data:application\/json;\S+\s+\*\//g;
+} // this is the cursor for keyframes
+// keyframes are stored on the SerializedStyles object as a linked list
+
+
+var cursor;
+
+var serializeStyles = function serializeStyles(args, registered, mergedProps) {
+  if (args.length === 1 && typeof args[0] === 'object' && args[0] !== null && args[0].styles !== undefined) {
+    return args[0];
+  }
+
+  var stringMode = true;
+  var styles = '';
+  cursor = undefined;
+  var strings = args[0];
+
+  if (strings == null || strings.raw === undefined) {
+    stringMode = false;
+    styles += handleInterpolation(mergedProps, registered, strings);
+  } else {
+    if ("development" !== 'production' && strings[0] === undefined) {
+      console.error(ILLEGAL_ESCAPE_SEQUENCE_ERROR);
+    }
+
+    styles += strings[0];
+  } // we start at 1 since we've already handled the first arg
+
+
+  for (var i = 1; i < args.length; i++) {
+    styles += handleInterpolation(mergedProps, registered, args[i]);
+
+    if (stringMode) {
+      if ("development" !== 'production' && strings[i] === undefined) {
+        console.error(ILLEGAL_ESCAPE_SEQUENCE_ERROR);
+      }
+
+      styles += strings[i];
+    }
+  }
+
+  var sourceMap;
+
+  if ("development" !== 'production') {
+    styles = styles.replace(sourceMapPattern, function (match) {
+      sourceMap = match;
+      return '';
+    });
+  } // using a global regex with .exec is stateful so lastIndex has to be reset each time
+
+
+  labelPattern.lastIndex = 0;
+  var identifierName = '';
+  var match; // https://esbench.com/bench/5b809c2cf2949800a0f61fb5
+
+  while ((match = labelPattern.exec(styles)) !== null) {
+    identifierName += '-' + // $FlowFixMe we know it's not null
+    match[1];
+  }
+
+  var name = (0, _hash.default)(styles) + identifierName;
+
+  if ("development" !== 'production') {
+    // $FlowFixMe SerializedStyles type doesn't have toString property (and we don't want to add it)
+    return {
+      name: name,
+      styles: styles,
+      map: sourceMap,
+      next: cursor,
+      toString: function toString() {
+        return "You have tried to stringify object returned from `css` function. It isn't supposed to be used directly (e.g. as value of the `className` prop), but rather handed to emotion so it can handle it (e.g. as value of `css` prop).";
+      }
+    };
+  }
+
+  return {
+    name: name,
+    styles: styles,
+    next: cursor
+  };
+};
+
+exports.serializeStyles = serializeStyles;
+},{"@emotion/hash":"../node_modules/@emotion/hash/dist/hash.browser.esm.js","@emotion/unitless":"../node_modules/@emotion/unitless/dist/unitless.browser.esm.js","@emotion/memoize":"../node_modules/@emotion/memoize/dist/emotion-memoize.browser.esm.js"}],"../node_modules/@emotion/react/dist/emotion-element-cbed451f.browser.esm.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.c = exports.b = exports.a = exports._ = exports.T = exports.E = exports.C = void 0;
+exports.d = withTheme;
+exports.h = void 0;
+exports.u = useInsertionEffectMaybe;
+exports.w = void 0;
+
+var React = _interopRequireWildcard(require("react"));
+
+var _cache = _interopRequireDefault(require("@emotion/cache"));
+
+var _extends2 = _interopRequireDefault(require("@babel/runtime/helpers/esm/extends"));
+
+var _weakMemoize = _interopRequireDefault(require("@emotion/weak-memoize"));
+
+var _emotionReact_isolatedHnrsBrowserEsm = _interopRequireDefault(require("../_isolated-hnrs/dist/emotion-react-_isolated-hnrs.browser.esm.js"));
+
+var _utils = require("@emotion/utils");
+
+var _serialize = require("@emotion/serialize");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function (nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
+
+function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+
+var hasOwnProperty = {}.hasOwnProperty;
+exports.h = hasOwnProperty;
+var EmotionCacheContext = /* #__PURE__ */(0, React.createContext)( // we're doing this to avoid preconstruct's dead code elimination in this one case
+// because this module is primarily intended for the browser and node
+// but it's also required in react native and similar environments sometimes
+// and we could have a special build just for that
+// but this is much easier and the native packages
+// might use a different theme context in the future anyway
+typeof HTMLElement !== 'undefined' ? /* #__PURE__ */(0, _cache.default)({
+  key: 'css'
+}) : null);
+
+if ("development" !== 'production') {
+  EmotionCacheContext.displayName = 'EmotionCacheContext';
+}
+
+var CacheProvider = EmotionCacheContext.Provider;
+exports.C = CacheProvider;
+
+var __unsafe_useEmotionCache = function useEmotionCache() {
+  return (0, React.useContext)(EmotionCacheContext);
+};
+
+exports._ = __unsafe_useEmotionCache;
+
+var withEmotionCache = function withEmotionCache(func) {
+  // $FlowFixMe
+  return /*#__PURE__*/(0, React.forwardRef)(function (props, ref) {
+    // the cache will never be null in the browser
+    var cache = (0, React.useContext)(EmotionCacheContext);
+    return func(props, cache, ref);
+  });
+};
+
+exports.w = withEmotionCache;
+var ThemeContext = /* #__PURE__ */(0, React.createContext)({});
+exports.T = ThemeContext;
+
+if ("development" !== 'production') {
+  ThemeContext.displayName = 'EmotionThemeContext';
+}
+
+var useTheme = function useTheme() {
+  return (0, React.useContext)(ThemeContext);
+};
+
+exports.a = useTheme;
+
+var getTheme = function getTheme(outerTheme, theme) {
+  if (typeof theme === 'function') {
+    var mergedTheme = theme(outerTheme);
+
+    if ("development" !== 'production' && (mergedTheme == null || typeof mergedTheme !== 'object' || Array.isArray(mergedTheme))) {
+      throw new Error('[ThemeProvider] Please return an object from your theme function, i.e. theme={() => ({})}!');
+    }
+
+    return mergedTheme;
+  }
+
+  if ("development" !== 'production' && (theme == null || typeof theme !== 'object' || Array.isArray(theme))) {
+    throw new Error('[ThemeProvider] Please make your theme prop a plain object');
+  }
+
+  return (0, _extends2.default)({}, outerTheme, theme);
+};
+
+var createCacheWithTheme = /* #__PURE__ */(0, _weakMemoize.default)(function (outerTheme) {
+  return (0, _weakMemoize.default)(function (theme) {
+    return getTheme(outerTheme, theme);
+  });
+});
+
+var ThemeProvider = function ThemeProvider(props) {
+  var theme = (0, React.useContext)(ThemeContext);
+
+  if (props.theme !== theme) {
+    theme = createCacheWithTheme(theme)(props.theme);
+  }
+
+  return /*#__PURE__*/(0, React.createElement)(ThemeContext.Provider, {
+    value: theme
+  }, props.children);
+};
+
+exports.b = ThemeProvider;
+
+function withTheme(Component) {
+  var componentName = Component.displayName || Component.name || 'Component';
+
+  var render = function render(props, ref) {
+    var theme = (0, React.useContext)(ThemeContext);
+    return /*#__PURE__*/(0, React.createElement)(Component, (0, _extends2.default)({
+      theme: theme,
+      ref: ref
+    }, props));
+  }; // $FlowFixMe
+
+
+  var WithTheme = /*#__PURE__*/(0, React.forwardRef)(render);
+  WithTheme.displayName = "WithTheme(" + componentName + ")";
+  return (0, _emotionReact_isolatedHnrsBrowserEsm.default)(WithTheme, Component);
+}
+
+var getLastPart = function getLastPart(functionName) {
+  // The match may be something like 'Object.createEmotionProps' or
+  // 'Loader.prototype.render'
+  var parts = functionName.split('.');
+  return parts[parts.length - 1];
+};
+
+var getFunctionNameFromStackTraceLine = function getFunctionNameFromStackTraceLine(line) {
+  // V8
+  var match = /^\s+at\s+([A-Za-z0-9$.]+)\s/.exec(line);
+  if (match) return getLastPart(match[1]); // Safari / Firefox
+
+  match = /^([A-Za-z0-9$.]+)@/.exec(line);
+  if (match) return getLastPart(match[1]);
+  return undefined;
+};
+
+var internalReactFunctionNames = /* #__PURE__ */new Set(['renderWithHooks', 'processChild', 'finishClassComponent', 'renderToString']); // These identifiers come from error stacks, so they have to be valid JS
+// identifiers, thus we only need to replace what is a valid character for JS,
+// but not for CSS.
+
+var sanitizeIdentifier = function sanitizeIdentifier(identifier) {
+  return identifier.replace(/\$/g, '-');
+};
+
+var getLabelFromStackTrace = function getLabelFromStackTrace(stackTrace) {
+  if (!stackTrace) return undefined;
+  var lines = stackTrace.split('\n');
+
+  for (var i = 0; i < lines.length; i++) {
+    var functionName = getFunctionNameFromStackTraceLine(lines[i]); // The first line of V8 stack traces is just "Error"
+
+    if (!functionName) continue; // If we reach one of these, we have gone too far and should quit
+
+    if (internalReactFunctionNames.has(functionName)) break; // The component name is the first function in the stack that starts with an
+    // uppercase letter
+
+    if (/^[A-Z]/.test(functionName)) return sanitizeIdentifier(functionName);
+  }
+
+  return undefined;
+};
+
+var useInsertionEffect = React['useInsertion' + 'Effect'] ? React['useInsertion' + 'Effect'] : function useInsertionEffect(create) {
+  create();
+};
+
+function useInsertionEffectMaybe(create) {
+  useInsertionEffect(create);
+}
+
+var typePropName = '__EMOTION_TYPE_PLEASE_DO_NOT_USE__';
+var labelPropName = '__EMOTION_LABEL_PLEASE_DO_NOT_USE__';
+
+var createEmotionProps = function createEmotionProps(type, props) {
+  if ("development" !== 'production' && typeof props.css === 'string' && // check if there is a css declaration
+  props.css.indexOf(':') !== -1) {
+    throw new Error("Strings are not allowed as css prop values, please wrap it in a css template literal from '@emotion/react' like this: css`" + props.css + "`");
+  }
+
+  var newProps = {};
+
+  for (var key in props) {
+    if (hasOwnProperty.call(props, key)) {
+      newProps[key] = props[key];
+    }
+  }
+
+  newProps[typePropName] = type; // For performance, only call getLabelFromStackTrace in development and when
+  // the label hasn't already been computed
+
+  if ("development" !== 'production' && !!props.css && (typeof props.css !== 'object' || typeof props.css.name !== 'string' || props.css.name.indexOf('-') === -1)) {
+    var label = getLabelFromStackTrace(new Error().stack);
+    if (label) newProps[labelPropName] = label;
+  }
+
+  return newProps;
+};
+
+exports.c = createEmotionProps;
+
+var Insertion = function Insertion(_ref) {
+  var cache = _ref.cache,
+      serialized = _ref.serialized,
+      isStringTag = _ref.isStringTag;
+  (0, _utils.registerStyles)(cache, serialized, isStringTag);
+  var rules = useInsertionEffectMaybe(function () {
+    return (0, _utils.insertStyles)(cache, serialized, isStringTag);
+  });
+  return null;
+};
+
+var Emotion = /* #__PURE__ */withEmotionCache(function (props, cache, ref) {
+  var cssProp = props.css; // so that using `css` from `emotion` and passing the result to the css prop works
+  // not passing the registered cache to serializeStyles because it would
+  // make certain babel optimisations not possible
+
+  if (typeof cssProp === 'string' && cache.registered[cssProp] !== undefined) {
+    cssProp = cache.registered[cssProp];
+  }
+
+  var WrappedComponent = props[typePropName];
+  var registeredStyles = [cssProp];
+  var className = '';
+
+  if (typeof props.className === 'string') {
+    className = (0, _utils.getRegisteredStyles)(cache.registered, registeredStyles, props.className);
+  } else if (props.className != null) {
+    className = props.className + " ";
+  }
+
+  var serialized = (0, _serialize.serializeStyles)(registeredStyles, undefined, (0, React.useContext)(ThemeContext));
+
+  if ("development" !== 'production' && serialized.name.indexOf('-') === -1) {
+    var labelFromStack = props[labelPropName];
+
+    if (labelFromStack) {
+      serialized = (0, _serialize.serializeStyles)([serialized, 'label:' + labelFromStack + ';']);
+    }
+  }
+
+  className += cache.key + "-" + serialized.name;
+  var newProps = {};
+
+  for (var key in props) {
+    if (hasOwnProperty.call(props, key) && key !== 'css' && key !== typePropName && ("development" === 'production' || key !== labelPropName)) {
+      newProps[key] = props[key];
+    }
+  }
+
+  newProps.ref = ref;
+  newProps.className = className;
+  return /*#__PURE__*/(0, React.createElement)(React.Fragment, null, /*#__PURE__*/(0, React.createElement)(Insertion, {
+    cache: cache,
+    serialized: serialized,
+    isStringTag: typeof WrappedComponent === 'string'
+  }), /*#__PURE__*/(0, React.createElement)(WrappedComponent, newProps));
+});
+exports.E = Emotion;
+
+if ("development" !== 'production') {
+  Emotion.displayName = 'EmotionCssPropInternal';
+}
+},{"react":"../node_modules/react/index.js","@emotion/cache":"../node_modules/@emotion/cache/dist/emotion-cache.browser.esm.js","@babel/runtime/helpers/esm/extends":"../node_modules/@babel/runtime/helpers/esm/extends.js","@emotion/weak-memoize":"../node_modules/@emotion/weak-memoize/dist/weak-memoize.browser.esm.js","../_isolated-hnrs/dist/emotion-react-_isolated-hnrs.browser.esm.js":"../node_modules/@emotion/react/_isolated-hnrs/dist/emotion-react-_isolated-hnrs.browser.esm.js","@emotion/utils":"../node_modules/@emotion/utils/dist/emotion-utils.browser.esm.js","@emotion/serialize":"../node_modules/@emotion/serialize/dist/emotion-serialize.browser.esm.js"}],"../node_modules/@babel/runtime/helpers/extends.js":[function(require,module,exports) {
+function _extends() {
+  module.exports = _extends = Object.assign || function (target) {
+    for (var i = 1; i < arguments.length; i++) {
+      var source = arguments[i];
+
+      for (var key in source) {
+        if (Object.prototype.hasOwnProperty.call(source, key)) {
+          target[key] = source[key];
+        }
+      }
+    }
+
+    return target;
+  }, module.exports.__esModule = true, module.exports["default"] = module.exports;
+  return _extends.apply(this, arguments);
+}
+
+module.exports = _extends, module.exports.__esModule = true, module.exports["default"] = module.exports;
+},{}],"../node_modules/react/cjs/react-jsx-dev-runtime.development.js":[function(require,module,exports) {
 /**
  * @license React
  * react-jsx-dev-runtime.development.js
@@ -4072,7 +6497,46 @@ if ("development" === 'production') {
 } else {
   module.exports = require('./cjs/react-jsx-dev-runtime.development.js');
 }
-},{"./cjs/react-jsx-dev-runtime.development.js":"../node_modules/react/cjs/react-jsx-dev-runtime.development.js"}],"../node_modules/scheduler/cjs/scheduler.development.js":[function(require,module,exports) {
+},{"./cjs/react-jsx-dev-runtime.development.js":"../node_modules/react/cjs/react-jsx-dev-runtime.development.js"}],"../node_modules/@emotion/react/jsx-dev-runtime/dist/emotion-react-jsx-dev-runtime.browser.esm.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Fragment = void 0;
+exports.jsxDEV = jsxDEV;
+
+require("react");
+
+require("@emotion/cache");
+
+var _emotionElementCbed451fBrowserEsm = require("../../dist/emotion-element-cbed451f.browser.esm.js");
+
+require("@babel/runtime/helpers/extends");
+
+require("@emotion/weak-memoize");
+
+require("hoist-non-react-statics");
+
+require("../../_isolated-hnrs/dist/emotion-react-_isolated-hnrs.browser.esm.js");
+
+require("@emotion/utils");
+
+require("@emotion/serialize");
+
+var _jsxDevRuntime = require("react/jsx-dev-runtime");
+
+var Fragment = _jsxDevRuntime.Fragment;
+exports.Fragment = Fragment;
+
+function jsxDEV(type, props, key, isStaticChildren, source, self) {
+  if (!_emotionElementCbed451fBrowserEsm.h.call(props, 'css')) {
+    return (0, _jsxDevRuntime.jsxDEV)(type, props, key, isStaticChildren, source, self);
+  }
+
+  return (0, _jsxDevRuntime.jsxDEV)(_emotionElementCbed451fBrowserEsm.E, (0, _emotionElementCbed451fBrowserEsm.c)(type, props), key, isStaticChildren, source, self);
+}
+},{"react":"../node_modules/react/index.js","@emotion/cache":"../node_modules/@emotion/cache/dist/emotion-cache.browser.esm.js","../../dist/emotion-element-cbed451f.browser.esm.js":"../node_modules/@emotion/react/dist/emotion-element-cbed451f.browser.esm.js","@babel/runtime/helpers/extends":"../node_modules/@babel/runtime/helpers/extends.js","@emotion/weak-memoize":"../node_modules/@emotion/weak-memoize/dist/weak-memoize.browser.esm.js","hoist-non-react-statics":"../node_modules/hoist-non-react-statics/dist/hoist-non-react-statics.cjs.js","../../_isolated-hnrs/dist/emotion-react-_isolated-hnrs.browser.esm.js":"../node_modules/@emotion/react/_isolated-hnrs/dist/emotion-react-_isolated-hnrs.browser.esm.js","@emotion/utils":"../node_modules/@emotion/utils/dist/emotion-utils.browser.esm.js","@emotion/serialize":"../node_modules/@emotion/serialize/dist/emotion-serialize.browser.esm.js","react/jsx-dev-runtime":"../node_modules/react/jsx-dev-runtime.js"}],"../node_modules/scheduler/cjs/scheduler.development.js":[function(require,module,exports) {
 /**
  * @license React
  * scheduler.development.js
@@ -34241,7 +36705,38 @@ if ("development" === 'production') {
 } else {
   module.exports = require('./cjs/react-dom.development.js');
 }
-},{"./cjs/react-dom.development.js":"../node_modules/react-dom/cjs/react-dom.development.js"}],"../src/App.tsx":[function(require,module,exports) {
+},{"./cjs/react-dom.development.js":"../node_modules/react-dom/cjs/react-dom.development.js"}],"../node_modules/react-dom/client.js":[function(require,module,exports) {
+'use strict';
+
+var m = require('react-dom');
+
+if ("development" === 'production') {
+  exports.createRoot = m.createRoot;
+  exports.hydrateRoot = m.hydrateRoot;
+} else {
+  var i = m.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED;
+
+  exports.createRoot = function (c, o) {
+    i.usingClientEntryPoint = true;
+
+    try {
+      return m.createRoot(c, o);
+    } finally {
+      i.usingClientEntryPoint = false;
+    }
+  };
+
+  exports.hydrateRoot = function (c, h, o) {
+    i.usingClientEntryPoint = true;
+
+    try {
+      return m.hydrateRoot(c, h, o);
+    } finally {
+      i.usingClientEntryPoint = false;
+    }
+  };
+}
+},{"react-dom":"../node_modules/react-dom/index.js"}],"../src/App.tsx":[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -34249,7 +36744,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = App;
 
-var _jsxDevRuntime = require("react/jsx-dev-runtime");
+var _jsxDevRuntime = require("@emotion/react/jsx-dev-runtime");
 
 var _react = _interopRequireDefault(require("react"));
 
@@ -34266,42 +36761,15815 @@ function App() {
     columnNumber: 11
   }, this);
 }
-},{"react/jsx-dev-runtime":"../node_modules/react/jsx-dev-runtime.js","react":"../node_modules/react/index.js"}],"../src/index.tsx":[function(require,module,exports) {
+},{"@emotion/react/jsx-dev-runtime":"../node_modules/@emotion/react/jsx-dev-runtime/dist/emotion-react-jsx-dev-runtime.browser.esm.js","react":"../node_modules/react/index.js"}],"../node_modules/@babel/runtime/helpers/esm/setPrototypeOf.js":[function(require,module,exports) {
 "use strict";
 
-var _jsxDevRuntime = require("react/jsx-dev-runtime");
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = _setPrototypeOf;
+
+function _setPrototypeOf(o, p) {
+  exports.default = _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) {
+    o.__proto__ = p;
+    return o;
+  };
+
+  return _setPrototypeOf(o, p);
+}
+},{}],"../node_modules/@babel/runtime/helpers/esm/inheritsLoose.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = _inheritsLoose;
+
+var _setPrototypeOf = _interopRequireDefault(require("./setPrototypeOf.js"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function _inheritsLoose(subClass, superClass) {
+  subClass.prototype = Object.create(superClass.prototype);
+  subClass.prototype.constructor = subClass;
+  (0, _setPrototypeOf.default)(subClass, superClass);
+}
+},{"./setPrototypeOf.js":"../node_modules/@babel/runtime/helpers/esm/setPrototypeOf.js"}],"../node_modules/react-query/es/core/subscribable.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Subscribable = void 0;
+
+var Subscribable = /*#__PURE__*/function () {
+  function Subscribable() {
+    this.listeners = [];
+  }
+
+  var _proto = Subscribable.prototype;
+
+  _proto.subscribe = function subscribe(listener) {
+    var _this = this;
+
+    var callback = listener || function () {
+      return undefined;
+    };
+
+    this.listeners.push(callback);
+    this.onSubscribe();
+    return function () {
+      _this.listeners = _this.listeners.filter(function (x) {
+        return x !== callback;
+      });
+
+      _this.onUnsubscribe();
+    };
+  };
+
+  _proto.hasListeners = function hasListeners() {
+    return this.listeners.length > 0;
+  };
+
+  _proto.onSubscribe = function onSubscribe() {// Do nothing
+  };
+
+  _proto.onUnsubscribe = function onUnsubscribe() {// Do nothing
+  };
+
+  return Subscribable;
+}();
+
+exports.Subscribable = Subscribable;
+},{}],"../node_modules/react-query/es/core/utils.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.difference = difference;
+exports.ensureQueryKeyArray = ensureQueryKeyArray;
+exports.functionalUpdate = functionalUpdate;
+exports.getAbortController = getAbortController;
+exports.hashQueryKey = hashQueryKey;
+exports.hashQueryKeyByOptions = hashQueryKeyByOptions;
+exports.isError = isError;
+exports.isPlainObject = isPlainObject;
+exports.isQueryKey = isQueryKey;
+exports.isServer = void 0;
+exports.isValidTimeout = isValidTimeout;
+exports.mapQueryStatusFilter = mapQueryStatusFilter;
+exports.matchMutation = matchMutation;
+exports.matchQuery = matchQuery;
+exports.noop = noop;
+exports.parseFilterArgs = parseFilterArgs;
+exports.parseMutationArgs = parseMutationArgs;
+exports.parseMutationFilterArgs = parseMutationFilterArgs;
+exports.parseQueryArgs = parseQueryArgs;
+exports.partialDeepEqual = partialDeepEqual;
+exports.partialMatchKey = partialMatchKey;
+exports.replaceAt = replaceAt;
+exports.replaceEqualDeep = replaceEqualDeep;
+exports.scheduleMicrotask = scheduleMicrotask;
+exports.shallowEqualObjects = shallowEqualObjects;
+exports.sleep = sleep;
+exports.stableValueHash = stableValueHash;
+exports.timeUntilStale = timeUntilStale;
+
+var _extends2 = _interopRequireDefault(require("@babel/runtime/helpers/esm/extends"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// TYPES
+// UTILS
+var isServer = typeof window === 'undefined';
+exports.isServer = isServer;
+
+function noop() {
+  return undefined;
+}
+
+function functionalUpdate(updater, input) {
+  return typeof updater === 'function' ? updater(input) : updater;
+}
+
+function isValidTimeout(value) {
+  return typeof value === 'number' && value >= 0 && value !== Infinity;
+}
+
+function ensureQueryKeyArray(value) {
+  return Array.isArray(value) ? value : [value];
+}
+
+function difference(array1, array2) {
+  return array1.filter(function (x) {
+    return array2.indexOf(x) === -1;
+  });
+}
+
+function replaceAt(array, index, value) {
+  var copy = array.slice(0);
+  copy[index] = value;
+  return copy;
+}
+
+function timeUntilStale(updatedAt, staleTime) {
+  return Math.max(updatedAt + (staleTime || 0) - Date.now(), 0);
+}
+
+function parseQueryArgs(arg1, arg2, arg3) {
+  if (!isQueryKey(arg1)) {
+    return arg1;
+  }
+
+  if (typeof arg2 === 'function') {
+    return (0, _extends2.default)({}, arg3, {
+      queryKey: arg1,
+      queryFn: arg2
+    });
+  }
+
+  return (0, _extends2.default)({}, arg2, {
+    queryKey: arg1
+  });
+}
+
+function parseMutationArgs(arg1, arg2, arg3) {
+  if (isQueryKey(arg1)) {
+    if (typeof arg2 === 'function') {
+      return (0, _extends2.default)({}, arg3, {
+        mutationKey: arg1,
+        mutationFn: arg2
+      });
+    }
+
+    return (0, _extends2.default)({}, arg2, {
+      mutationKey: arg1
+    });
+  }
+
+  if (typeof arg1 === 'function') {
+    return (0, _extends2.default)({}, arg2, {
+      mutationFn: arg1
+    });
+  }
+
+  return (0, _extends2.default)({}, arg1);
+}
+
+function parseFilterArgs(arg1, arg2, arg3) {
+  return isQueryKey(arg1) ? [(0, _extends2.default)({}, arg2, {
+    queryKey: arg1
+  }), arg3] : [arg1 || {}, arg2];
+}
+
+function parseMutationFilterArgs(arg1, arg2) {
+  return isQueryKey(arg1) ? (0, _extends2.default)({}, arg2, {
+    mutationKey: arg1
+  }) : arg1;
+}
+
+function mapQueryStatusFilter(active, inactive) {
+  if (active === true && inactive === true || active == null && inactive == null) {
+    return 'all';
+  } else if (active === false && inactive === false) {
+    return 'none';
+  } else {
+    // At this point, active|inactive can only be true|false or false|true
+    // so, when only one value is provided, the missing one has to be the negated value
+    var isActive = active != null ? active : !inactive;
+    return isActive ? 'active' : 'inactive';
+  }
+}
+
+function matchQuery(filters, query) {
+  var active = filters.active,
+      exact = filters.exact,
+      fetching = filters.fetching,
+      inactive = filters.inactive,
+      predicate = filters.predicate,
+      queryKey = filters.queryKey,
+      stale = filters.stale;
+
+  if (isQueryKey(queryKey)) {
+    if (exact) {
+      if (query.queryHash !== hashQueryKeyByOptions(queryKey, query.options)) {
+        return false;
+      }
+    } else if (!partialMatchKey(query.queryKey, queryKey)) {
+      return false;
+    }
+  }
+
+  var queryStatusFilter = mapQueryStatusFilter(active, inactive);
+
+  if (queryStatusFilter === 'none') {
+    return false;
+  } else if (queryStatusFilter !== 'all') {
+    var isActive = query.isActive();
+
+    if (queryStatusFilter === 'active' && !isActive) {
+      return false;
+    }
+
+    if (queryStatusFilter === 'inactive' && isActive) {
+      return false;
+    }
+  }
+
+  if (typeof stale === 'boolean' && query.isStale() !== stale) {
+    return false;
+  }
+
+  if (typeof fetching === 'boolean' && query.isFetching() !== fetching) {
+    return false;
+  }
+
+  if (predicate && !predicate(query)) {
+    return false;
+  }
+
+  return true;
+}
+
+function matchMutation(filters, mutation) {
+  var exact = filters.exact,
+      fetching = filters.fetching,
+      predicate = filters.predicate,
+      mutationKey = filters.mutationKey;
+
+  if (isQueryKey(mutationKey)) {
+    if (!mutation.options.mutationKey) {
+      return false;
+    }
+
+    if (exact) {
+      if (hashQueryKey(mutation.options.mutationKey) !== hashQueryKey(mutationKey)) {
+        return false;
+      }
+    } else if (!partialMatchKey(mutation.options.mutationKey, mutationKey)) {
+      return false;
+    }
+  }
+
+  if (typeof fetching === 'boolean' && mutation.state.status === 'loading' !== fetching) {
+    return false;
+  }
+
+  if (predicate && !predicate(mutation)) {
+    return false;
+  }
+
+  return true;
+}
+
+function hashQueryKeyByOptions(queryKey, options) {
+  var hashFn = (options == null ? void 0 : options.queryKeyHashFn) || hashQueryKey;
+  return hashFn(queryKey);
+}
+/**
+ * Default query keys hash function.
+ */
+
+
+function hashQueryKey(queryKey) {
+  var asArray = ensureQueryKeyArray(queryKey);
+  return stableValueHash(asArray);
+}
+/**
+ * Hashes the value into a stable hash.
+ */
+
+
+function stableValueHash(value) {
+  return JSON.stringify(value, function (_, val) {
+    return isPlainObject(val) ? Object.keys(val).sort().reduce(function (result, key) {
+      result[key] = val[key];
+      return result;
+    }, {}) : val;
+  });
+}
+/**
+ * Checks if key `b` partially matches with key `a`.
+ */
+
+
+function partialMatchKey(a, b) {
+  return partialDeepEqual(ensureQueryKeyArray(a), ensureQueryKeyArray(b));
+}
+/**
+ * Checks if `b` partially matches with `a`.
+ */
+
+
+function partialDeepEqual(a, b) {
+  if (a === b) {
+    return true;
+  }
+
+  if (typeof a !== typeof b) {
+    return false;
+  }
+
+  if (a && b && typeof a === 'object' && typeof b === 'object') {
+    return !Object.keys(b).some(function (key) {
+      return !partialDeepEqual(a[key], b[key]);
+    });
+  }
+
+  return false;
+}
+/**
+ * This function returns `a` if `b` is deeply equal.
+ * If not, it will replace any deeply equal children of `b` with those of `a`.
+ * This can be used for structural sharing between JSON values for example.
+ */
+
+
+function replaceEqualDeep(a, b) {
+  if (a === b) {
+    return a;
+  }
+
+  var array = Array.isArray(a) && Array.isArray(b);
+
+  if (array || isPlainObject(a) && isPlainObject(b)) {
+    var aSize = array ? a.length : Object.keys(a).length;
+    var bItems = array ? b : Object.keys(b);
+    var bSize = bItems.length;
+    var copy = array ? [] : {};
+    var equalItems = 0;
+
+    for (var i = 0; i < bSize; i++) {
+      var key = array ? i : bItems[i];
+      copy[key] = replaceEqualDeep(a[key], b[key]);
+
+      if (copy[key] === a[key]) {
+        equalItems++;
+      }
+    }
+
+    return aSize === bSize && equalItems === aSize ? a : copy;
+  }
+
+  return b;
+}
+/**
+ * Shallow compare objects. Only works with objects that always have the same properties.
+ */
+
+
+function shallowEqualObjects(a, b) {
+  if (a && !b || b && !a) {
+    return false;
+  }
+
+  for (var key in a) {
+    if (a[key] !== b[key]) {
+      return false;
+    }
+  }
+
+  return true;
+} // Copied from: https://github.com/jonschlinkert/is-plain-object
+
+
+function isPlainObject(o) {
+  if (!hasObjectPrototype(o)) {
+    return false;
+  } // If has modified constructor
+
+
+  var ctor = o.constructor;
+
+  if (typeof ctor === 'undefined') {
+    return true;
+  } // If has modified prototype
+
+
+  var prot = ctor.prototype;
+
+  if (!hasObjectPrototype(prot)) {
+    return false;
+  } // If constructor does not have an Object-specific method
+
+
+  if (!prot.hasOwnProperty('isPrototypeOf')) {
+    return false;
+  } // Most likely a plain Object
+
+
+  return true;
+}
+
+function hasObjectPrototype(o) {
+  return Object.prototype.toString.call(o) === '[object Object]';
+}
+
+function isQueryKey(value) {
+  return typeof value === 'string' || Array.isArray(value);
+}
+
+function isError(value) {
+  return value instanceof Error;
+}
+
+function sleep(timeout) {
+  return new Promise(function (resolve) {
+    setTimeout(resolve, timeout);
+  });
+}
+/**
+ * Schedules a microtask.
+ * This can be useful to schedule state updates after rendering.
+ */
+
+
+function scheduleMicrotask(callback) {
+  Promise.resolve().then(callback).catch(function (error) {
+    return setTimeout(function () {
+      throw error;
+    });
+  });
+}
+
+function getAbortController() {
+  if (typeof AbortController === 'function') {
+    return new AbortController();
+  }
+}
+},{"@babel/runtime/helpers/esm/extends":"../node_modules/@babel/runtime/helpers/esm/extends.js"}],"../node_modules/react-query/es/core/focusManager.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.focusManager = exports.FocusManager = void 0;
+
+var _inheritsLoose2 = _interopRequireDefault(require("@babel/runtime/helpers/esm/inheritsLoose"));
+
+var _subscribable = require("./subscribable");
+
+var _utils = require("./utils");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var FocusManager = /*#__PURE__*/function (_Subscribable) {
+  (0, _inheritsLoose2.default)(FocusManager, _Subscribable);
+
+  function FocusManager() {
+    var _this;
+
+    _this = _Subscribable.call(this) || this;
+
+    _this.setup = function (onFocus) {
+      var _window;
+
+      if (!_utils.isServer && ((_window = window) == null ? void 0 : _window.addEventListener)) {
+        var listener = function listener() {
+          return onFocus();
+        }; // Listen to visibillitychange and focus
+
+
+        window.addEventListener('visibilitychange', listener, false);
+        window.addEventListener('focus', listener, false);
+        return function () {
+          // Be sure to unsubscribe if a new handler is set
+          window.removeEventListener('visibilitychange', listener);
+          window.removeEventListener('focus', listener);
+        };
+      }
+    };
+
+    return _this;
+  }
+
+  var _proto = FocusManager.prototype;
+
+  _proto.onSubscribe = function onSubscribe() {
+    if (!this.cleanup) {
+      this.setEventListener(this.setup);
+    }
+  };
+
+  _proto.onUnsubscribe = function onUnsubscribe() {
+    if (!this.hasListeners()) {
+      var _this$cleanup;
+
+      (_this$cleanup = this.cleanup) == null ? void 0 : _this$cleanup.call(this);
+      this.cleanup = undefined;
+    }
+  };
+
+  _proto.setEventListener = function setEventListener(setup) {
+    var _this$cleanup2,
+        _this2 = this;
+
+    this.setup = setup;
+    (_this$cleanup2 = this.cleanup) == null ? void 0 : _this$cleanup2.call(this);
+    this.cleanup = setup(function (focused) {
+      if (typeof focused === 'boolean') {
+        _this2.setFocused(focused);
+      } else {
+        _this2.onFocus();
+      }
+    });
+  };
+
+  _proto.setFocused = function setFocused(focused) {
+    this.focused = focused;
+
+    if (focused) {
+      this.onFocus();
+    }
+  };
+
+  _proto.onFocus = function onFocus() {
+    this.listeners.forEach(function (listener) {
+      listener();
+    });
+  };
+
+  _proto.isFocused = function isFocused() {
+    if (typeof this.focused === 'boolean') {
+      return this.focused;
+    } // document global can be unavailable in react native
+
+
+    if (typeof document === 'undefined') {
+      return true;
+    }
+
+    return [undefined, 'visible', 'prerender'].includes(document.visibilityState);
+  };
+
+  return FocusManager;
+}(_subscribable.Subscribable);
+
+exports.FocusManager = FocusManager;
+var focusManager = new FocusManager();
+exports.focusManager = focusManager;
+},{"@babel/runtime/helpers/esm/inheritsLoose":"../node_modules/@babel/runtime/helpers/esm/inheritsLoose.js","./subscribable":"../node_modules/react-query/es/core/subscribable.js","./utils":"../node_modules/react-query/es/core/utils.js"}],"../node_modules/react-query/es/core/onlineManager.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.onlineManager = exports.OnlineManager = void 0;
+
+var _inheritsLoose2 = _interopRequireDefault(require("@babel/runtime/helpers/esm/inheritsLoose"));
+
+var _subscribable = require("./subscribable");
+
+var _utils = require("./utils");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var OnlineManager = /*#__PURE__*/function (_Subscribable) {
+  (0, _inheritsLoose2.default)(OnlineManager, _Subscribable);
+
+  function OnlineManager() {
+    var _this;
+
+    _this = _Subscribable.call(this) || this;
+
+    _this.setup = function (onOnline) {
+      var _window;
+
+      if (!_utils.isServer && ((_window = window) == null ? void 0 : _window.addEventListener)) {
+        var listener = function listener() {
+          return onOnline();
+        }; // Listen to online
+
+
+        window.addEventListener('online', listener, false);
+        window.addEventListener('offline', listener, false);
+        return function () {
+          // Be sure to unsubscribe if a new handler is set
+          window.removeEventListener('online', listener);
+          window.removeEventListener('offline', listener);
+        };
+      }
+    };
+
+    return _this;
+  }
+
+  var _proto = OnlineManager.prototype;
+
+  _proto.onSubscribe = function onSubscribe() {
+    if (!this.cleanup) {
+      this.setEventListener(this.setup);
+    }
+  };
+
+  _proto.onUnsubscribe = function onUnsubscribe() {
+    if (!this.hasListeners()) {
+      var _this$cleanup;
+
+      (_this$cleanup = this.cleanup) == null ? void 0 : _this$cleanup.call(this);
+      this.cleanup = undefined;
+    }
+  };
+
+  _proto.setEventListener = function setEventListener(setup) {
+    var _this$cleanup2,
+        _this2 = this;
+
+    this.setup = setup;
+    (_this$cleanup2 = this.cleanup) == null ? void 0 : _this$cleanup2.call(this);
+    this.cleanup = setup(function (online) {
+      if (typeof online === 'boolean') {
+        _this2.setOnline(online);
+      } else {
+        _this2.onOnline();
+      }
+    });
+  };
+
+  _proto.setOnline = function setOnline(online) {
+    this.online = online;
+
+    if (online) {
+      this.onOnline();
+    }
+  };
+
+  _proto.onOnline = function onOnline() {
+    this.listeners.forEach(function (listener) {
+      listener();
+    });
+  };
+
+  _proto.isOnline = function isOnline() {
+    if (typeof this.online === 'boolean') {
+      return this.online;
+    }
+
+    if (typeof navigator === 'undefined' || typeof navigator.onLine === 'undefined') {
+      return true;
+    }
+
+    return navigator.onLine;
+  };
+
+  return OnlineManager;
+}(_subscribable.Subscribable);
+
+exports.OnlineManager = OnlineManager;
+var onlineManager = new OnlineManager();
+exports.onlineManager = onlineManager;
+},{"@babel/runtime/helpers/esm/inheritsLoose":"../node_modules/@babel/runtime/helpers/esm/inheritsLoose.js","./subscribable":"../node_modules/react-query/es/core/subscribable.js","./utils":"../node_modules/react-query/es/core/utils.js"}],"../node_modules/react-query/es/core/retryer.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Retryer = exports.CancelledError = void 0;
+exports.isCancelable = isCancelable;
+exports.isCancelledError = isCancelledError;
+
+var _focusManager = require("./focusManager");
+
+var _onlineManager = require("./onlineManager");
+
+var _utils = require("./utils");
+
+function defaultRetryDelay(failureCount) {
+  return Math.min(1000 * Math.pow(2, failureCount), 30000);
+}
+
+function isCancelable(value) {
+  return typeof (value == null ? void 0 : value.cancel) === 'function';
+}
+
+var CancelledError = function CancelledError(options) {
+  this.revert = options == null ? void 0 : options.revert;
+  this.silent = options == null ? void 0 : options.silent;
+};
+
+exports.CancelledError = CancelledError;
+
+function isCancelledError(value) {
+  return value instanceof CancelledError;
+} // CLASS
+
+
+var Retryer = function Retryer(config) {
+  var _this = this;
+
+  var cancelRetry = false;
+  var cancelFn;
+  var continueFn;
+  var promiseResolve;
+  var promiseReject;
+  this.abort = config.abort;
+
+  this.cancel = function (cancelOptions) {
+    return cancelFn == null ? void 0 : cancelFn(cancelOptions);
+  };
+
+  this.cancelRetry = function () {
+    cancelRetry = true;
+  };
+
+  this.continueRetry = function () {
+    cancelRetry = false;
+  };
+
+  this.continue = function () {
+    return continueFn == null ? void 0 : continueFn();
+  };
+
+  this.failureCount = 0;
+  this.isPaused = false;
+  this.isResolved = false;
+  this.isTransportCancelable = false;
+  this.promise = new Promise(function (outerResolve, outerReject) {
+    promiseResolve = outerResolve;
+    promiseReject = outerReject;
+  });
+
+  var resolve = function resolve(value) {
+    if (!_this.isResolved) {
+      _this.isResolved = true;
+      config.onSuccess == null ? void 0 : config.onSuccess(value);
+      continueFn == null ? void 0 : continueFn();
+      promiseResolve(value);
+    }
+  };
+
+  var reject = function reject(value) {
+    if (!_this.isResolved) {
+      _this.isResolved = true;
+      config.onError == null ? void 0 : config.onError(value);
+      continueFn == null ? void 0 : continueFn();
+      promiseReject(value);
+    }
+  };
+
+  var pause = function pause() {
+    return new Promise(function (continueResolve) {
+      continueFn = continueResolve;
+      _this.isPaused = true;
+      config.onPause == null ? void 0 : config.onPause();
+    }).then(function () {
+      continueFn = undefined;
+      _this.isPaused = false;
+      config.onContinue == null ? void 0 : config.onContinue();
+    });
+  }; // Create loop function
+
+
+  var run = function run() {
+    // Do nothing if already resolved
+    if (_this.isResolved) {
+      return;
+    }
+
+    var promiseOrValue; // Execute query
+
+    try {
+      promiseOrValue = config.fn();
+    } catch (error) {
+      promiseOrValue = Promise.reject(error);
+    } // Create callback to cancel this fetch
+
+
+    cancelFn = function cancelFn(cancelOptions) {
+      if (!_this.isResolved) {
+        reject(new CancelledError(cancelOptions));
+        _this.abort == null ? void 0 : _this.abort(); // Cancel transport if supported
+
+        if (isCancelable(promiseOrValue)) {
+          try {
+            promiseOrValue.cancel();
+          } catch (_unused) {}
+        }
+      }
+    }; // Check if the transport layer support cancellation
+
+
+    _this.isTransportCancelable = isCancelable(promiseOrValue);
+    Promise.resolve(promiseOrValue).then(resolve).catch(function (error) {
+      var _config$retry, _config$retryDelay; // Stop if the fetch is already resolved
+
+
+      if (_this.isResolved) {
+        return;
+      } // Do we need to retry the request?
+
+
+      var retry = (_config$retry = config.retry) != null ? _config$retry : 3;
+      var retryDelay = (_config$retryDelay = config.retryDelay) != null ? _config$retryDelay : defaultRetryDelay;
+      var delay = typeof retryDelay === 'function' ? retryDelay(_this.failureCount, error) : retryDelay;
+      var shouldRetry = retry === true || typeof retry === 'number' && _this.failureCount < retry || typeof retry === 'function' && retry(_this.failureCount, error);
+
+      if (cancelRetry || !shouldRetry) {
+        // We are done if the query does not need to be retried
+        reject(error);
+        return;
+      }
+
+      _this.failureCount++; // Notify on fail
+
+      config.onFail == null ? void 0 : config.onFail(_this.failureCount, error); // Delay
+
+      (0, _utils.sleep)(delay) // Pause if the document is not visible or when the device is offline
+      .then(function () {
+        if (!_focusManager.focusManager.isFocused() || !_onlineManager.onlineManager.isOnline()) {
+          return pause();
+        }
+      }).then(function () {
+        if (cancelRetry) {
+          reject(error);
+        } else {
+          run();
+        }
+      });
+    });
+  }; // Start loop
+
+
+  run();
+};
+
+exports.Retryer = Retryer;
+},{"./focusManager":"../node_modules/react-query/es/core/focusManager.js","./onlineManager":"../node_modules/react-query/es/core/onlineManager.js","./utils":"../node_modules/react-query/es/core/utils.js"}],"../node_modules/react-query/es/core/notifyManager.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.notifyManager = exports.NotifyManager = void 0;
+
+var _utils = require("./utils");
+
+// TYPES
+// CLASS
+var NotifyManager = /*#__PURE__*/function () {
+  function NotifyManager() {
+    this.queue = [];
+    this.transactions = 0;
+
+    this.notifyFn = function (callback) {
+      callback();
+    };
+
+    this.batchNotifyFn = function (callback) {
+      callback();
+    };
+  }
+
+  var _proto = NotifyManager.prototype;
+
+  _proto.batch = function batch(callback) {
+    var result;
+    this.transactions++;
+
+    try {
+      result = callback();
+    } finally {
+      this.transactions--;
+
+      if (!this.transactions) {
+        this.flush();
+      }
+    }
+
+    return result;
+  };
+
+  _proto.schedule = function schedule(callback) {
+    var _this = this;
+
+    if (this.transactions) {
+      this.queue.push(callback);
+    } else {
+      (0, _utils.scheduleMicrotask)(function () {
+        _this.notifyFn(callback);
+      });
+    }
+  }
+  /**
+   * All calls to the wrapped function will be batched.
+   */
+  ;
+
+  _proto.batchCalls = function batchCalls(callback) {
+    var _this2 = this;
+
+    return function () {
+      for (var _len = arguments.length, args = new Array(_len), _key = 0; _key < _len; _key++) {
+        args[_key] = arguments[_key];
+      }
+
+      _this2.schedule(function () {
+        callback.apply(void 0, args);
+      });
+    };
+  };
+
+  _proto.flush = function flush() {
+    var _this3 = this;
+
+    var queue = this.queue;
+    this.queue = [];
+
+    if (queue.length) {
+      (0, _utils.scheduleMicrotask)(function () {
+        _this3.batchNotifyFn(function () {
+          queue.forEach(function (callback) {
+            _this3.notifyFn(callback);
+          });
+        });
+      });
+    }
+  }
+  /**
+   * Use this method to set a custom notify function.
+   * This can be used to for example wrap notifications with `React.act` while running tests.
+   */
+  ;
+
+  _proto.setNotifyFunction = function setNotifyFunction(fn) {
+    this.notifyFn = fn;
+  }
+  /**
+   * Use this method to set a custom function to batch notifications together into a single tick.
+   * By default React Query will use the batch function provided by ReactDOM or React Native.
+   */
+  ;
+
+  _proto.setBatchNotifyFunction = function setBatchNotifyFunction(fn) {
+    this.batchNotifyFn = fn;
+  };
+
+  return NotifyManager;
+}(); // SINGLETON
+
+
+exports.NotifyManager = NotifyManager;
+var notifyManager = new NotifyManager();
+exports.notifyManager = notifyManager;
+},{"./utils":"../node_modules/react-query/es/core/utils.js"}],"../node_modules/react-query/es/core/logger.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getLogger = getLogger;
+exports.setLogger = setLogger;
+// TYPES
+// FUNCTIONS
+var logger = console;
+
+function getLogger() {
+  return logger;
+}
+
+function setLogger(newLogger) {
+  logger = newLogger;
+}
+},{}],"../node_modules/react-query/es/core/query.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Query = void 0;
+
+var _extends2 = _interopRequireDefault(require("@babel/runtime/helpers/esm/extends"));
+
+var _utils = require("./utils");
+
+var _notifyManager = require("./notifyManager");
+
+var _logger = require("./logger");
+
+var _retryer = require("./retryer");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// TYPES
+// CLASS
+var Query = /*#__PURE__*/function () {
+  function Query(config) {
+    this.abortSignalConsumed = false;
+    this.hadObservers = false;
+    this.defaultOptions = config.defaultOptions;
+    this.setOptions(config.options);
+    this.observers = [];
+    this.cache = config.cache;
+    this.queryKey = config.queryKey;
+    this.queryHash = config.queryHash;
+    this.initialState = config.state || this.getDefaultState(this.options);
+    this.state = this.initialState;
+    this.meta = config.meta;
+    this.scheduleGc();
+  }
+
+  var _proto = Query.prototype;
+
+  _proto.setOptions = function setOptions(options) {
+    var _this$options$cacheTi;
+
+    this.options = (0, _extends2.default)({}, this.defaultOptions, options);
+    this.meta = options == null ? void 0 : options.meta; // Default to 5 minutes if not cache time is set
+
+    this.cacheTime = Math.max(this.cacheTime || 0, (_this$options$cacheTi = this.options.cacheTime) != null ? _this$options$cacheTi : 5 * 60 * 1000);
+  };
+
+  _proto.setDefaultOptions = function setDefaultOptions(options) {
+    this.defaultOptions = options;
+  };
+
+  _proto.scheduleGc = function scheduleGc() {
+    var _this = this;
+
+    this.clearGcTimeout();
+
+    if ((0, _utils.isValidTimeout)(this.cacheTime)) {
+      this.gcTimeout = setTimeout(function () {
+        _this.optionalRemove();
+      }, this.cacheTime);
+    }
+  };
+
+  _proto.clearGcTimeout = function clearGcTimeout() {
+    clearTimeout(this.gcTimeout);
+    this.gcTimeout = undefined;
+  };
+
+  _proto.optionalRemove = function optionalRemove() {
+    if (!this.observers.length) {
+      if (this.state.isFetching) {
+        if (this.hadObservers) {
+          this.scheduleGc();
+        }
+      } else {
+        this.cache.remove(this);
+      }
+    }
+  };
+
+  _proto.setData = function setData(updater, options) {
+    var _this$options$isDataE, _this$options;
+
+    var prevData = this.state.data; // Get the new data
+
+    var data = (0, _utils.functionalUpdate)(updater, prevData); // Use prev data if an isDataEqual function is defined and returns `true`
+
+    if ((_this$options$isDataE = (_this$options = this.options).isDataEqual) == null ? void 0 : _this$options$isDataE.call(_this$options, prevData, data)) {
+      data = prevData;
+    } else if (this.options.structuralSharing !== false) {
+      // Structurally share data between prev and new data if needed
+      data = (0, _utils.replaceEqualDeep)(prevData, data);
+    } // Set data and mark it as cached
+
+
+    this.dispatch({
+      data: data,
+      type: 'success',
+      dataUpdatedAt: options == null ? void 0 : options.updatedAt
+    });
+    return data;
+  };
+
+  _proto.setState = function setState(state, setStateOptions) {
+    this.dispatch({
+      type: 'setState',
+      state: state,
+      setStateOptions: setStateOptions
+    });
+  };
+
+  _proto.cancel = function cancel(options) {
+    var _this$retryer;
+
+    var promise = this.promise;
+    (_this$retryer = this.retryer) == null ? void 0 : _this$retryer.cancel(options);
+    return promise ? promise.then(_utils.noop).catch(_utils.noop) : Promise.resolve();
+  };
+
+  _proto.destroy = function destroy() {
+    this.clearGcTimeout();
+    this.cancel({
+      silent: true
+    });
+  };
+
+  _proto.reset = function reset() {
+    this.destroy();
+    this.setState(this.initialState);
+  };
+
+  _proto.isActive = function isActive() {
+    return this.observers.some(function (observer) {
+      return observer.options.enabled !== false;
+    });
+  };
+
+  _proto.isFetching = function isFetching() {
+    return this.state.isFetching;
+  };
+
+  _proto.isStale = function isStale() {
+    return this.state.isInvalidated || !this.state.dataUpdatedAt || this.observers.some(function (observer) {
+      return observer.getCurrentResult().isStale;
+    });
+  };
+
+  _proto.isStaleByTime = function isStaleByTime(staleTime) {
+    if (staleTime === void 0) {
+      staleTime = 0;
+    }
+
+    return this.state.isInvalidated || !this.state.dataUpdatedAt || !(0, _utils.timeUntilStale)(this.state.dataUpdatedAt, staleTime);
+  };
+
+  _proto.onFocus = function onFocus() {
+    var _this$retryer2;
+
+    var observer = this.observers.find(function (x) {
+      return x.shouldFetchOnWindowFocus();
+    });
+
+    if (observer) {
+      observer.refetch();
+    } // Continue fetch if currently paused
+
+
+    (_this$retryer2 = this.retryer) == null ? void 0 : _this$retryer2.continue();
+  };
+
+  _proto.onOnline = function onOnline() {
+    var _this$retryer3;
+
+    var observer = this.observers.find(function (x) {
+      return x.shouldFetchOnReconnect();
+    });
+
+    if (observer) {
+      observer.refetch();
+    } // Continue fetch if currently paused
+
+
+    (_this$retryer3 = this.retryer) == null ? void 0 : _this$retryer3.continue();
+  };
+
+  _proto.addObserver = function addObserver(observer) {
+    if (this.observers.indexOf(observer) === -1) {
+      this.observers.push(observer);
+      this.hadObservers = true; // Stop the query from being garbage collected
+
+      this.clearGcTimeout();
+      this.cache.notify({
+        type: 'observerAdded',
+        query: this,
+        observer: observer
+      });
+    }
+  };
+
+  _proto.removeObserver = function removeObserver(observer) {
+    if (this.observers.indexOf(observer) !== -1) {
+      this.observers = this.observers.filter(function (x) {
+        return x !== observer;
+      });
+
+      if (!this.observers.length) {
+        // If the transport layer does not support cancellation
+        // we'll let the query continue so the result can be cached
+        if (this.retryer) {
+          if (this.retryer.isTransportCancelable || this.abortSignalConsumed) {
+            this.retryer.cancel({
+              revert: true
+            });
+          } else {
+            this.retryer.cancelRetry();
+          }
+        }
+
+        if (this.cacheTime) {
+          this.scheduleGc();
+        } else {
+          this.cache.remove(this);
+        }
+      }
+
+      this.cache.notify({
+        type: 'observerRemoved',
+        query: this,
+        observer: observer
+      });
+    }
+  };
+
+  _proto.getObserversCount = function getObserversCount() {
+    return this.observers.length;
+  };
+
+  _proto.invalidate = function invalidate() {
+    if (!this.state.isInvalidated) {
+      this.dispatch({
+        type: 'invalidate'
+      });
+    }
+  };
+
+  _proto.fetch = function fetch(options, fetchOptions) {
+    var _this2 = this,
+        _this$options$behavio,
+        _context$fetchOptions,
+        _abortController$abor;
+
+    if (this.state.isFetching) {
+      if (this.state.dataUpdatedAt && (fetchOptions == null ? void 0 : fetchOptions.cancelRefetch)) {
+        // Silently cancel current fetch if the user wants to cancel refetches
+        this.cancel({
+          silent: true
+        });
+      } else if (this.promise) {
+        var _this$retryer4; // make sure that retries that were potentially cancelled due to unmounts can continue
+
+
+        (_this$retryer4 = this.retryer) == null ? void 0 : _this$retryer4.continueRetry(); // Return current promise if we are already fetching
+
+        return this.promise;
+      }
+    } // Update config if passed, otherwise the config from the last execution is used
+
+
+    if (options) {
+      this.setOptions(options);
+    } // Use the options from the first observer with a query function if no function is found.
+    // This can happen when the query is hydrated or created with setQueryData.
+
+
+    if (!this.options.queryFn) {
+      var observer = this.observers.find(function (x) {
+        return x.options.queryFn;
+      });
+
+      if (observer) {
+        this.setOptions(observer.options);
+      }
+    }
+
+    var queryKey = (0, _utils.ensureQueryKeyArray)(this.queryKey);
+    var abortController = (0, _utils.getAbortController)(); // Create query function context
+
+    var queryFnContext = {
+      queryKey: queryKey,
+      pageParam: undefined,
+      meta: this.meta
+    };
+    Object.defineProperty(queryFnContext, 'signal', {
+      enumerable: true,
+      get: function get() {
+        if (abortController) {
+          _this2.abortSignalConsumed = true;
+          return abortController.signal;
+        }
+
+        return undefined;
+      }
+    }); // Create fetch function
+
+    var fetchFn = function fetchFn() {
+      if (!_this2.options.queryFn) {
+        return Promise.reject('Missing queryFn');
+      }
+
+      _this2.abortSignalConsumed = false;
+      return _this2.options.queryFn(queryFnContext);
+    }; // Trigger behavior hook
+
+
+    var context = {
+      fetchOptions: fetchOptions,
+      options: this.options,
+      queryKey: queryKey,
+      state: this.state,
+      fetchFn: fetchFn,
+      meta: this.meta
+    };
+
+    if ((_this$options$behavio = this.options.behavior) == null ? void 0 : _this$options$behavio.onFetch) {
+      var _this$options$behavio2;
+
+      (_this$options$behavio2 = this.options.behavior) == null ? void 0 : _this$options$behavio2.onFetch(context);
+    } // Store state in case the current fetch needs to be reverted
+
+
+    this.revertState = this.state; // Set to fetching state if not already in it
+
+    if (!this.state.isFetching || this.state.fetchMeta !== ((_context$fetchOptions = context.fetchOptions) == null ? void 0 : _context$fetchOptions.meta)) {
+      var _context$fetchOptions2;
+
+      this.dispatch({
+        type: 'fetch',
+        meta: (_context$fetchOptions2 = context.fetchOptions) == null ? void 0 : _context$fetchOptions2.meta
+      });
+    } // Try to fetch the data
+
+
+    this.retryer = new _retryer.Retryer({
+      fn: context.fetchFn,
+      abort: abortController == null ? void 0 : (_abortController$abor = abortController.abort) == null ? void 0 : _abortController$abor.bind(abortController),
+      onSuccess: function onSuccess(data) {
+        _this2.setData(data); // Notify cache callback
+
+
+        _this2.cache.config.onSuccess == null ? void 0 : _this2.cache.config.onSuccess(data, _this2); // Remove query after fetching if cache time is 0
+
+        if (_this2.cacheTime === 0) {
+          _this2.optionalRemove();
+        }
+      },
+      onError: function onError(error) {
+        // Optimistically update state if needed
+        if (!((0, _retryer.isCancelledError)(error) && error.silent)) {
+          _this2.dispatch({
+            type: 'error',
+            error: error
+          });
+        }
+
+        if (!(0, _retryer.isCancelledError)(error)) {
+          // Notify cache callback
+          _this2.cache.config.onError == null ? void 0 : _this2.cache.config.onError(error, _this2); // Log error
+
+          (0, _logger.getLogger)().error(error);
+        } // Remove query after fetching if cache time is 0
+
+
+        if (_this2.cacheTime === 0) {
+          _this2.optionalRemove();
+        }
+      },
+      onFail: function onFail() {
+        _this2.dispatch({
+          type: 'failed'
+        });
+      },
+      onPause: function onPause() {
+        _this2.dispatch({
+          type: 'pause'
+        });
+      },
+      onContinue: function onContinue() {
+        _this2.dispatch({
+          type: 'continue'
+        });
+      },
+      retry: context.options.retry,
+      retryDelay: context.options.retryDelay
+    });
+    this.promise = this.retryer.promise;
+    return this.promise;
+  };
+
+  _proto.dispatch = function dispatch(action) {
+    var _this3 = this;
+
+    this.state = this.reducer(this.state, action);
+
+    _notifyManager.notifyManager.batch(function () {
+      _this3.observers.forEach(function (observer) {
+        observer.onQueryUpdate(action);
+      });
+
+      _this3.cache.notify({
+        query: _this3,
+        type: 'queryUpdated',
+        action: action
+      });
+    });
+  };
+
+  _proto.getDefaultState = function getDefaultState(options) {
+    var data = typeof options.initialData === 'function' ? options.initialData() : options.initialData;
+    var hasInitialData = typeof options.initialData !== 'undefined';
+    var initialDataUpdatedAt = hasInitialData ? typeof options.initialDataUpdatedAt === 'function' ? options.initialDataUpdatedAt() : options.initialDataUpdatedAt : 0;
+    var hasData = typeof data !== 'undefined';
+    return {
+      data: data,
+      dataUpdateCount: 0,
+      dataUpdatedAt: hasData ? initialDataUpdatedAt != null ? initialDataUpdatedAt : Date.now() : 0,
+      error: null,
+      errorUpdateCount: 0,
+      errorUpdatedAt: 0,
+      fetchFailureCount: 0,
+      fetchMeta: null,
+      isFetching: false,
+      isInvalidated: false,
+      isPaused: false,
+      status: hasData ? 'success' : 'idle'
+    };
+  };
+
+  _proto.reducer = function reducer(state, action) {
+    var _action$meta, _action$dataUpdatedAt;
+
+    switch (action.type) {
+      case 'failed':
+        return (0, _extends2.default)({}, state, {
+          fetchFailureCount: state.fetchFailureCount + 1
+        });
+
+      case 'pause':
+        return (0, _extends2.default)({}, state, {
+          isPaused: true
+        });
+
+      case 'continue':
+        return (0, _extends2.default)({}, state, {
+          isPaused: false
+        });
+
+      case 'fetch':
+        return (0, _extends2.default)({}, state, {
+          fetchFailureCount: 0,
+          fetchMeta: (_action$meta = action.meta) != null ? _action$meta : null,
+          isFetching: true,
+          isPaused: false
+        }, !state.dataUpdatedAt && {
+          error: null,
+          status: 'loading'
+        });
+
+      case 'success':
+        return (0, _extends2.default)({}, state, {
+          data: action.data,
+          dataUpdateCount: state.dataUpdateCount + 1,
+          dataUpdatedAt: (_action$dataUpdatedAt = action.dataUpdatedAt) != null ? _action$dataUpdatedAt : Date.now(),
+          error: null,
+          fetchFailureCount: 0,
+          isFetching: false,
+          isInvalidated: false,
+          isPaused: false,
+          status: 'success'
+        });
+
+      case 'error':
+        var error = action.error;
+
+        if ((0, _retryer.isCancelledError)(error) && error.revert && this.revertState) {
+          return (0, _extends2.default)({}, this.revertState);
+        }
+
+        return (0, _extends2.default)({}, state, {
+          error: error,
+          errorUpdateCount: state.errorUpdateCount + 1,
+          errorUpdatedAt: Date.now(),
+          fetchFailureCount: state.fetchFailureCount + 1,
+          isFetching: false,
+          isPaused: false,
+          status: 'error'
+        });
+
+      case 'invalidate':
+        return (0, _extends2.default)({}, state, {
+          isInvalidated: true
+        });
+
+      case 'setState':
+        return (0, _extends2.default)({}, state, action.state);
+
+      default:
+        return state;
+    }
+  };
+
+  return Query;
+}();
+
+exports.Query = Query;
+},{"@babel/runtime/helpers/esm/extends":"../node_modules/@babel/runtime/helpers/esm/extends.js","./utils":"../node_modules/react-query/es/core/utils.js","./notifyManager":"../node_modules/react-query/es/core/notifyManager.js","./logger":"../node_modules/react-query/es/core/logger.js","./retryer":"../node_modules/react-query/es/core/retryer.js"}],"../node_modules/react-query/es/core/queryCache.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.QueryCache = void 0;
+
+var _inheritsLoose2 = _interopRequireDefault(require("@babel/runtime/helpers/esm/inheritsLoose"));
+
+var _utils = require("./utils");
+
+var _query = require("./query");
+
+var _notifyManager = require("./notifyManager");
+
+var _subscribable = require("./subscribable");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// CLASS
+var QueryCache = /*#__PURE__*/function (_Subscribable) {
+  (0, _inheritsLoose2.default)(QueryCache, _Subscribable);
+
+  function QueryCache(config) {
+    var _this;
+
+    _this = _Subscribable.call(this) || this;
+    _this.config = config || {};
+    _this.queries = [];
+    _this.queriesMap = {};
+    return _this;
+  }
+
+  var _proto = QueryCache.prototype;
+
+  _proto.build = function build(client, options, state) {
+    var _options$queryHash;
+
+    var queryKey = options.queryKey;
+    var queryHash = (_options$queryHash = options.queryHash) != null ? _options$queryHash : (0, _utils.hashQueryKeyByOptions)(queryKey, options);
+    var query = this.get(queryHash);
+
+    if (!query) {
+      query = new _query.Query({
+        cache: this,
+        queryKey: queryKey,
+        queryHash: queryHash,
+        options: client.defaultQueryOptions(options),
+        state: state,
+        defaultOptions: client.getQueryDefaults(queryKey),
+        meta: options.meta
+      });
+      this.add(query);
+    }
+
+    return query;
+  };
+
+  _proto.add = function add(query) {
+    if (!this.queriesMap[query.queryHash]) {
+      this.queriesMap[query.queryHash] = query;
+      this.queries.push(query);
+      this.notify({
+        type: 'queryAdded',
+        query: query
+      });
+    }
+  };
+
+  _proto.remove = function remove(query) {
+    var queryInMap = this.queriesMap[query.queryHash];
+
+    if (queryInMap) {
+      query.destroy();
+      this.queries = this.queries.filter(function (x) {
+        return x !== query;
+      });
+
+      if (queryInMap === query) {
+        delete this.queriesMap[query.queryHash];
+      }
+
+      this.notify({
+        type: 'queryRemoved',
+        query: query
+      });
+    }
+  };
+
+  _proto.clear = function clear() {
+    var _this2 = this;
+
+    _notifyManager.notifyManager.batch(function () {
+      _this2.queries.forEach(function (query) {
+        _this2.remove(query);
+      });
+    });
+  };
+
+  _proto.get = function get(queryHash) {
+    return this.queriesMap[queryHash];
+  };
+
+  _proto.getAll = function getAll() {
+    return this.queries;
+  };
+
+  _proto.find = function find(arg1, arg2) {
+    var _parseFilterArgs = (0, _utils.parseFilterArgs)(arg1, arg2),
+        filters = _parseFilterArgs[0];
+
+    if (typeof filters.exact === 'undefined') {
+      filters.exact = true;
+    }
+
+    return this.queries.find(function (query) {
+      return (0, _utils.matchQuery)(filters, query);
+    });
+  };
+
+  _proto.findAll = function findAll(arg1, arg2) {
+    var _parseFilterArgs2 = (0, _utils.parseFilterArgs)(arg1, arg2),
+        filters = _parseFilterArgs2[0];
+
+    return Object.keys(filters).length > 0 ? this.queries.filter(function (query) {
+      return (0, _utils.matchQuery)(filters, query);
+    }) : this.queries;
+  };
+
+  _proto.notify = function notify(event) {
+    var _this3 = this;
+
+    _notifyManager.notifyManager.batch(function () {
+      _this3.listeners.forEach(function (listener) {
+        listener(event);
+      });
+    });
+  };
+
+  _proto.onFocus = function onFocus() {
+    var _this4 = this;
+
+    _notifyManager.notifyManager.batch(function () {
+      _this4.queries.forEach(function (query) {
+        query.onFocus();
+      });
+    });
+  };
+
+  _proto.onOnline = function onOnline() {
+    var _this5 = this;
+
+    _notifyManager.notifyManager.batch(function () {
+      _this5.queries.forEach(function (query) {
+        query.onOnline();
+      });
+    });
+  };
+
+  return QueryCache;
+}(_subscribable.Subscribable);
+
+exports.QueryCache = QueryCache;
+},{"@babel/runtime/helpers/esm/inheritsLoose":"../node_modules/@babel/runtime/helpers/esm/inheritsLoose.js","./utils":"../node_modules/react-query/es/core/utils.js","./query":"../node_modules/react-query/es/core/query.js","./notifyManager":"../node_modules/react-query/es/core/notifyManager.js","./subscribable":"../node_modules/react-query/es/core/subscribable.js"}],"../node_modules/react-query/es/core/mutation.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Mutation = void 0;
+exports.getDefaultState = getDefaultState;
+
+var _extends2 = _interopRequireDefault(require("@babel/runtime/helpers/esm/extends"));
+
+var _logger = require("./logger");
+
+var _notifyManager = require("./notifyManager");
+
+var _retryer = require("./retryer");
+
+var _utils = require("./utils");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// TYPES
+// CLASS
+var Mutation = /*#__PURE__*/function () {
+  function Mutation(config) {
+    this.options = (0, _extends2.default)({}, config.defaultOptions, config.options);
+    this.mutationId = config.mutationId;
+    this.mutationCache = config.mutationCache;
+    this.observers = [];
+    this.state = config.state || getDefaultState();
+    this.meta = config.meta;
+  }
+
+  var _proto = Mutation.prototype;
+
+  _proto.setState = function setState(state) {
+    this.dispatch({
+      type: 'setState',
+      state: state
+    });
+  };
+
+  _proto.addObserver = function addObserver(observer) {
+    if (this.observers.indexOf(observer) === -1) {
+      this.observers.push(observer);
+    }
+  };
+
+  _proto.removeObserver = function removeObserver(observer) {
+    this.observers = this.observers.filter(function (x) {
+      return x !== observer;
+    });
+  };
+
+  _proto.cancel = function cancel() {
+    if (this.retryer) {
+      this.retryer.cancel();
+      return this.retryer.promise.then(_utils.noop).catch(_utils.noop);
+    }
+
+    return Promise.resolve();
+  };
+
+  _proto.continue = function _continue() {
+    if (this.retryer) {
+      this.retryer.continue();
+      return this.retryer.promise;
+    }
+
+    return this.execute();
+  };
+
+  _proto.execute = function execute() {
+    var _this = this;
+
+    var data;
+    var restored = this.state.status === 'loading';
+    var promise = Promise.resolve();
+
+    if (!restored) {
+      this.dispatch({
+        type: 'loading',
+        variables: this.options.variables
+      });
+      promise = promise.then(function () {
+        // Notify cache callback
+        _this.mutationCache.config.onMutate == null ? void 0 : _this.mutationCache.config.onMutate(_this.state.variables, _this);
+      }).then(function () {
+        return _this.options.onMutate == null ? void 0 : _this.options.onMutate(_this.state.variables);
+      }).then(function (context) {
+        if (context !== _this.state.context) {
+          _this.dispatch({
+            type: 'loading',
+            context: context,
+            variables: _this.state.variables
+          });
+        }
+      });
+    }
+
+    return promise.then(function () {
+      return _this.executeMutation();
+    }).then(function (result) {
+      data = result; // Notify cache callback
+
+      _this.mutationCache.config.onSuccess == null ? void 0 : _this.mutationCache.config.onSuccess(data, _this.state.variables, _this.state.context, _this);
+    }).then(function () {
+      return _this.options.onSuccess == null ? void 0 : _this.options.onSuccess(data, _this.state.variables, _this.state.context);
+    }).then(function () {
+      return _this.options.onSettled == null ? void 0 : _this.options.onSettled(data, null, _this.state.variables, _this.state.context);
+    }).then(function () {
+      _this.dispatch({
+        type: 'success',
+        data: data
+      });
+
+      return data;
+    }).catch(function (error) {
+      // Notify cache callback
+      _this.mutationCache.config.onError == null ? void 0 : _this.mutationCache.config.onError(error, _this.state.variables, _this.state.context, _this); // Log error
+
+      (0, _logger.getLogger)().error(error);
+      return Promise.resolve().then(function () {
+        return _this.options.onError == null ? void 0 : _this.options.onError(error, _this.state.variables, _this.state.context);
+      }).then(function () {
+        return _this.options.onSettled == null ? void 0 : _this.options.onSettled(undefined, error, _this.state.variables, _this.state.context);
+      }).then(function () {
+        _this.dispatch({
+          type: 'error',
+          error: error
+        });
+
+        throw error;
+      });
+    });
+  };
+
+  _proto.executeMutation = function executeMutation() {
+    var _this2 = this,
+        _this$options$retry;
+
+    this.retryer = new _retryer.Retryer({
+      fn: function fn() {
+        if (!_this2.options.mutationFn) {
+          return Promise.reject('No mutationFn found');
+        }
+
+        return _this2.options.mutationFn(_this2.state.variables);
+      },
+      onFail: function onFail() {
+        _this2.dispatch({
+          type: 'failed'
+        });
+      },
+      onPause: function onPause() {
+        _this2.dispatch({
+          type: 'pause'
+        });
+      },
+      onContinue: function onContinue() {
+        _this2.dispatch({
+          type: 'continue'
+        });
+      },
+      retry: (_this$options$retry = this.options.retry) != null ? _this$options$retry : 0,
+      retryDelay: this.options.retryDelay
+    });
+    return this.retryer.promise;
+  };
+
+  _proto.dispatch = function dispatch(action) {
+    var _this3 = this;
+
+    this.state = reducer(this.state, action);
+
+    _notifyManager.notifyManager.batch(function () {
+      _this3.observers.forEach(function (observer) {
+        observer.onMutationUpdate(action);
+      });
+
+      _this3.mutationCache.notify(_this3);
+    });
+  };
+
+  return Mutation;
+}();
+
+exports.Mutation = Mutation;
+
+function getDefaultState() {
+  return {
+    context: undefined,
+    data: undefined,
+    error: null,
+    failureCount: 0,
+    isPaused: false,
+    status: 'idle',
+    variables: undefined
+  };
+}
+
+function reducer(state, action) {
+  switch (action.type) {
+    case 'failed':
+      return (0, _extends2.default)({}, state, {
+        failureCount: state.failureCount + 1
+      });
+
+    case 'pause':
+      return (0, _extends2.default)({}, state, {
+        isPaused: true
+      });
+
+    case 'continue':
+      return (0, _extends2.default)({}, state, {
+        isPaused: false
+      });
+
+    case 'loading':
+      return (0, _extends2.default)({}, state, {
+        context: action.context,
+        data: undefined,
+        error: null,
+        isPaused: false,
+        status: 'loading',
+        variables: action.variables
+      });
+
+    case 'success':
+      return (0, _extends2.default)({}, state, {
+        data: action.data,
+        error: null,
+        status: 'success',
+        isPaused: false
+      });
+
+    case 'error':
+      return (0, _extends2.default)({}, state, {
+        data: undefined,
+        error: action.error,
+        failureCount: state.failureCount + 1,
+        isPaused: false,
+        status: 'error'
+      });
+
+    case 'setState':
+      return (0, _extends2.default)({}, state, action.state);
+
+    default:
+      return state;
+  }
+}
+},{"@babel/runtime/helpers/esm/extends":"../node_modules/@babel/runtime/helpers/esm/extends.js","./logger":"../node_modules/react-query/es/core/logger.js","./notifyManager":"../node_modules/react-query/es/core/notifyManager.js","./retryer":"../node_modules/react-query/es/core/retryer.js","./utils":"../node_modules/react-query/es/core/utils.js"}],"../node_modules/react-query/es/core/mutationCache.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.MutationCache = void 0;
+
+var _inheritsLoose2 = _interopRequireDefault(require("@babel/runtime/helpers/esm/inheritsLoose"));
+
+var _notifyManager = require("./notifyManager");
+
+var _mutation = require("./mutation");
+
+var _utils = require("./utils");
+
+var _subscribable = require("./subscribable");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// TYPES
+// CLASS
+var MutationCache = /*#__PURE__*/function (_Subscribable) {
+  (0, _inheritsLoose2.default)(MutationCache, _Subscribable);
+
+  function MutationCache(config) {
+    var _this;
+
+    _this = _Subscribable.call(this) || this;
+    _this.config = config || {};
+    _this.mutations = [];
+    _this.mutationId = 0;
+    return _this;
+  }
+
+  var _proto = MutationCache.prototype;
+
+  _proto.build = function build(client, options, state) {
+    var mutation = new _mutation.Mutation({
+      mutationCache: this,
+      mutationId: ++this.mutationId,
+      options: client.defaultMutationOptions(options),
+      state: state,
+      defaultOptions: options.mutationKey ? client.getMutationDefaults(options.mutationKey) : undefined,
+      meta: options.meta
+    });
+    this.add(mutation);
+    return mutation;
+  };
+
+  _proto.add = function add(mutation) {
+    this.mutations.push(mutation);
+    this.notify(mutation);
+  };
+
+  _proto.remove = function remove(mutation) {
+    this.mutations = this.mutations.filter(function (x) {
+      return x !== mutation;
+    });
+    mutation.cancel();
+    this.notify(mutation);
+  };
+
+  _proto.clear = function clear() {
+    var _this2 = this;
+
+    _notifyManager.notifyManager.batch(function () {
+      _this2.mutations.forEach(function (mutation) {
+        _this2.remove(mutation);
+      });
+    });
+  };
+
+  _proto.getAll = function getAll() {
+    return this.mutations;
+  };
+
+  _proto.find = function find(filters) {
+    if (typeof filters.exact === 'undefined') {
+      filters.exact = true;
+    }
+
+    return this.mutations.find(function (mutation) {
+      return (0, _utils.matchMutation)(filters, mutation);
+    });
+  };
+
+  _proto.findAll = function findAll(filters) {
+    return this.mutations.filter(function (mutation) {
+      return (0, _utils.matchMutation)(filters, mutation);
+    });
+  };
+
+  _proto.notify = function notify(mutation) {
+    var _this3 = this;
+
+    _notifyManager.notifyManager.batch(function () {
+      _this3.listeners.forEach(function (listener) {
+        listener(mutation);
+      });
+    });
+  };
+
+  _proto.onFocus = function onFocus() {
+    this.resumePausedMutations();
+  };
+
+  _proto.onOnline = function onOnline() {
+    this.resumePausedMutations();
+  };
+
+  _proto.resumePausedMutations = function resumePausedMutations() {
+    var pausedMutations = this.mutations.filter(function (x) {
+      return x.state.isPaused;
+    });
+    return _notifyManager.notifyManager.batch(function () {
+      return pausedMutations.reduce(function (promise, mutation) {
+        return promise.then(function () {
+          return mutation.continue().catch(_utils.noop);
+        });
+      }, Promise.resolve());
+    });
+  };
+
+  return MutationCache;
+}(_subscribable.Subscribable);
+
+exports.MutationCache = MutationCache;
+},{"@babel/runtime/helpers/esm/inheritsLoose":"../node_modules/@babel/runtime/helpers/esm/inheritsLoose.js","./notifyManager":"../node_modules/react-query/es/core/notifyManager.js","./mutation":"../node_modules/react-query/es/core/mutation.js","./utils":"../node_modules/react-query/es/core/utils.js","./subscribable":"../node_modules/react-query/es/core/subscribable.js"}],"../node_modules/react-query/es/core/infiniteQueryBehavior.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.getNextPageParam = getNextPageParam;
+exports.getPreviousPageParam = getPreviousPageParam;
+exports.hasNextPage = hasNextPage;
+exports.hasPreviousPage = hasPreviousPage;
+exports.infiniteQueryBehavior = infiniteQueryBehavior;
+
+var _retryer = require("./retryer");
+
+var _utils = require("./utils");
+
+function infiniteQueryBehavior() {
+  return {
+    onFetch: function onFetch(context) {
+      context.fetchFn = function () {
+        var _context$fetchOptions, _context$fetchOptions2, _context$fetchOptions3, _context$fetchOptions4, _context$state$data, _context$state$data2;
+
+        var refetchPage = (_context$fetchOptions = context.fetchOptions) == null ? void 0 : (_context$fetchOptions2 = _context$fetchOptions.meta) == null ? void 0 : _context$fetchOptions2.refetchPage;
+        var fetchMore = (_context$fetchOptions3 = context.fetchOptions) == null ? void 0 : (_context$fetchOptions4 = _context$fetchOptions3.meta) == null ? void 0 : _context$fetchOptions4.fetchMore;
+        var pageParam = fetchMore == null ? void 0 : fetchMore.pageParam;
+        var isFetchingNextPage = (fetchMore == null ? void 0 : fetchMore.direction) === 'forward';
+        var isFetchingPreviousPage = (fetchMore == null ? void 0 : fetchMore.direction) === 'backward';
+        var oldPages = ((_context$state$data = context.state.data) == null ? void 0 : _context$state$data.pages) || [];
+        var oldPageParams = ((_context$state$data2 = context.state.data) == null ? void 0 : _context$state$data2.pageParams) || [];
+        var abortController = (0, _utils.getAbortController)();
+        var abortSignal = abortController == null ? void 0 : abortController.signal;
+        var newPageParams = oldPageParams;
+        var cancelled = false; // Get query function
+
+        var queryFn = context.options.queryFn || function () {
+          return Promise.reject('Missing queryFn');
+        };
+
+        var buildNewPages = function buildNewPages(pages, param, page, previous) {
+          newPageParams = previous ? [param].concat(newPageParams) : [].concat(newPageParams, [param]);
+          return previous ? [page].concat(pages) : [].concat(pages, [page]);
+        }; // Create function to fetch a page
+
+
+        var fetchPage = function fetchPage(pages, manual, param, previous) {
+          if (cancelled) {
+            return Promise.reject('Cancelled');
+          }
+
+          if (typeof param === 'undefined' && !manual && pages.length) {
+            return Promise.resolve(pages);
+          }
+
+          var queryFnContext = {
+            queryKey: context.queryKey,
+            signal: abortSignal,
+            pageParam: param,
+            meta: context.meta
+          };
+          var queryFnResult = queryFn(queryFnContext);
+          var promise = Promise.resolve(queryFnResult).then(function (page) {
+            return buildNewPages(pages, param, page, previous);
+          });
+
+          if ((0, _retryer.isCancelable)(queryFnResult)) {
+            var promiseAsAny = promise;
+            promiseAsAny.cancel = queryFnResult.cancel;
+          }
+
+          return promise;
+        };
+
+        var promise; // Fetch first page?
+
+        if (!oldPages.length) {
+          promise = fetchPage([]);
+        } // Fetch next page?
+        else if (isFetchingNextPage) {
+          var manual = typeof pageParam !== 'undefined';
+          var param = manual ? pageParam : getNextPageParam(context.options, oldPages);
+          promise = fetchPage(oldPages, manual, param);
+        } // Fetch previous page?
+        else if (isFetchingPreviousPage) {
+          var _manual = typeof pageParam !== 'undefined';
+
+          var _param = _manual ? pageParam : getPreviousPageParam(context.options, oldPages);
+
+          promise = fetchPage(oldPages, _manual, _param, true);
+        } // Refetch pages
+        else {
+          (function () {
+            newPageParams = [];
+            var manual = typeof context.options.getNextPageParam === 'undefined';
+            var shouldFetchFirstPage = refetchPage && oldPages[0] ? refetchPage(oldPages[0], 0, oldPages) : true; // Fetch first page
+
+            promise = shouldFetchFirstPage ? fetchPage([], manual, oldPageParams[0]) : Promise.resolve(buildNewPages([], oldPageParams[0], oldPages[0])); // Fetch remaining pages
+
+            var _loop = function _loop(i) {
+              promise = promise.then(function (pages) {
+                var shouldFetchNextPage = refetchPage && oldPages[i] ? refetchPage(oldPages[i], i, oldPages) : true;
+
+                if (shouldFetchNextPage) {
+                  var _param2 = manual ? oldPageParams[i] : getNextPageParam(context.options, pages);
+
+                  return fetchPage(pages, manual, _param2);
+                }
+
+                return Promise.resolve(buildNewPages(pages, oldPageParams[i], oldPages[i]));
+              });
+            };
+
+            for (var i = 1; i < oldPages.length; i++) {
+              _loop(i);
+            }
+          })();
+        }
+
+        var finalPromise = promise.then(function (pages) {
+          return {
+            pages: pages,
+            pageParams: newPageParams
+          };
+        });
+        var finalPromiseAsAny = finalPromise;
+
+        finalPromiseAsAny.cancel = function () {
+          cancelled = true;
+          abortController == null ? void 0 : abortController.abort();
+
+          if ((0, _retryer.isCancelable)(promise)) {
+            promise.cancel();
+          }
+        };
+
+        return finalPromise;
+      };
+    }
+  };
+}
+
+function getNextPageParam(options, pages) {
+  return options.getNextPageParam == null ? void 0 : options.getNextPageParam(pages[pages.length - 1], pages);
+}
+
+function getPreviousPageParam(options, pages) {
+  return options.getPreviousPageParam == null ? void 0 : options.getPreviousPageParam(pages[0], pages);
+}
+/**
+ * Checks if there is a next page.
+ * Returns `undefined` if it cannot be determined.
+ */
+
+
+function hasNextPage(options, pages) {
+  if (options.getNextPageParam && Array.isArray(pages)) {
+    var nextPageParam = getNextPageParam(options, pages);
+    return typeof nextPageParam !== 'undefined' && nextPageParam !== null && nextPageParam !== false;
+  }
+}
+/**
+ * Checks if there is a previous page.
+ * Returns `undefined` if it cannot be determined.
+ */
+
+
+function hasPreviousPage(options, pages) {
+  if (options.getPreviousPageParam && Array.isArray(pages)) {
+    var previousPageParam = getPreviousPageParam(options, pages);
+    return typeof previousPageParam !== 'undefined' && previousPageParam !== null && previousPageParam !== false;
+  }
+}
+},{"./retryer":"../node_modules/react-query/es/core/retryer.js","./utils":"../node_modules/react-query/es/core/utils.js"}],"../node_modules/react-query/es/core/queryClient.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.QueryClient = void 0;
+
+var _extends2 = _interopRequireDefault(require("@babel/runtime/helpers/esm/extends"));
+
+var _utils = require("./utils");
+
+var _queryCache = require("./queryCache");
+
+var _mutationCache = require("./mutationCache");
+
+var _focusManager = require("./focusManager");
+
+var _onlineManager = require("./onlineManager");
+
+var _notifyManager = require("./notifyManager");
+
+var _infiniteQueryBehavior = require("./infiniteQueryBehavior");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// CLASS
+var QueryClient = /*#__PURE__*/function () {
+  function QueryClient(config) {
+    if (config === void 0) {
+      config = {};
+    }
+
+    this.queryCache = config.queryCache || new _queryCache.QueryCache();
+    this.mutationCache = config.mutationCache || new _mutationCache.MutationCache();
+    this.defaultOptions = config.defaultOptions || {};
+    this.queryDefaults = [];
+    this.mutationDefaults = [];
+  }
+
+  var _proto = QueryClient.prototype;
+
+  _proto.mount = function mount() {
+    var _this = this;
+
+    this.unsubscribeFocus = _focusManager.focusManager.subscribe(function () {
+      if (_focusManager.focusManager.isFocused() && _onlineManager.onlineManager.isOnline()) {
+        _this.mutationCache.onFocus();
+
+        _this.queryCache.onFocus();
+      }
+    });
+    this.unsubscribeOnline = _onlineManager.onlineManager.subscribe(function () {
+      if (_focusManager.focusManager.isFocused() && _onlineManager.onlineManager.isOnline()) {
+        _this.mutationCache.onOnline();
+
+        _this.queryCache.onOnline();
+      }
+    });
+  };
+
+  _proto.unmount = function unmount() {
+    var _this$unsubscribeFocu, _this$unsubscribeOnli;
+
+    (_this$unsubscribeFocu = this.unsubscribeFocus) == null ? void 0 : _this$unsubscribeFocu.call(this);
+    (_this$unsubscribeOnli = this.unsubscribeOnline) == null ? void 0 : _this$unsubscribeOnli.call(this);
+  };
+
+  _proto.isFetching = function isFetching(arg1, arg2) {
+    var _parseFilterArgs = (0, _utils.parseFilterArgs)(arg1, arg2),
+        filters = _parseFilterArgs[0];
+
+    filters.fetching = true;
+    return this.queryCache.findAll(filters).length;
+  };
+
+  _proto.isMutating = function isMutating(filters) {
+    return this.mutationCache.findAll((0, _extends2.default)({}, filters, {
+      fetching: true
+    })).length;
+  };
+
+  _proto.getQueryData = function getQueryData(queryKey, filters) {
+    var _this$queryCache$find;
+
+    return (_this$queryCache$find = this.queryCache.find(queryKey, filters)) == null ? void 0 : _this$queryCache$find.state.data;
+  };
+
+  _proto.getQueriesData = function getQueriesData(queryKeyOrFilters) {
+    return this.getQueryCache().findAll(queryKeyOrFilters).map(function (_ref) {
+      var queryKey = _ref.queryKey,
+          state = _ref.state;
+      var data = state.data;
+      return [queryKey, data];
+    });
+  };
+
+  _proto.setQueryData = function setQueryData(queryKey, updater, options) {
+    var parsedOptions = (0, _utils.parseQueryArgs)(queryKey);
+    var defaultedOptions = this.defaultQueryOptions(parsedOptions);
+    return this.queryCache.build(this, defaultedOptions).setData(updater, options);
+  };
+
+  _proto.setQueriesData = function setQueriesData(queryKeyOrFilters, updater, options) {
+    var _this2 = this;
+
+    return _notifyManager.notifyManager.batch(function () {
+      return _this2.getQueryCache().findAll(queryKeyOrFilters).map(function (_ref2) {
+        var queryKey = _ref2.queryKey;
+        return [queryKey, _this2.setQueryData(queryKey, updater, options)];
+      });
+    });
+  };
+
+  _proto.getQueryState = function getQueryState(queryKey, filters) {
+    var _this$queryCache$find2;
+
+    return (_this$queryCache$find2 = this.queryCache.find(queryKey, filters)) == null ? void 0 : _this$queryCache$find2.state;
+  };
+
+  _proto.removeQueries = function removeQueries(arg1, arg2) {
+    var _parseFilterArgs2 = (0, _utils.parseFilterArgs)(arg1, arg2),
+        filters = _parseFilterArgs2[0];
+
+    var queryCache = this.queryCache;
+
+    _notifyManager.notifyManager.batch(function () {
+      queryCache.findAll(filters).forEach(function (query) {
+        queryCache.remove(query);
+      });
+    });
+  };
+
+  _proto.resetQueries = function resetQueries(arg1, arg2, arg3) {
+    var _this3 = this;
+
+    var _parseFilterArgs3 = (0, _utils.parseFilterArgs)(arg1, arg2, arg3),
+        filters = _parseFilterArgs3[0],
+        options = _parseFilterArgs3[1];
+
+    var queryCache = this.queryCache;
+    var refetchFilters = (0, _extends2.default)({}, filters, {
+      active: true
+    });
+    return _notifyManager.notifyManager.batch(function () {
+      queryCache.findAll(filters).forEach(function (query) {
+        query.reset();
+      });
+      return _this3.refetchQueries(refetchFilters, options);
+    });
+  };
+
+  _proto.cancelQueries = function cancelQueries(arg1, arg2, arg3) {
+    var _this4 = this;
+
+    var _parseFilterArgs4 = (0, _utils.parseFilterArgs)(arg1, arg2, arg3),
+        filters = _parseFilterArgs4[0],
+        _parseFilterArgs4$ = _parseFilterArgs4[1],
+        cancelOptions = _parseFilterArgs4$ === void 0 ? {} : _parseFilterArgs4$;
+
+    if (typeof cancelOptions.revert === 'undefined') {
+      cancelOptions.revert = true;
+    }
+
+    var promises = _notifyManager.notifyManager.batch(function () {
+      return _this4.queryCache.findAll(filters).map(function (query) {
+        return query.cancel(cancelOptions);
+      });
+    });
+
+    return Promise.all(promises).then(_utils.noop).catch(_utils.noop);
+  };
+
+  _proto.invalidateQueries = function invalidateQueries(arg1, arg2, arg3) {
+    var _ref3,
+        _filters$refetchActiv,
+        _filters$refetchInact,
+        _this5 = this;
+
+    var _parseFilterArgs5 = (0, _utils.parseFilterArgs)(arg1, arg2, arg3),
+        filters = _parseFilterArgs5[0],
+        options = _parseFilterArgs5[1];
+
+    var refetchFilters = (0, _extends2.default)({}, filters, {
+      // if filters.refetchActive is not provided and filters.active is explicitly false,
+      // e.g. invalidateQueries({ active: false }), we don't want to refetch active queries
+      active: (_ref3 = (_filters$refetchActiv = filters.refetchActive) != null ? _filters$refetchActiv : filters.active) != null ? _ref3 : true,
+      inactive: (_filters$refetchInact = filters.refetchInactive) != null ? _filters$refetchInact : false
+    });
+    return _notifyManager.notifyManager.batch(function () {
+      _this5.queryCache.findAll(filters).forEach(function (query) {
+        query.invalidate();
+      });
+
+      return _this5.refetchQueries(refetchFilters, options);
+    });
+  };
+
+  _proto.refetchQueries = function refetchQueries(arg1, arg2, arg3) {
+    var _this6 = this;
+
+    var _parseFilterArgs6 = (0, _utils.parseFilterArgs)(arg1, arg2, arg3),
+        filters = _parseFilterArgs6[0],
+        options = _parseFilterArgs6[1];
+
+    var promises = _notifyManager.notifyManager.batch(function () {
+      return _this6.queryCache.findAll(filters).map(function (query) {
+        return query.fetch(undefined, (0, _extends2.default)({}, options, {
+          meta: {
+            refetchPage: filters == null ? void 0 : filters.refetchPage
+          }
+        }));
+      });
+    });
+
+    var promise = Promise.all(promises).then(_utils.noop);
+
+    if (!(options == null ? void 0 : options.throwOnError)) {
+      promise = promise.catch(_utils.noop);
+    }
+
+    return promise;
+  };
+
+  _proto.fetchQuery = function fetchQuery(arg1, arg2, arg3) {
+    var parsedOptions = (0, _utils.parseQueryArgs)(arg1, arg2, arg3);
+    var defaultedOptions = this.defaultQueryOptions(parsedOptions); // https://github.com/tannerlinsley/react-query/issues/652
+
+    if (typeof defaultedOptions.retry === 'undefined') {
+      defaultedOptions.retry = false;
+    }
+
+    var query = this.queryCache.build(this, defaultedOptions);
+    return query.isStaleByTime(defaultedOptions.staleTime) ? query.fetch(defaultedOptions) : Promise.resolve(query.state.data);
+  };
+
+  _proto.prefetchQuery = function prefetchQuery(arg1, arg2, arg3) {
+    return this.fetchQuery(arg1, arg2, arg3).then(_utils.noop).catch(_utils.noop);
+  };
+
+  _proto.fetchInfiniteQuery = function fetchInfiniteQuery(arg1, arg2, arg3) {
+    var parsedOptions = (0, _utils.parseQueryArgs)(arg1, arg2, arg3);
+    parsedOptions.behavior = (0, _infiniteQueryBehavior.infiniteQueryBehavior)();
+    return this.fetchQuery(parsedOptions);
+  };
+
+  _proto.prefetchInfiniteQuery = function prefetchInfiniteQuery(arg1, arg2, arg3) {
+    return this.fetchInfiniteQuery(arg1, arg2, arg3).then(_utils.noop).catch(_utils.noop);
+  };
+
+  _proto.cancelMutations = function cancelMutations() {
+    var _this7 = this;
+
+    var promises = _notifyManager.notifyManager.batch(function () {
+      return _this7.mutationCache.getAll().map(function (mutation) {
+        return mutation.cancel();
+      });
+    });
+
+    return Promise.all(promises).then(_utils.noop).catch(_utils.noop);
+  };
+
+  _proto.resumePausedMutations = function resumePausedMutations() {
+    return this.getMutationCache().resumePausedMutations();
+  };
+
+  _proto.executeMutation = function executeMutation(options) {
+    return this.mutationCache.build(this, options).execute();
+  };
+
+  _proto.getQueryCache = function getQueryCache() {
+    return this.queryCache;
+  };
+
+  _proto.getMutationCache = function getMutationCache() {
+    return this.mutationCache;
+  };
+
+  _proto.getDefaultOptions = function getDefaultOptions() {
+    return this.defaultOptions;
+  };
+
+  _proto.setDefaultOptions = function setDefaultOptions(options) {
+    this.defaultOptions = options;
+  };
+
+  _proto.setQueryDefaults = function setQueryDefaults(queryKey, options) {
+    var result = this.queryDefaults.find(function (x) {
+      return (0, _utils.hashQueryKey)(queryKey) === (0, _utils.hashQueryKey)(x.queryKey);
+    });
+
+    if (result) {
+      result.defaultOptions = options;
+    } else {
+      this.queryDefaults.push({
+        queryKey: queryKey,
+        defaultOptions: options
+      });
+    }
+  };
+
+  _proto.getQueryDefaults = function getQueryDefaults(queryKey) {
+    var _this$queryDefaults$f;
+
+    return queryKey ? (_this$queryDefaults$f = this.queryDefaults.find(function (x) {
+      return (0, _utils.partialMatchKey)(queryKey, x.queryKey);
+    })) == null ? void 0 : _this$queryDefaults$f.defaultOptions : undefined;
+  };
+
+  _proto.setMutationDefaults = function setMutationDefaults(mutationKey, options) {
+    var result = this.mutationDefaults.find(function (x) {
+      return (0, _utils.hashQueryKey)(mutationKey) === (0, _utils.hashQueryKey)(x.mutationKey);
+    });
+
+    if (result) {
+      result.defaultOptions = options;
+    } else {
+      this.mutationDefaults.push({
+        mutationKey: mutationKey,
+        defaultOptions: options
+      });
+    }
+  };
+
+  _proto.getMutationDefaults = function getMutationDefaults(mutationKey) {
+    var _this$mutationDefault;
+
+    return mutationKey ? (_this$mutationDefault = this.mutationDefaults.find(function (x) {
+      return (0, _utils.partialMatchKey)(mutationKey, x.mutationKey);
+    })) == null ? void 0 : _this$mutationDefault.defaultOptions : undefined;
+  };
+
+  _proto.defaultQueryOptions = function defaultQueryOptions(options) {
+    if (options == null ? void 0 : options._defaulted) {
+      return options;
+    }
+
+    var defaultedOptions = (0, _extends2.default)({}, this.defaultOptions.queries, this.getQueryDefaults(options == null ? void 0 : options.queryKey), options, {
+      _defaulted: true
+    });
+
+    if (!defaultedOptions.queryHash && defaultedOptions.queryKey) {
+      defaultedOptions.queryHash = (0, _utils.hashQueryKeyByOptions)(defaultedOptions.queryKey, defaultedOptions);
+    }
+
+    return defaultedOptions;
+  };
+
+  _proto.defaultQueryObserverOptions = function defaultQueryObserverOptions(options) {
+    return this.defaultQueryOptions(options);
+  };
+
+  _proto.defaultMutationOptions = function defaultMutationOptions(options) {
+    if (options == null ? void 0 : options._defaulted) {
+      return options;
+    }
+
+    return (0, _extends2.default)({}, this.defaultOptions.mutations, this.getMutationDefaults(options == null ? void 0 : options.mutationKey), options, {
+      _defaulted: true
+    });
+  };
+
+  _proto.clear = function clear() {
+    this.queryCache.clear();
+    this.mutationCache.clear();
+  };
+
+  return QueryClient;
+}();
+
+exports.QueryClient = QueryClient;
+},{"@babel/runtime/helpers/esm/extends":"../node_modules/@babel/runtime/helpers/esm/extends.js","./utils":"../node_modules/react-query/es/core/utils.js","./queryCache":"../node_modules/react-query/es/core/queryCache.js","./mutationCache":"../node_modules/react-query/es/core/mutationCache.js","./focusManager":"../node_modules/react-query/es/core/focusManager.js","./onlineManager":"../node_modules/react-query/es/core/onlineManager.js","./notifyManager":"../node_modules/react-query/es/core/notifyManager.js","./infiniteQueryBehavior":"../node_modules/react-query/es/core/infiniteQueryBehavior.js"}],"../node_modules/react-query/es/core/queryObserver.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.QueryObserver = void 0;
+
+var _extends2 = _interopRequireDefault(require("@babel/runtime/helpers/esm/extends"));
+
+var _inheritsLoose2 = _interopRequireDefault(require("@babel/runtime/helpers/esm/inheritsLoose"));
+
+var _utils = require("./utils");
+
+var _notifyManager = require("./notifyManager");
+
+var _focusManager = require("./focusManager");
+
+var _subscribable = require("./subscribable");
+
+var _logger = require("./logger");
+
+var _retryer = require("./retryer");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var QueryObserver = /*#__PURE__*/function (_Subscribable) {
+  (0, _inheritsLoose2.default)(QueryObserver, _Subscribable);
+
+  function QueryObserver(client, options) {
+    var _this;
+
+    _this = _Subscribable.call(this) || this;
+    _this.client = client;
+    _this.options = options;
+    _this.trackedProps = [];
+    _this.selectError = null;
+
+    _this.bindMethods();
+
+    _this.setOptions(options);
+
+    return _this;
+  }
+
+  var _proto = QueryObserver.prototype;
+
+  _proto.bindMethods = function bindMethods() {
+    this.remove = this.remove.bind(this);
+    this.refetch = this.refetch.bind(this);
+  };
+
+  _proto.onSubscribe = function onSubscribe() {
+    if (this.listeners.length === 1) {
+      this.currentQuery.addObserver(this);
+
+      if (shouldFetchOnMount(this.currentQuery, this.options)) {
+        this.executeFetch();
+      }
+
+      this.updateTimers();
+    }
+  };
+
+  _proto.onUnsubscribe = function onUnsubscribe() {
+    if (!this.listeners.length) {
+      this.destroy();
+    }
+  };
+
+  _proto.shouldFetchOnReconnect = function shouldFetchOnReconnect() {
+    return shouldFetchOn(this.currentQuery, this.options, this.options.refetchOnReconnect);
+  };
+
+  _proto.shouldFetchOnWindowFocus = function shouldFetchOnWindowFocus() {
+    return shouldFetchOn(this.currentQuery, this.options, this.options.refetchOnWindowFocus);
+  };
+
+  _proto.destroy = function destroy() {
+    this.listeners = [];
+    this.clearTimers();
+    this.currentQuery.removeObserver(this);
+  };
+
+  _proto.setOptions = function setOptions(options, notifyOptions) {
+    var prevOptions = this.options;
+    var prevQuery = this.currentQuery;
+    this.options = this.client.defaultQueryObserverOptions(options);
+
+    if (typeof this.options.enabled !== 'undefined' && typeof this.options.enabled !== 'boolean') {
+      throw new Error('Expected enabled to be a boolean');
+    } // Keep previous query key if the user does not supply one
+
+
+    if (!this.options.queryKey) {
+      this.options.queryKey = prevOptions.queryKey;
+    }
+
+    this.updateQuery();
+    var mounted = this.hasListeners(); // Fetch if there are subscribers
+
+    if (mounted && shouldFetchOptionally(this.currentQuery, prevQuery, this.options, prevOptions)) {
+      this.executeFetch();
+    } // Update result
+
+
+    this.updateResult(notifyOptions); // Update stale interval if needed
+
+    if (mounted && (this.currentQuery !== prevQuery || this.options.enabled !== prevOptions.enabled || this.options.staleTime !== prevOptions.staleTime)) {
+      this.updateStaleTimeout();
+    }
+
+    var nextRefetchInterval = this.computeRefetchInterval(); // Update refetch interval if needed
+
+    if (mounted && (this.currentQuery !== prevQuery || this.options.enabled !== prevOptions.enabled || nextRefetchInterval !== this.currentRefetchInterval)) {
+      this.updateRefetchInterval(nextRefetchInterval);
+    }
+  };
+
+  _proto.getOptimisticResult = function getOptimisticResult(options) {
+    var defaultedOptions = this.client.defaultQueryObserverOptions(options);
+    var query = this.client.getQueryCache().build(this.client, defaultedOptions);
+    return this.createResult(query, defaultedOptions);
+  };
+
+  _proto.getCurrentResult = function getCurrentResult() {
+    return this.currentResult;
+  };
+
+  _proto.trackResult = function trackResult(result, defaultedOptions) {
+    var _this2 = this;
+
+    var trackedResult = {};
+
+    var trackProp = function trackProp(key) {
+      if (!_this2.trackedProps.includes(key)) {
+        _this2.trackedProps.push(key);
+      }
+    };
+
+    Object.keys(result).forEach(function (key) {
+      Object.defineProperty(trackedResult, key, {
+        configurable: false,
+        enumerable: true,
+        get: function get() {
+          trackProp(key);
+          return result[key];
+        }
+      });
+    });
+
+    if (defaultedOptions.useErrorBoundary || defaultedOptions.suspense) {
+      trackProp('error');
+    }
+
+    return trackedResult;
+  };
+
+  _proto.getNextResult = function getNextResult(options) {
+    var _this3 = this;
+
+    return new Promise(function (resolve, reject) {
+      var unsubscribe = _this3.subscribe(function (result) {
+        if (!result.isFetching) {
+          unsubscribe();
+
+          if (result.isError && (options == null ? void 0 : options.throwOnError)) {
+            reject(result.error);
+          } else {
+            resolve(result);
+          }
+        }
+      });
+    });
+  };
+
+  _proto.getCurrentQuery = function getCurrentQuery() {
+    return this.currentQuery;
+  };
+
+  _proto.remove = function remove() {
+    this.client.getQueryCache().remove(this.currentQuery);
+  };
+
+  _proto.refetch = function refetch(options) {
+    return this.fetch((0, _extends2.default)({}, options, {
+      meta: {
+        refetchPage: options == null ? void 0 : options.refetchPage
+      }
+    }));
+  };
+
+  _proto.fetchOptimistic = function fetchOptimistic(options) {
+    var _this4 = this;
+
+    var defaultedOptions = this.client.defaultQueryObserverOptions(options);
+    var query = this.client.getQueryCache().build(this.client, defaultedOptions);
+    return query.fetch().then(function () {
+      return _this4.createResult(query, defaultedOptions);
+    });
+  };
+
+  _proto.fetch = function fetch(fetchOptions) {
+    var _this5 = this;
+
+    return this.executeFetch(fetchOptions).then(function () {
+      _this5.updateResult();
+
+      return _this5.currentResult;
+    });
+  };
+
+  _proto.executeFetch = function executeFetch(fetchOptions) {
+    // Make sure we reference the latest query as the current one might have been removed
+    this.updateQuery(); // Fetch
+
+    var promise = this.currentQuery.fetch(this.options, fetchOptions);
+
+    if (!(fetchOptions == null ? void 0 : fetchOptions.throwOnError)) {
+      promise = promise.catch(_utils.noop);
+    }
+
+    return promise;
+  };
+
+  _proto.updateStaleTimeout = function updateStaleTimeout() {
+    var _this6 = this;
+
+    this.clearStaleTimeout();
+
+    if (_utils.isServer || this.currentResult.isStale || !(0, _utils.isValidTimeout)(this.options.staleTime)) {
+      return;
+    }
+
+    var time = (0, _utils.timeUntilStale)(this.currentResult.dataUpdatedAt, this.options.staleTime); // The timeout is sometimes triggered 1 ms before the stale time expiration.
+    // To mitigate this issue we always add 1 ms to the timeout.
+
+    var timeout = time + 1;
+    this.staleTimeoutId = setTimeout(function () {
+      if (!_this6.currentResult.isStale) {
+        _this6.updateResult();
+      }
+    }, timeout);
+  };
+
+  _proto.computeRefetchInterval = function computeRefetchInterval() {
+    var _this$options$refetch;
+
+    return typeof this.options.refetchInterval === 'function' ? this.options.refetchInterval(this.currentResult.data, this.currentQuery) : (_this$options$refetch = this.options.refetchInterval) != null ? _this$options$refetch : false;
+  };
+
+  _proto.updateRefetchInterval = function updateRefetchInterval(nextInterval) {
+    var _this7 = this;
+
+    this.clearRefetchInterval();
+    this.currentRefetchInterval = nextInterval;
+
+    if (_utils.isServer || this.options.enabled === false || !(0, _utils.isValidTimeout)(this.currentRefetchInterval) || this.currentRefetchInterval === 0) {
+      return;
+    }
+
+    this.refetchIntervalId = setInterval(function () {
+      if (_this7.options.refetchIntervalInBackground || _focusManager.focusManager.isFocused()) {
+        _this7.executeFetch();
+      }
+    }, this.currentRefetchInterval);
+  };
+
+  _proto.updateTimers = function updateTimers() {
+    this.updateStaleTimeout();
+    this.updateRefetchInterval(this.computeRefetchInterval());
+  };
+
+  _proto.clearTimers = function clearTimers() {
+    this.clearStaleTimeout();
+    this.clearRefetchInterval();
+  };
+
+  _proto.clearStaleTimeout = function clearStaleTimeout() {
+    clearTimeout(this.staleTimeoutId);
+    this.staleTimeoutId = undefined;
+  };
+
+  _proto.clearRefetchInterval = function clearRefetchInterval() {
+    clearInterval(this.refetchIntervalId);
+    this.refetchIntervalId = undefined;
+  };
+
+  _proto.createResult = function createResult(query, options) {
+    var prevQuery = this.currentQuery;
+    var prevOptions = this.options;
+    var prevResult = this.currentResult;
+    var prevResultState = this.currentResultState;
+    var prevResultOptions = this.currentResultOptions;
+    var queryChange = query !== prevQuery;
+    var queryInitialState = queryChange ? query.state : this.currentQueryInitialState;
+    var prevQueryResult = queryChange ? this.currentResult : this.previousQueryResult;
+    var state = query.state;
+    var dataUpdatedAt = state.dataUpdatedAt,
+        error = state.error,
+        errorUpdatedAt = state.errorUpdatedAt,
+        isFetching = state.isFetching,
+        status = state.status;
+    var isPreviousData = false;
+    var isPlaceholderData = false;
+    var data; // Optimistically set result in fetching state if needed
+
+    if (options.optimisticResults) {
+      var mounted = this.hasListeners();
+      var fetchOnMount = !mounted && shouldFetchOnMount(query, options);
+      var fetchOptionally = mounted && shouldFetchOptionally(query, prevQuery, options, prevOptions);
+
+      if (fetchOnMount || fetchOptionally) {
+        isFetching = true;
+
+        if (!dataUpdatedAt) {
+          status = 'loading';
+        }
+      }
+    } // Keep previous data if needed
+
+
+    if (options.keepPreviousData && !state.dataUpdateCount && (prevQueryResult == null ? void 0 : prevQueryResult.isSuccess) && status !== 'error') {
+      data = prevQueryResult.data;
+      dataUpdatedAt = prevQueryResult.dataUpdatedAt;
+      status = prevQueryResult.status;
+      isPreviousData = true;
+    } // Select data if needed
+    else if (options.select && typeof state.data !== 'undefined') {
+      // Memoize select result
+      if (prevResult && state.data === (prevResultState == null ? void 0 : prevResultState.data) && options.select === this.selectFn) {
+        data = this.selectResult;
+      } else {
+        try {
+          this.selectFn = options.select;
+          data = options.select(state.data);
+
+          if (options.structuralSharing !== false) {
+            data = (0, _utils.replaceEqualDeep)(prevResult == null ? void 0 : prevResult.data, data);
+          }
+
+          this.selectResult = data;
+          this.selectError = null;
+        } catch (selectError) {
+          (0, _logger.getLogger)().error(selectError);
+          this.selectError = selectError;
+        }
+      }
+    } // Use query data
+    else {
+      data = state.data;
+    } // Show placeholder data if needed
+
+
+    if (typeof options.placeholderData !== 'undefined' && typeof data === 'undefined' && (status === 'loading' || status === 'idle')) {
+      var placeholderData; // Memoize placeholder data
+
+      if ((prevResult == null ? void 0 : prevResult.isPlaceholderData) && options.placeholderData === (prevResultOptions == null ? void 0 : prevResultOptions.placeholderData)) {
+        placeholderData = prevResult.data;
+      } else {
+        placeholderData = typeof options.placeholderData === 'function' ? options.placeholderData() : options.placeholderData;
+
+        if (options.select && typeof placeholderData !== 'undefined') {
+          try {
+            placeholderData = options.select(placeholderData);
+
+            if (options.structuralSharing !== false) {
+              placeholderData = (0, _utils.replaceEqualDeep)(prevResult == null ? void 0 : prevResult.data, placeholderData);
+            }
+
+            this.selectError = null;
+          } catch (selectError) {
+            (0, _logger.getLogger)().error(selectError);
+            this.selectError = selectError;
+          }
+        }
+      }
+
+      if (typeof placeholderData !== 'undefined') {
+        status = 'success';
+        data = placeholderData;
+        isPlaceholderData = true;
+      }
+    }
+
+    if (this.selectError) {
+      error = this.selectError;
+      data = this.selectResult;
+      errorUpdatedAt = Date.now();
+      status = 'error';
+    }
+
+    var result = {
+      status: status,
+      isLoading: status === 'loading',
+      isSuccess: status === 'success',
+      isError: status === 'error',
+      isIdle: status === 'idle',
+      data: data,
+      dataUpdatedAt: dataUpdatedAt,
+      error: error,
+      errorUpdatedAt: errorUpdatedAt,
+      failureCount: state.fetchFailureCount,
+      errorUpdateCount: state.errorUpdateCount,
+      isFetched: state.dataUpdateCount > 0 || state.errorUpdateCount > 0,
+      isFetchedAfterMount: state.dataUpdateCount > queryInitialState.dataUpdateCount || state.errorUpdateCount > queryInitialState.errorUpdateCount,
+      isFetching: isFetching,
+      isRefetching: isFetching && status !== 'loading',
+      isLoadingError: status === 'error' && state.dataUpdatedAt === 0,
+      isPlaceholderData: isPlaceholderData,
+      isPreviousData: isPreviousData,
+      isRefetchError: status === 'error' && state.dataUpdatedAt !== 0,
+      isStale: isStale(query, options),
+      refetch: this.refetch,
+      remove: this.remove
+    };
+    return result;
+  };
+
+  _proto.shouldNotifyListeners = function shouldNotifyListeners(result, prevResult) {
+    if (!prevResult) {
+      return true;
+    }
+
+    var _this$options = this.options,
+        notifyOnChangeProps = _this$options.notifyOnChangeProps,
+        notifyOnChangePropsExclusions = _this$options.notifyOnChangePropsExclusions;
+
+    if (!notifyOnChangeProps && !notifyOnChangePropsExclusions) {
+      return true;
+    }
+
+    if (notifyOnChangeProps === 'tracked' && !this.trackedProps.length) {
+      return true;
+    }
+
+    var includedProps = notifyOnChangeProps === 'tracked' ? this.trackedProps : notifyOnChangeProps;
+    return Object.keys(result).some(function (key) {
+      var typedKey = key;
+      var changed = result[typedKey] !== prevResult[typedKey];
+      var isIncluded = includedProps == null ? void 0 : includedProps.some(function (x) {
+        return x === key;
+      });
+      var isExcluded = notifyOnChangePropsExclusions == null ? void 0 : notifyOnChangePropsExclusions.some(function (x) {
+        return x === key;
+      });
+      return changed && !isExcluded && (!includedProps || isIncluded);
+    });
+  };
+
+  _proto.updateResult = function updateResult(notifyOptions) {
+    var prevResult = this.currentResult;
+    this.currentResult = this.createResult(this.currentQuery, this.options);
+    this.currentResultState = this.currentQuery.state;
+    this.currentResultOptions = this.options; // Only notify if something has changed
+
+    if ((0, _utils.shallowEqualObjects)(this.currentResult, prevResult)) {
+      return;
+    } // Determine which callbacks to trigger
+
+
+    var defaultNotifyOptions = {
+      cache: true
+    };
+
+    if ((notifyOptions == null ? void 0 : notifyOptions.listeners) !== false && this.shouldNotifyListeners(this.currentResult, prevResult)) {
+      defaultNotifyOptions.listeners = true;
+    }
+
+    this.notify((0, _extends2.default)({}, defaultNotifyOptions, notifyOptions));
+  };
+
+  _proto.updateQuery = function updateQuery() {
+    var query = this.client.getQueryCache().build(this.client, this.options);
+
+    if (query === this.currentQuery) {
+      return;
+    }
+
+    var prevQuery = this.currentQuery;
+    this.currentQuery = query;
+    this.currentQueryInitialState = query.state;
+    this.previousQueryResult = this.currentResult;
+
+    if (this.hasListeners()) {
+      prevQuery == null ? void 0 : prevQuery.removeObserver(this);
+      query.addObserver(this);
+    }
+  };
+
+  _proto.onQueryUpdate = function onQueryUpdate(action) {
+    var notifyOptions = {};
+
+    if (action.type === 'success') {
+      notifyOptions.onSuccess = true;
+    } else if (action.type === 'error' && !(0, _retryer.isCancelledError)(action.error)) {
+      notifyOptions.onError = true;
+    }
+
+    this.updateResult(notifyOptions);
+
+    if (this.hasListeners()) {
+      this.updateTimers();
+    }
+  };
+
+  _proto.notify = function notify(notifyOptions) {
+    var _this8 = this;
+
+    _notifyManager.notifyManager.batch(function () {
+      // First trigger the configuration callbacks
+      if (notifyOptions.onSuccess) {
+        _this8.options.onSuccess == null ? void 0 : _this8.options.onSuccess(_this8.currentResult.data);
+        _this8.options.onSettled == null ? void 0 : _this8.options.onSettled(_this8.currentResult.data, null);
+      } else if (notifyOptions.onError) {
+        _this8.options.onError == null ? void 0 : _this8.options.onError(_this8.currentResult.error);
+        _this8.options.onSettled == null ? void 0 : _this8.options.onSettled(undefined, _this8.currentResult.error);
+      } // Then trigger the listeners
+
+
+      if (notifyOptions.listeners) {
+        _this8.listeners.forEach(function (listener) {
+          listener(_this8.currentResult);
+        });
+      } // Then the cache listeners
+
+
+      if (notifyOptions.cache) {
+        _this8.client.getQueryCache().notify({
+          query: _this8.currentQuery,
+          type: 'observerResultsUpdated'
+        });
+      }
+    });
+  };
+
+  return QueryObserver;
+}(_subscribable.Subscribable);
+
+exports.QueryObserver = QueryObserver;
+
+function shouldLoadOnMount(query, options) {
+  return options.enabled !== false && !query.state.dataUpdatedAt && !(query.state.status === 'error' && options.retryOnMount === false);
+}
+
+function shouldFetchOnMount(query, options) {
+  return shouldLoadOnMount(query, options) || query.state.dataUpdatedAt > 0 && shouldFetchOn(query, options, options.refetchOnMount);
+}
+
+function shouldFetchOn(query, options, field) {
+  if (options.enabled !== false) {
+    var value = typeof field === 'function' ? field(query) : field;
+    return value === 'always' || value !== false && isStale(query, options);
+  }
+
+  return false;
+}
+
+function shouldFetchOptionally(query, prevQuery, options, prevOptions) {
+  return options.enabled !== false && (query !== prevQuery || prevOptions.enabled === false) && (!options.suspense || query.state.status !== 'error') && isStale(query, options);
+}
+
+function isStale(query, options) {
+  return query.isStaleByTime(options.staleTime);
+}
+},{"@babel/runtime/helpers/esm/extends":"../node_modules/@babel/runtime/helpers/esm/extends.js","@babel/runtime/helpers/esm/inheritsLoose":"../node_modules/@babel/runtime/helpers/esm/inheritsLoose.js","./utils":"../node_modules/react-query/es/core/utils.js","./notifyManager":"../node_modules/react-query/es/core/notifyManager.js","./focusManager":"../node_modules/react-query/es/core/focusManager.js","./subscribable":"../node_modules/react-query/es/core/subscribable.js","./logger":"../node_modules/react-query/es/core/logger.js","./retryer":"../node_modules/react-query/es/core/retryer.js"}],"../node_modules/react-query/es/core/queriesObserver.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.QueriesObserver = void 0;
+
+var _inheritsLoose2 = _interopRequireDefault(require("@babel/runtime/helpers/esm/inheritsLoose"));
+
+var _utils = require("./utils");
+
+var _notifyManager = require("./notifyManager");
+
+var _queryObserver = require("./queryObserver");
+
+var _subscribable = require("./subscribable");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var QueriesObserver = /*#__PURE__*/function (_Subscribable) {
+  (0, _inheritsLoose2.default)(QueriesObserver, _Subscribable);
+
+  function QueriesObserver(client, queries) {
+    var _this;
+
+    _this = _Subscribable.call(this) || this;
+    _this.client = client;
+    _this.queries = [];
+    _this.result = [];
+    _this.observers = [];
+    _this.observersMap = {};
+
+    if (queries) {
+      _this.setQueries(queries);
+    }
+
+    return _this;
+  }
+
+  var _proto = QueriesObserver.prototype;
+
+  _proto.onSubscribe = function onSubscribe() {
+    var _this2 = this;
+
+    if (this.listeners.length === 1) {
+      this.observers.forEach(function (observer) {
+        observer.subscribe(function (result) {
+          _this2.onUpdate(observer, result);
+        });
+      });
+    }
+  };
+
+  _proto.onUnsubscribe = function onUnsubscribe() {
+    if (!this.listeners.length) {
+      this.destroy();
+    }
+  };
+
+  _proto.destroy = function destroy() {
+    this.listeners = [];
+    this.observers.forEach(function (observer) {
+      observer.destroy();
+    });
+  };
+
+  _proto.setQueries = function setQueries(queries, notifyOptions) {
+    this.queries = queries;
+    this.updateObservers(notifyOptions);
+  };
+
+  _proto.getCurrentResult = function getCurrentResult() {
+    return this.result;
+  };
+
+  _proto.getOptimisticResult = function getOptimisticResult(queries) {
+    return this.findMatchingObservers(queries).map(function (match) {
+      return match.observer.getOptimisticResult(match.defaultedQueryOptions);
+    });
+  };
+
+  _proto.findMatchingObservers = function findMatchingObservers(queries) {
+    var _this3 = this;
+
+    var prevObservers = this.observers;
+    var defaultedQueryOptions = queries.map(function (options) {
+      return _this3.client.defaultQueryObserverOptions(options);
+    });
+    var matchingObservers = defaultedQueryOptions.flatMap(function (defaultedOptions) {
+      var match = prevObservers.find(function (observer) {
+        return observer.options.queryHash === defaultedOptions.queryHash;
+      });
+
+      if (match != null) {
+        return [{
+          defaultedQueryOptions: defaultedOptions,
+          observer: match
+        }];
+      }
+
+      return [];
+    });
+    var matchedQueryHashes = matchingObservers.map(function (match) {
+      return match.defaultedQueryOptions.queryHash;
+    });
+    var unmatchedQueries = defaultedQueryOptions.filter(function (defaultedOptions) {
+      return !matchedQueryHashes.includes(defaultedOptions.queryHash);
+    });
+    var unmatchedObservers = prevObservers.filter(function (prevObserver) {
+      return !matchingObservers.some(function (match) {
+        return match.observer === prevObserver;
+      });
+    });
+    var newOrReusedObservers = unmatchedQueries.map(function (options, index) {
+      if (options.keepPreviousData) {
+        // return previous data from one of the observers that no longer match
+        var previouslyUsedObserver = unmatchedObservers[index];
+
+        if (previouslyUsedObserver !== undefined) {
+          return {
+            defaultedQueryOptions: options,
+            observer: previouslyUsedObserver
+          };
+        }
+      }
+
+      return {
+        defaultedQueryOptions: options,
+        observer: _this3.getObserver(options)
+      };
+    });
+
+    var sortMatchesByOrderOfQueries = function sortMatchesByOrderOfQueries(a, b) {
+      return defaultedQueryOptions.indexOf(a.defaultedQueryOptions) - defaultedQueryOptions.indexOf(b.defaultedQueryOptions);
+    };
+
+    return matchingObservers.concat(newOrReusedObservers).sort(sortMatchesByOrderOfQueries);
+  };
+
+  _proto.getObserver = function getObserver(options) {
+    var defaultedOptions = this.client.defaultQueryObserverOptions(options);
+    var currentObserver = this.observersMap[defaultedOptions.queryHash];
+    return currentObserver != null ? currentObserver : new _queryObserver.QueryObserver(this.client, defaultedOptions);
+  };
+
+  _proto.updateObservers = function updateObservers(notifyOptions) {
+    var _this4 = this;
+
+    _notifyManager.notifyManager.batch(function () {
+      var prevObservers = _this4.observers;
+
+      var newObserverMatches = _this4.findMatchingObservers(_this4.queries); // set options for the new observers to notify of changes
+
+
+      newObserverMatches.forEach(function (match) {
+        return match.observer.setOptions(match.defaultedQueryOptions, notifyOptions);
+      });
+      var newObservers = newObserverMatches.map(function (match) {
+        return match.observer;
+      });
+      var newObserversMap = Object.fromEntries(newObservers.map(function (observer) {
+        return [observer.options.queryHash, observer];
+      }));
+      var newResult = newObservers.map(function (observer) {
+        return observer.getCurrentResult();
+      });
+      var hasIndexChange = newObservers.some(function (observer, index) {
+        return observer !== prevObservers[index];
+      });
+
+      if (prevObservers.length === newObservers.length && !hasIndexChange) {
+        return;
+      }
+
+      _this4.observers = newObservers;
+      _this4.observersMap = newObserversMap;
+      _this4.result = newResult;
+
+      if (!_this4.hasListeners()) {
+        return;
+      }
+
+      (0, _utils.difference)(prevObservers, newObservers).forEach(function (observer) {
+        observer.destroy();
+      });
+      (0, _utils.difference)(newObservers, prevObservers).forEach(function (observer) {
+        observer.subscribe(function (result) {
+          _this4.onUpdate(observer, result);
+        });
+      });
+
+      _this4.notify();
+    });
+  };
+
+  _proto.onUpdate = function onUpdate(observer, result) {
+    var index = this.observers.indexOf(observer);
+
+    if (index !== -1) {
+      this.result = (0, _utils.replaceAt)(this.result, index, result);
+      this.notify();
+    }
+  };
+
+  _proto.notify = function notify() {
+    var _this5 = this;
+
+    _notifyManager.notifyManager.batch(function () {
+      _this5.listeners.forEach(function (listener) {
+        listener(_this5.result);
+      });
+    });
+  };
+
+  return QueriesObserver;
+}(_subscribable.Subscribable);
+
+exports.QueriesObserver = QueriesObserver;
+},{"@babel/runtime/helpers/esm/inheritsLoose":"../node_modules/@babel/runtime/helpers/esm/inheritsLoose.js","./utils":"../node_modules/react-query/es/core/utils.js","./notifyManager":"../node_modules/react-query/es/core/notifyManager.js","./queryObserver":"../node_modules/react-query/es/core/queryObserver.js","./subscribable":"../node_modules/react-query/es/core/subscribable.js"}],"../node_modules/react-query/es/core/infiniteQueryObserver.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.InfiniteQueryObserver = void 0;
+
+var _extends2 = _interopRequireDefault(require("@babel/runtime/helpers/esm/extends"));
+
+var _inheritsLoose2 = _interopRequireDefault(require("@babel/runtime/helpers/esm/inheritsLoose"));
+
+var _queryObserver = require("./queryObserver");
+
+var _infiniteQueryBehavior = require("./infiniteQueryBehavior");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var InfiniteQueryObserver = /*#__PURE__*/function (_QueryObserver) {
+  (0, _inheritsLoose2.default)(InfiniteQueryObserver, _QueryObserver); // Type override
+  // Type override
+  // Type override
+  // eslint-disable-next-line @typescript-eslint/no-useless-constructor
+
+  function InfiniteQueryObserver(client, options) {
+    return _QueryObserver.call(this, client, options) || this;
+  }
+
+  var _proto = InfiniteQueryObserver.prototype;
+
+  _proto.bindMethods = function bindMethods() {
+    _QueryObserver.prototype.bindMethods.call(this);
+
+    this.fetchNextPage = this.fetchNextPage.bind(this);
+    this.fetchPreviousPage = this.fetchPreviousPage.bind(this);
+  };
+
+  _proto.setOptions = function setOptions(options, notifyOptions) {
+    _QueryObserver.prototype.setOptions.call(this, (0, _extends2.default)({}, options, {
+      behavior: (0, _infiniteQueryBehavior.infiniteQueryBehavior)()
+    }), notifyOptions);
+  };
+
+  _proto.getOptimisticResult = function getOptimisticResult(options) {
+    options.behavior = (0, _infiniteQueryBehavior.infiniteQueryBehavior)();
+    return _QueryObserver.prototype.getOptimisticResult.call(this, options);
+  };
+
+  _proto.fetchNextPage = function fetchNextPage(options) {
+    var _options$cancelRefetc;
+
+    return this.fetch({
+      // TODO consider removing `?? true` in future breaking change, to be consistent with `refetch` API (see https://github.com/tannerlinsley/react-query/issues/2617)
+      cancelRefetch: (_options$cancelRefetc = options == null ? void 0 : options.cancelRefetch) != null ? _options$cancelRefetc : true,
+      throwOnError: options == null ? void 0 : options.throwOnError,
+      meta: {
+        fetchMore: {
+          direction: 'forward',
+          pageParam: options == null ? void 0 : options.pageParam
+        }
+      }
+    });
+  };
+
+  _proto.fetchPreviousPage = function fetchPreviousPage(options) {
+    var _options$cancelRefetc2;
+
+    return this.fetch({
+      // TODO consider removing `?? true` in future breaking change, to be consistent with `refetch` API (see https://github.com/tannerlinsley/react-query/issues/2617)
+      cancelRefetch: (_options$cancelRefetc2 = options == null ? void 0 : options.cancelRefetch) != null ? _options$cancelRefetc2 : true,
+      throwOnError: options == null ? void 0 : options.throwOnError,
+      meta: {
+        fetchMore: {
+          direction: 'backward',
+          pageParam: options == null ? void 0 : options.pageParam
+        }
+      }
+    });
+  };
+
+  _proto.createResult = function createResult(query, options) {
+    var _state$data, _state$data2, _state$fetchMeta, _state$fetchMeta$fetc, _state$fetchMeta2, _state$fetchMeta2$fet;
+
+    var state = query.state;
+
+    var result = _QueryObserver.prototype.createResult.call(this, query, options);
+
+    return (0, _extends2.default)({}, result, {
+      fetchNextPage: this.fetchNextPage,
+      fetchPreviousPage: this.fetchPreviousPage,
+      hasNextPage: (0, _infiniteQueryBehavior.hasNextPage)(options, (_state$data = state.data) == null ? void 0 : _state$data.pages),
+      hasPreviousPage: (0, _infiniteQueryBehavior.hasPreviousPage)(options, (_state$data2 = state.data) == null ? void 0 : _state$data2.pages),
+      isFetchingNextPage: state.isFetching && ((_state$fetchMeta = state.fetchMeta) == null ? void 0 : (_state$fetchMeta$fetc = _state$fetchMeta.fetchMore) == null ? void 0 : _state$fetchMeta$fetc.direction) === 'forward',
+      isFetchingPreviousPage: state.isFetching && ((_state$fetchMeta2 = state.fetchMeta) == null ? void 0 : (_state$fetchMeta2$fet = _state$fetchMeta2.fetchMore) == null ? void 0 : _state$fetchMeta2$fet.direction) === 'backward'
+    });
+  };
+
+  return InfiniteQueryObserver;
+}(_queryObserver.QueryObserver);
+
+exports.InfiniteQueryObserver = InfiniteQueryObserver;
+},{"@babel/runtime/helpers/esm/extends":"../node_modules/@babel/runtime/helpers/esm/extends.js","@babel/runtime/helpers/esm/inheritsLoose":"../node_modules/@babel/runtime/helpers/esm/inheritsLoose.js","./queryObserver":"../node_modules/react-query/es/core/queryObserver.js","./infiniteQueryBehavior":"../node_modules/react-query/es/core/infiniteQueryBehavior.js"}],"../node_modules/react-query/es/core/mutationObserver.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.MutationObserver = void 0;
+
+var _extends2 = _interopRequireDefault(require("@babel/runtime/helpers/esm/extends"));
+
+var _inheritsLoose2 = _interopRequireDefault(require("@babel/runtime/helpers/esm/inheritsLoose"));
+
+var _mutation = require("./mutation");
+
+var _notifyManager = require("./notifyManager");
+
+var _subscribable = require("./subscribable");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// CLASS
+var MutationObserver = /*#__PURE__*/function (_Subscribable) {
+  (0, _inheritsLoose2.default)(MutationObserver, _Subscribable);
+
+  function MutationObserver(client, options) {
+    var _this;
+
+    _this = _Subscribable.call(this) || this;
+    _this.client = client;
+
+    _this.setOptions(options);
+
+    _this.bindMethods();
+
+    _this.updateResult();
+
+    return _this;
+  }
+
+  var _proto = MutationObserver.prototype;
+
+  _proto.bindMethods = function bindMethods() {
+    this.mutate = this.mutate.bind(this);
+    this.reset = this.reset.bind(this);
+  };
+
+  _proto.setOptions = function setOptions(options) {
+    this.options = this.client.defaultMutationOptions(options);
+  };
+
+  _proto.onUnsubscribe = function onUnsubscribe() {
+    if (!this.listeners.length) {
+      var _this$currentMutation;
+
+      (_this$currentMutation = this.currentMutation) == null ? void 0 : _this$currentMutation.removeObserver(this);
+    }
+  };
+
+  _proto.onMutationUpdate = function onMutationUpdate(action) {
+    this.updateResult(); // Determine which callbacks to trigger
+
+    var notifyOptions = {
+      listeners: true
+    };
+
+    if (action.type === 'success') {
+      notifyOptions.onSuccess = true;
+    } else if (action.type === 'error') {
+      notifyOptions.onError = true;
+    }
+
+    this.notify(notifyOptions);
+  };
+
+  _proto.getCurrentResult = function getCurrentResult() {
+    return this.currentResult;
+  };
+
+  _proto.reset = function reset() {
+    this.currentMutation = undefined;
+    this.updateResult();
+    this.notify({
+      listeners: true
+    });
+  };
+
+  _proto.mutate = function mutate(variables, options) {
+    this.mutateOptions = options;
+
+    if (this.currentMutation) {
+      this.currentMutation.removeObserver(this);
+    }
+
+    this.currentMutation = this.client.getMutationCache().build(this.client, (0, _extends2.default)({}, this.options, {
+      variables: typeof variables !== 'undefined' ? variables : this.options.variables
+    }));
+    this.currentMutation.addObserver(this);
+    return this.currentMutation.execute();
+  };
+
+  _proto.updateResult = function updateResult() {
+    var state = this.currentMutation ? this.currentMutation.state : (0, _mutation.getDefaultState)();
+    var result = (0, _extends2.default)({}, state, {
+      isLoading: state.status === 'loading',
+      isSuccess: state.status === 'success',
+      isError: state.status === 'error',
+      isIdle: state.status === 'idle',
+      mutate: this.mutate,
+      reset: this.reset
+    });
+    this.currentResult = result;
+  };
+
+  _proto.notify = function notify(options) {
+    var _this2 = this;
+
+    _notifyManager.notifyManager.batch(function () {
+      // First trigger the mutate callbacks
+      if (_this2.mutateOptions) {
+        if (options.onSuccess) {
+          _this2.mutateOptions.onSuccess == null ? void 0 : _this2.mutateOptions.onSuccess(_this2.currentResult.data, _this2.currentResult.variables, _this2.currentResult.context);
+          _this2.mutateOptions.onSettled == null ? void 0 : _this2.mutateOptions.onSettled(_this2.currentResult.data, null, _this2.currentResult.variables, _this2.currentResult.context);
+        } else if (options.onError) {
+          _this2.mutateOptions.onError == null ? void 0 : _this2.mutateOptions.onError(_this2.currentResult.error, _this2.currentResult.variables, _this2.currentResult.context);
+          _this2.mutateOptions.onSettled == null ? void 0 : _this2.mutateOptions.onSettled(undefined, _this2.currentResult.error, _this2.currentResult.variables, _this2.currentResult.context);
+        }
+      } // Then trigger the listeners
+
+
+      if (options.listeners) {
+        _this2.listeners.forEach(function (listener) {
+          listener(_this2.currentResult);
+        });
+      }
+    });
+  };
+
+  return MutationObserver;
+}(_subscribable.Subscribable);
+
+exports.MutationObserver = MutationObserver;
+},{"@babel/runtime/helpers/esm/extends":"../node_modules/@babel/runtime/helpers/esm/extends.js","@babel/runtime/helpers/esm/inheritsLoose":"../node_modules/@babel/runtime/helpers/esm/inheritsLoose.js","./mutation":"../node_modules/react-query/es/core/mutation.js","./notifyManager":"../node_modules/react-query/es/core/notifyManager.js","./subscribable":"../node_modules/react-query/es/core/subscribable.js"}],"../node_modules/react-query/es/core/hydration.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.dehydrate = dehydrate;
+exports.hydrate = hydrate;
+
+var _extends2 = _interopRequireDefault(require("@babel/runtime/helpers/esm/extends"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// TYPES
+// FUNCTIONS
+function dehydrateMutation(mutation) {
+  return {
+    mutationKey: mutation.options.mutationKey,
+    state: mutation.state
+  };
+} // Most config is not dehydrated but instead meant to configure again when
+// consuming the de/rehydrated data, typically with useQuery on the client.
+// Sometimes it might make sense to prefetch data on the server and include
+// in the html-payload, but not consume it on the initial render.
+
+
+function dehydrateQuery(query) {
+  return {
+    state: query.state,
+    queryKey: query.queryKey,
+    queryHash: query.queryHash
+  };
+}
+
+function defaultShouldDehydrateMutation(mutation) {
+  return mutation.state.isPaused;
+}
+
+function defaultShouldDehydrateQuery(query) {
+  return query.state.status === 'success';
+}
+
+function dehydrate(client, options) {
+  var _options, _options2;
+
+  options = options || {};
+  var mutations = [];
+  var queries = [];
+
+  if (((_options = options) == null ? void 0 : _options.dehydrateMutations) !== false) {
+    var shouldDehydrateMutation = options.shouldDehydrateMutation || defaultShouldDehydrateMutation;
+    client.getMutationCache().getAll().forEach(function (mutation) {
+      if (shouldDehydrateMutation(mutation)) {
+        mutations.push(dehydrateMutation(mutation));
+      }
+    });
+  }
+
+  if (((_options2 = options) == null ? void 0 : _options2.dehydrateQueries) !== false) {
+    var shouldDehydrateQuery = options.shouldDehydrateQuery || defaultShouldDehydrateQuery;
+    client.getQueryCache().getAll().forEach(function (query) {
+      if (shouldDehydrateQuery(query)) {
+        queries.push(dehydrateQuery(query));
+      }
+    });
+  }
+
+  return {
+    mutations: mutations,
+    queries: queries
+  };
+}
+
+function hydrate(client, dehydratedState, options) {
+  if (typeof dehydratedState !== 'object' || dehydratedState === null) {
+    return;
+  }
+
+  var mutationCache = client.getMutationCache();
+  var queryCache = client.getQueryCache();
+  var mutations = dehydratedState.mutations || [];
+  var queries = dehydratedState.queries || [];
+  mutations.forEach(function (dehydratedMutation) {
+    var _options$defaultOptio;
+
+    mutationCache.build(client, (0, _extends2.default)({}, options == null ? void 0 : (_options$defaultOptio = options.defaultOptions) == null ? void 0 : _options$defaultOptio.mutations, {
+      mutationKey: dehydratedMutation.mutationKey
+    }), dehydratedMutation.state);
+  });
+  queries.forEach(function (dehydratedQuery) {
+    var _options$defaultOptio2;
+
+    var query = queryCache.get(dehydratedQuery.queryHash); // Do not hydrate if an existing query exists with newer data
+
+    if (query) {
+      if (query.state.dataUpdatedAt < dehydratedQuery.state.dataUpdatedAt) {
+        query.setState(dehydratedQuery.state);
+      }
+
+      return;
+    } // Restore query
+
+
+    queryCache.build(client, (0, _extends2.default)({}, options == null ? void 0 : (_options$defaultOptio2 = options.defaultOptions) == null ? void 0 : _options$defaultOptio2.queries, {
+      queryKey: dehydratedQuery.queryKey,
+      queryHash: dehydratedQuery.queryHash
+    }), dehydratedQuery.state);
+  });
+}
+},{"@babel/runtime/helpers/esm/extends":"../node_modules/@babel/runtime/helpers/esm/extends.js"}],"../node_modules/react-query/es/core/types.js":[function(require,module,exports) {
+
+},{}],"../node_modules/react-query/es/core/index.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+var _exportNames = {
+  CancelledError: true,
+  isCancelledError: true,
+  QueryCache: true,
+  QueryClient: true,
+  QueryObserver: true,
+  QueriesObserver: true,
+  InfiniteQueryObserver: true,
+  MutationCache: true,
+  MutationObserver: true,
+  setLogger: true,
+  notifyManager: true,
+  focusManager: true,
+  onlineManager: true,
+  hashQueryKey: true,
+  isError: true,
+  dehydrate: true,
+  hydrate: true
+};
+Object.defineProperty(exports, "CancelledError", {
+  enumerable: true,
+  get: function () {
+    return _retryer.CancelledError;
+  }
+});
+Object.defineProperty(exports, "InfiniteQueryObserver", {
+  enumerable: true,
+  get: function () {
+    return _infiniteQueryObserver.InfiniteQueryObserver;
+  }
+});
+Object.defineProperty(exports, "MutationCache", {
+  enumerable: true,
+  get: function () {
+    return _mutationCache.MutationCache;
+  }
+});
+Object.defineProperty(exports, "MutationObserver", {
+  enumerable: true,
+  get: function () {
+    return _mutationObserver.MutationObserver;
+  }
+});
+Object.defineProperty(exports, "QueriesObserver", {
+  enumerable: true,
+  get: function () {
+    return _queriesObserver.QueriesObserver;
+  }
+});
+Object.defineProperty(exports, "QueryCache", {
+  enumerable: true,
+  get: function () {
+    return _queryCache.QueryCache;
+  }
+});
+Object.defineProperty(exports, "QueryClient", {
+  enumerable: true,
+  get: function () {
+    return _queryClient.QueryClient;
+  }
+});
+Object.defineProperty(exports, "QueryObserver", {
+  enumerable: true,
+  get: function () {
+    return _queryObserver.QueryObserver;
+  }
+});
+Object.defineProperty(exports, "dehydrate", {
+  enumerable: true,
+  get: function () {
+    return _hydration.dehydrate;
+  }
+});
+Object.defineProperty(exports, "focusManager", {
+  enumerable: true,
+  get: function () {
+    return _focusManager.focusManager;
+  }
+});
+Object.defineProperty(exports, "hashQueryKey", {
+  enumerable: true,
+  get: function () {
+    return _utils.hashQueryKey;
+  }
+});
+Object.defineProperty(exports, "hydrate", {
+  enumerable: true,
+  get: function () {
+    return _hydration.hydrate;
+  }
+});
+Object.defineProperty(exports, "isCancelledError", {
+  enumerable: true,
+  get: function () {
+    return _retryer.isCancelledError;
+  }
+});
+Object.defineProperty(exports, "isError", {
+  enumerable: true,
+  get: function () {
+    return _utils.isError;
+  }
+});
+Object.defineProperty(exports, "notifyManager", {
+  enumerable: true,
+  get: function () {
+    return _notifyManager.notifyManager;
+  }
+});
+Object.defineProperty(exports, "onlineManager", {
+  enumerable: true,
+  get: function () {
+    return _onlineManager.onlineManager;
+  }
+});
+Object.defineProperty(exports, "setLogger", {
+  enumerable: true,
+  get: function () {
+    return _logger.setLogger;
+  }
+});
+
+var _retryer = require("./retryer");
+
+var _queryCache = require("./queryCache");
+
+var _queryClient = require("./queryClient");
+
+var _queryObserver = require("./queryObserver");
+
+var _queriesObserver = require("./queriesObserver");
+
+var _infiniteQueryObserver = require("./infiniteQueryObserver");
+
+var _mutationCache = require("./mutationCache");
+
+var _mutationObserver = require("./mutationObserver");
+
+var _logger = require("./logger");
+
+var _notifyManager = require("./notifyManager");
+
+var _focusManager = require("./focusManager");
+
+var _onlineManager = require("./onlineManager");
+
+var _utils = require("./utils");
+
+var _hydration = require("./hydration");
+
+var _types = require("./types");
+
+Object.keys(_types).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  if (key in exports && exports[key] === _types[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function () {
+      return _types[key];
+    }
+  });
+});
+},{"./retryer":"../node_modules/react-query/es/core/retryer.js","./queryCache":"../node_modules/react-query/es/core/queryCache.js","./queryClient":"../node_modules/react-query/es/core/queryClient.js","./queryObserver":"../node_modules/react-query/es/core/queryObserver.js","./queriesObserver":"../node_modules/react-query/es/core/queriesObserver.js","./infiniteQueryObserver":"../node_modules/react-query/es/core/infiniteQueryObserver.js","./mutationCache":"../node_modules/react-query/es/core/mutationCache.js","./mutationObserver":"../node_modules/react-query/es/core/mutationObserver.js","./logger":"../node_modules/react-query/es/core/logger.js","./notifyManager":"../node_modules/react-query/es/core/notifyManager.js","./focusManager":"../node_modules/react-query/es/core/focusManager.js","./onlineManager":"../node_modules/react-query/es/core/onlineManager.js","./utils":"../node_modules/react-query/es/core/utils.js","./hydration":"../node_modules/react-query/es/core/hydration.js","./types":"../node_modules/react-query/es/core/types.js"}],"../node_modules/react-query/es/react/reactBatchedUpdates.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.unstable_batchedUpdates = void 0;
+
+var _reactDom = _interopRequireDefault(require("react-dom"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var unstable_batchedUpdates = _reactDom.default.unstable_batchedUpdates;
+exports.unstable_batchedUpdates = unstable_batchedUpdates;
+},{"react-dom":"../node_modules/react-dom/index.js"}],"../node_modules/react-query/es/react/setBatchUpdatesFn.js":[function(require,module,exports) {
+"use strict";
+
+var _core = require("../core");
+
+var _reactBatchedUpdates = require("./reactBatchedUpdates");
+
+_core.notifyManager.setBatchNotifyFunction(_reactBatchedUpdates.unstable_batchedUpdates);
+},{"../core":"../node_modules/react-query/es/core/index.js","./reactBatchedUpdates":"../node_modules/react-query/es/react/reactBatchedUpdates.js"}],"../node_modules/react-query/es/react/logger.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.logger = void 0;
+var logger = console;
+exports.logger = logger;
+},{}],"../node_modules/react-query/es/react/setLogger.js":[function(require,module,exports) {
+"use strict";
+
+var _core = require("../core");
+
+var _logger = require("./logger");
+
+(0, _core.setLogger)(_logger.logger);
+},{"../core":"../node_modules/react-query/es/core/index.js","./logger":"../node_modules/react-query/es/react/logger.js"}],"../node_modules/react-query/es/react/QueryClientProvider.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.useQueryClient = exports.QueryClientProvider = void 0;
+
+var _react = _interopRequireDefault(require("react"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var defaultContext = /*#__PURE__*/_react.default.createContext(undefined);
+
+var QueryClientSharingContext = /*#__PURE__*/_react.default.createContext(false); // if contextSharing is on, we share the first and at least one
+// instance of the context across the window
+// to ensure that if React Query is used across
+// different bundles or microfrontends they will
+// all use the same **instance** of context, regardless
+// of module scoping.
+
+
+function getQueryClientContext(contextSharing) {
+  if (contextSharing && typeof window !== 'undefined') {
+    if (!window.ReactQueryClientContext) {
+      window.ReactQueryClientContext = defaultContext;
+    }
+
+    return window.ReactQueryClientContext;
+  }
+
+  return defaultContext;
+}
+
+var useQueryClient = function useQueryClient() {
+  var queryClient = _react.default.useContext(getQueryClientContext(_react.default.useContext(QueryClientSharingContext)));
+
+  if (!queryClient) {
+    throw new Error('No QueryClient set, use QueryClientProvider to set one');
+  }
+
+  return queryClient;
+};
+
+exports.useQueryClient = useQueryClient;
+
+var QueryClientProvider = function QueryClientProvider(_ref) {
+  var client = _ref.client,
+      _ref$contextSharing = _ref.contextSharing,
+      contextSharing = _ref$contextSharing === void 0 ? false : _ref$contextSharing,
+      children = _ref.children;
+
+  _react.default.useEffect(function () {
+    client.mount();
+    return function () {
+      client.unmount();
+    };
+  }, [client]);
+
+  var Context = getQueryClientContext(contextSharing);
+  return /*#__PURE__*/_react.default.createElement(QueryClientSharingContext.Provider, {
+    value: contextSharing
+  }, /*#__PURE__*/_react.default.createElement(Context.Provider, {
+    value: client
+  }, children));
+};
+
+exports.QueryClientProvider = QueryClientProvider;
+},{"react":"../node_modules/react/index.js"}],"../node_modules/react-query/es/react/QueryErrorResetBoundary.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.useQueryErrorResetBoundary = exports.QueryErrorResetBoundary = void 0;
+
+var _react = _interopRequireDefault(require("react"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// CONTEXT
+function createValue() {
+  var _isReset = false;
+  return {
+    clearReset: function clearReset() {
+      _isReset = false;
+    },
+    reset: function reset() {
+      _isReset = true;
+    },
+    isReset: function isReset() {
+      return _isReset;
+    }
+  };
+}
+
+var QueryErrorResetBoundaryContext = /*#__PURE__*/_react.default.createContext(createValue()); // HOOK
+
+
+var useQueryErrorResetBoundary = function useQueryErrorResetBoundary() {
+  return _react.default.useContext(QueryErrorResetBoundaryContext);
+}; // COMPONENT
+
+
+exports.useQueryErrorResetBoundary = useQueryErrorResetBoundary;
+
+var QueryErrorResetBoundary = function QueryErrorResetBoundary(_ref) {
+  var children = _ref.children;
+
+  var value = _react.default.useMemo(function () {
+    return createValue();
+  }, []);
+
+  return /*#__PURE__*/_react.default.createElement(QueryErrorResetBoundaryContext.Provider, {
+    value: value
+  }, typeof children === 'function' ? children(value) : children);
+};
+
+exports.QueryErrorResetBoundary = QueryErrorResetBoundary;
+},{"react":"../node_modules/react/index.js"}],"../node_modules/react-query/es/react/useIsFetching.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.useIsFetching = useIsFetching;
+
+var _react = _interopRequireDefault(require("react"));
+
+var _notifyManager = require("../core/notifyManager");
+
+var _utils = require("../core/utils");
+
+var _QueryClientProvider = require("./QueryClientProvider");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var checkIsFetching = function checkIsFetching(queryClient, filters, isFetching, setIsFetching) {
+  var newIsFetching = queryClient.isFetching(filters);
+
+  if (isFetching !== newIsFetching) {
+    setIsFetching(newIsFetching);
+  }
+};
+
+function useIsFetching(arg1, arg2) {
+  var mountedRef = _react.default.useRef(false);
+
+  var queryClient = (0, _QueryClientProvider.useQueryClient)();
+
+  var _parseFilterArgs = (0, _utils.parseFilterArgs)(arg1, arg2),
+      filters = _parseFilterArgs[0];
+
+  var _React$useState = _react.default.useState(queryClient.isFetching(filters)),
+      isFetching = _React$useState[0],
+      setIsFetching = _React$useState[1];
+
+  var filtersRef = _react.default.useRef(filters);
+
+  filtersRef.current = filters;
+
+  var isFetchingRef = _react.default.useRef(isFetching);
+
+  isFetchingRef.current = isFetching;
+
+  _react.default.useEffect(function () {
+    mountedRef.current = true;
+    checkIsFetching(queryClient, filtersRef.current, isFetchingRef.current, setIsFetching);
+    var unsubscribe = queryClient.getQueryCache().subscribe(_notifyManager.notifyManager.batchCalls(function () {
+      if (mountedRef.current) {
+        checkIsFetching(queryClient, filtersRef.current, isFetchingRef.current, setIsFetching);
+      }
+    }));
+    return function () {
+      mountedRef.current = false;
+      unsubscribe();
+    };
+  }, [queryClient]);
+
+  return isFetching;
+}
+},{"react":"../node_modules/react/index.js","../core/notifyManager":"../node_modules/react-query/es/core/notifyManager.js","../core/utils":"../node_modules/react-query/es/core/utils.js","./QueryClientProvider":"../node_modules/react-query/es/react/QueryClientProvider.js"}],"../node_modules/react-query/es/react/useIsMutating.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.useIsMutating = useIsMutating;
+
+var _react = _interopRequireDefault(require("react"));
+
+var _notifyManager = require("../core/notifyManager");
+
+var _utils = require("../core/utils");
+
+var _QueryClientProvider = require("./QueryClientProvider");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function useIsMutating(arg1, arg2) {
+  var mountedRef = _react.default.useRef(false);
+
+  var filters = (0, _utils.parseMutationFilterArgs)(arg1, arg2);
+  var queryClient = (0, _QueryClientProvider.useQueryClient)();
+
+  var _React$useState = _react.default.useState(queryClient.isMutating(filters)),
+      isMutating = _React$useState[0],
+      setIsMutating = _React$useState[1];
+
+  var filtersRef = _react.default.useRef(filters);
+
+  filtersRef.current = filters;
+
+  var isMutatingRef = _react.default.useRef(isMutating);
+
+  isMutatingRef.current = isMutating;
+
+  _react.default.useEffect(function () {
+    mountedRef.current = true;
+    var unsubscribe = queryClient.getMutationCache().subscribe(_notifyManager.notifyManager.batchCalls(function () {
+      if (mountedRef.current) {
+        var newIsMutating = queryClient.isMutating(filtersRef.current);
+
+        if (isMutatingRef.current !== newIsMutating) {
+          setIsMutating(newIsMutating);
+        }
+      }
+    }));
+    return function () {
+      mountedRef.current = false;
+      unsubscribe();
+    };
+  }, [queryClient]);
+
+  return isMutating;
+}
+},{"react":"../node_modules/react/index.js","../core/notifyManager":"../node_modules/react-query/es/core/notifyManager.js","../core/utils":"../node_modules/react-query/es/core/utils.js","./QueryClientProvider":"../node_modules/react-query/es/react/QueryClientProvider.js"}],"../node_modules/react-query/es/react/utils.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.shouldThrowError = shouldThrowError;
+
+function shouldThrowError(suspense, _useErrorBoundary, params) {
+  // Allow useErrorBoundary function to override throwing behavior on a per-error basis
+  if (typeof _useErrorBoundary === 'function') {
+    return _useErrorBoundary.apply(void 0, params);
+  } // Allow useErrorBoundary to override suspense's throwing behavior
+
+
+  if (typeof _useErrorBoundary === 'boolean') return _useErrorBoundary; // If suspense is enabled default to throwing errors
+
+  return !!suspense;
+}
+},{}],"../node_modules/react-query/es/react/useMutation.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.useMutation = useMutation;
+
+var _extends2 = _interopRequireDefault(require("@babel/runtime/helpers/esm/extends"));
+
+var _react = _interopRequireDefault(require("react"));
+
+var _notifyManager = require("../core/notifyManager");
+
+var _utils = require("../core/utils");
+
+var _mutationObserver = require("../core/mutationObserver");
+
+var _QueryClientProvider = require("./QueryClientProvider");
+
+var _utils2 = require("./utils");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// HOOK
+function useMutation(arg1, arg2, arg3) {
+  var mountedRef = _react.default.useRef(false);
+
+  var _React$useState = _react.default.useState(0),
+      forceUpdate = _React$useState[1];
+
+  var options = (0, _utils.parseMutationArgs)(arg1, arg2, arg3);
+  var queryClient = (0, _QueryClientProvider.useQueryClient)();
+
+  var obsRef = _react.default.useRef();
+
+  if (!obsRef.current) {
+    obsRef.current = new _mutationObserver.MutationObserver(queryClient, options);
+  } else {
+    obsRef.current.setOptions(options);
+  }
+
+  var currentResult = obsRef.current.getCurrentResult();
+
+  _react.default.useEffect(function () {
+    mountedRef.current = true;
+    var unsubscribe = obsRef.current.subscribe(_notifyManager.notifyManager.batchCalls(function () {
+      if (mountedRef.current) {
+        forceUpdate(function (x) {
+          return x + 1;
+        });
+      }
+    }));
+    return function () {
+      mountedRef.current = false;
+      unsubscribe();
+    };
+  }, []);
+
+  var mutate = _react.default.useCallback(function (variables, mutateOptions) {
+    obsRef.current.mutate(variables, mutateOptions).catch(_utils.noop);
+  }, []);
+
+  if (currentResult.error && (0, _utils2.shouldThrowError)(undefined, obsRef.current.options.useErrorBoundary, [currentResult.error])) {
+    throw currentResult.error;
+  }
+
+  return (0, _extends2.default)({}, currentResult, {
+    mutate: mutate,
+    mutateAsync: currentResult.mutate
+  });
+}
+},{"@babel/runtime/helpers/esm/extends":"../node_modules/@babel/runtime/helpers/esm/extends.js","react":"../node_modules/react/index.js","../core/notifyManager":"../node_modules/react-query/es/core/notifyManager.js","../core/utils":"../node_modules/react-query/es/core/utils.js","../core/mutationObserver":"../node_modules/react-query/es/core/mutationObserver.js","./QueryClientProvider":"../node_modules/react-query/es/react/QueryClientProvider.js","./utils":"../node_modules/react-query/es/react/utils.js"}],"../node_modules/react-query/es/react/useBaseQuery.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.useBaseQuery = useBaseQuery;
+
+var _react = _interopRequireDefault(require("react"));
+
+var _notifyManager = require("../core/notifyManager");
+
+var _QueryErrorResetBoundary = require("./QueryErrorResetBoundary");
+
+var _QueryClientProvider = require("./QueryClientProvider");
+
+var _utils = require("./utils");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function useBaseQuery(options, Observer) {
+  var mountedRef = _react.default.useRef(false);
+
+  var _React$useState = _react.default.useState(0),
+      forceUpdate = _React$useState[1];
+
+  var queryClient = (0, _QueryClientProvider.useQueryClient)();
+  var errorResetBoundary = (0, _QueryErrorResetBoundary.useQueryErrorResetBoundary)();
+  var defaultedOptions = queryClient.defaultQueryObserverOptions(options); // Make sure results are optimistically set in fetching state before subscribing or updating options
+
+  defaultedOptions.optimisticResults = true; // Include callbacks in batch renders
+
+  if (defaultedOptions.onError) {
+    defaultedOptions.onError = _notifyManager.notifyManager.batchCalls(defaultedOptions.onError);
+  }
+
+  if (defaultedOptions.onSuccess) {
+    defaultedOptions.onSuccess = _notifyManager.notifyManager.batchCalls(defaultedOptions.onSuccess);
+  }
+
+  if (defaultedOptions.onSettled) {
+    defaultedOptions.onSettled = _notifyManager.notifyManager.batchCalls(defaultedOptions.onSettled);
+  }
+
+  if (defaultedOptions.suspense) {
+    // Always set stale time when using suspense to prevent
+    // fetching again when directly mounting after suspending
+    if (typeof defaultedOptions.staleTime !== 'number') {
+      defaultedOptions.staleTime = 1000;
+    } // Set cache time to 1 if the option has been set to 0
+    // when using suspense to prevent infinite loop of fetches
+
+
+    if (defaultedOptions.cacheTime === 0) {
+      defaultedOptions.cacheTime = 1;
+    }
+  }
+
+  if (defaultedOptions.suspense || defaultedOptions.useErrorBoundary) {
+    // Prevent retrying failed query if the error boundary has not been reset yet
+    if (!errorResetBoundary.isReset()) {
+      defaultedOptions.retryOnMount = false;
+    }
+  }
+
+  var _React$useState2 = _react.default.useState(function () {
+    return new Observer(queryClient, defaultedOptions);
+  }),
+      observer = _React$useState2[0];
+
+  var result = observer.getOptimisticResult(defaultedOptions);
+
+  _react.default.useEffect(function () {
+    mountedRef.current = true;
+    errorResetBoundary.clearReset();
+    var unsubscribe = observer.subscribe(_notifyManager.notifyManager.batchCalls(function () {
+      if (mountedRef.current) {
+        forceUpdate(function (x) {
+          return x + 1;
+        });
+      }
+    })); // Update result to make sure we did not miss any query updates
+    // between creating the observer and subscribing to it.
+
+    observer.updateResult();
+    return function () {
+      mountedRef.current = false;
+      unsubscribe();
+    };
+  }, [errorResetBoundary, observer]);
+
+  _react.default.useEffect(function () {
+    // Do not notify on updates because of changes in the options because
+    // these changes should already be reflected in the optimistic result.
+    observer.setOptions(defaultedOptions, {
+      listeners: false
+    });
+  }, [defaultedOptions, observer]); // Handle suspense
+
+
+  if (defaultedOptions.suspense && result.isLoading) {
+    throw observer.fetchOptimistic(defaultedOptions).then(function (_ref) {
+      var data = _ref.data;
+      defaultedOptions.onSuccess == null ? void 0 : defaultedOptions.onSuccess(data);
+      defaultedOptions.onSettled == null ? void 0 : defaultedOptions.onSettled(data, null);
+    }).catch(function (error) {
+      errorResetBoundary.clearReset();
+      defaultedOptions.onError == null ? void 0 : defaultedOptions.onError(error);
+      defaultedOptions.onSettled == null ? void 0 : defaultedOptions.onSettled(undefined, error);
+    });
+  } // Handle error boundary
+
+
+  if (result.isError && !errorResetBoundary.isReset() && !result.isFetching && (0, _utils.shouldThrowError)(defaultedOptions.suspense, defaultedOptions.useErrorBoundary, [result.error, observer.getCurrentQuery()])) {
+    throw result.error;
+  } // Handle result property usage tracking
+
+
+  if (defaultedOptions.notifyOnChangeProps === 'tracked') {
+    result = observer.trackResult(result, defaultedOptions);
+  }
+
+  return result;
+}
+},{"react":"../node_modules/react/index.js","../core/notifyManager":"../node_modules/react-query/es/core/notifyManager.js","./QueryErrorResetBoundary":"../node_modules/react-query/es/react/QueryErrorResetBoundary.js","./QueryClientProvider":"../node_modules/react-query/es/react/QueryClientProvider.js","./utils":"../node_modules/react-query/es/react/utils.js"}],"../node_modules/react-query/es/react/useQuery.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.useQuery = useQuery;
+
+var _core = require("../core");
+
+var _utils = require("../core/utils");
+
+var _useBaseQuery = require("./useBaseQuery");
+
+// HOOK
+function useQuery(arg1, arg2, arg3) {
+  var parsedOptions = (0, _utils.parseQueryArgs)(arg1, arg2, arg3);
+  return (0, _useBaseQuery.useBaseQuery)(parsedOptions, _core.QueryObserver);
+}
+},{"../core":"../node_modules/react-query/es/core/index.js","../core/utils":"../node_modules/react-query/es/core/utils.js","./useBaseQuery":"../node_modules/react-query/es/react/useBaseQuery.js"}],"../node_modules/react-query/es/react/useQueries.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.useQueries = useQueries;
 
 var _react = _interopRequireWildcard(require("react"));
 
-var _reactDom = require("react-dom");
+var _notifyManager = require("../core/notifyManager");
 
-var _App = _interopRequireDefault(require("./App"));
+var _queriesObserver = require("../core/queriesObserver");
 
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+var _QueryClientProvider = require("./QueryClientProvider");
 
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function (nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 
+function useQueries(queries) {
+  var mountedRef = _react.default.useRef(false);
+
+  var _React$useState = _react.default.useState(0),
+      forceUpdate = _React$useState[1];
+
+  var queryClient = (0, _QueryClientProvider.useQueryClient)();
+  var defaultedQueries = (0, _react.useMemo)(function () {
+    return queries.map(function (options) {
+      var defaultedOptions = queryClient.defaultQueryObserverOptions(options); // Make sure the results are already in fetching state before subscribing or updating options
+
+      defaultedOptions.optimisticResults = true;
+      return defaultedOptions;
+    });
+  }, [queries, queryClient]);
+
+  var _React$useState2 = _react.default.useState(function () {
+    return new _queriesObserver.QueriesObserver(queryClient, defaultedQueries);
+  }),
+      observer = _React$useState2[0];
+
+  var result = observer.getOptimisticResult(defaultedQueries);
+
+  _react.default.useEffect(function () {
+    mountedRef.current = true;
+    var unsubscribe = observer.subscribe(_notifyManager.notifyManager.batchCalls(function () {
+      if (mountedRef.current) {
+        forceUpdate(function (x) {
+          return x + 1;
+        });
+      }
+    }));
+    return function () {
+      mountedRef.current = false;
+      unsubscribe();
+    };
+  }, [observer]);
+
+  _react.default.useEffect(function () {
+    // Do not notify on updates because of changes in the options because
+    // these changes should already be reflected in the optimistic result.
+    observer.setQueries(defaultedQueries, {
+      listeners: false
+    });
+  }, [defaultedQueries, observer]);
+
+  return result;
+}
+},{"react":"../node_modules/react/index.js","../core/notifyManager":"../node_modules/react-query/es/core/notifyManager.js","../core/queriesObserver":"../node_modules/react-query/es/core/queriesObserver.js","./QueryClientProvider":"../node_modules/react-query/es/react/QueryClientProvider.js"}],"../node_modules/react-query/es/react/useInfiniteQuery.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.useInfiniteQuery = useInfiniteQuery;
+
+var _infiniteQueryObserver = require("../core/infiniteQueryObserver");
+
+var _utils = require("../core/utils");
+
+var _useBaseQuery = require("./useBaseQuery");
+
+// HOOK
+function useInfiniteQuery(arg1, arg2, arg3) {
+  var options = (0, _utils.parseQueryArgs)(arg1, arg2, arg3);
+  return (0, _useBaseQuery.useBaseQuery)(options, _infiniteQueryObserver.InfiniteQueryObserver);
+}
+},{"../core/infiniteQueryObserver":"../node_modules/react-query/es/core/infiniteQueryObserver.js","../core/utils":"../node_modules/react-query/es/core/utils.js","./useBaseQuery":"../node_modules/react-query/es/react/useBaseQuery.js"}],"../node_modules/react-query/es/react/Hydrate.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Hydrate = void 0;
+exports.useHydrate = useHydrate;
+
+var _react = _interopRequireDefault(require("react"));
+
+var _core = require("../core");
+
+var _QueryClientProvider = require("./QueryClientProvider");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function useHydrate(state, options) {
+  var queryClient = (0, _QueryClientProvider.useQueryClient)();
+
+  var optionsRef = _react.default.useRef(options);
+
+  optionsRef.current = options; // Running hydrate again with the same queries is safe,
+  // it wont overwrite or initialize existing queries,
+  // relying on useMemo here is only a performance optimization.
+  // hydrate can and should be run *during* render here for SSR to work properly
+
+  _react.default.useMemo(function () {
+    if (state) {
+      (0, _core.hydrate)(queryClient, state, optionsRef.current);
+    }
+  }, [queryClient, state]);
+}
+
+var Hydrate = function Hydrate(_ref) {
+  var children = _ref.children,
+      options = _ref.options,
+      state = _ref.state;
+  useHydrate(state, options);
+  return children;
+};
+
+exports.Hydrate = Hydrate;
+},{"react":"../node_modules/react/index.js","../core":"../node_modules/react-query/es/core/index.js","./QueryClientProvider":"../node_modules/react-query/es/react/QueryClientProvider.js"}],"../node_modules/react-query/es/react/types.js":[function(require,module,exports) {
+
+},{}],"../node_modules/react-query/es/react/index.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+var _exportNames = {
+  QueryClientProvider: true,
+  useQueryClient: true,
+  QueryErrorResetBoundary: true,
+  useQueryErrorResetBoundary: true,
+  useIsFetching: true,
+  useIsMutating: true,
+  useMutation: true,
+  useQuery: true,
+  useQueries: true,
+  useInfiniteQuery: true,
+  useHydrate: true,
+  Hydrate: true
+};
+Object.defineProperty(exports, "Hydrate", {
+  enumerable: true,
+  get: function () {
+    return _Hydrate.Hydrate;
+  }
+});
+Object.defineProperty(exports, "QueryClientProvider", {
+  enumerable: true,
+  get: function () {
+    return _QueryClientProvider.QueryClientProvider;
+  }
+});
+Object.defineProperty(exports, "QueryErrorResetBoundary", {
+  enumerable: true,
+  get: function () {
+    return _QueryErrorResetBoundary.QueryErrorResetBoundary;
+  }
+});
+Object.defineProperty(exports, "useHydrate", {
+  enumerable: true,
+  get: function () {
+    return _Hydrate.useHydrate;
+  }
+});
+Object.defineProperty(exports, "useInfiniteQuery", {
+  enumerable: true,
+  get: function () {
+    return _useInfiniteQuery.useInfiniteQuery;
+  }
+});
+Object.defineProperty(exports, "useIsFetching", {
+  enumerable: true,
+  get: function () {
+    return _useIsFetching.useIsFetching;
+  }
+});
+Object.defineProperty(exports, "useIsMutating", {
+  enumerable: true,
+  get: function () {
+    return _useIsMutating.useIsMutating;
+  }
+});
+Object.defineProperty(exports, "useMutation", {
+  enumerable: true,
+  get: function () {
+    return _useMutation.useMutation;
+  }
+});
+Object.defineProperty(exports, "useQueries", {
+  enumerable: true,
+  get: function () {
+    return _useQueries.useQueries;
+  }
+});
+Object.defineProperty(exports, "useQuery", {
+  enumerable: true,
+  get: function () {
+    return _useQuery.useQuery;
+  }
+});
+Object.defineProperty(exports, "useQueryClient", {
+  enumerable: true,
+  get: function () {
+    return _QueryClientProvider.useQueryClient;
+  }
+});
+Object.defineProperty(exports, "useQueryErrorResetBoundary", {
+  enumerable: true,
+  get: function () {
+    return _QueryErrorResetBoundary.useQueryErrorResetBoundary;
+  }
+});
+
+require("./setBatchUpdatesFn");
+
+require("./setLogger");
+
+var _QueryClientProvider = require("./QueryClientProvider");
+
+var _QueryErrorResetBoundary = require("./QueryErrorResetBoundary");
+
+var _useIsFetching = require("./useIsFetching");
+
+var _useIsMutating = require("./useIsMutating");
+
+var _useMutation = require("./useMutation");
+
+var _useQuery = require("./useQuery");
+
+var _useQueries = require("./useQueries");
+
+var _useInfiniteQuery = require("./useInfiniteQuery");
+
+var _Hydrate = require("./Hydrate");
+
+var _types = require("./types");
+
+Object.keys(_types).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  if (key in exports && exports[key] === _types[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function () {
+      return _types[key];
+    }
+  });
+});
+},{"./setBatchUpdatesFn":"../node_modules/react-query/es/react/setBatchUpdatesFn.js","./setLogger":"../node_modules/react-query/es/react/setLogger.js","./QueryClientProvider":"../node_modules/react-query/es/react/QueryClientProvider.js","./QueryErrorResetBoundary":"../node_modules/react-query/es/react/QueryErrorResetBoundary.js","./useIsFetching":"../node_modules/react-query/es/react/useIsFetching.js","./useIsMutating":"../node_modules/react-query/es/react/useIsMutating.js","./useMutation":"../node_modules/react-query/es/react/useMutation.js","./useQuery":"../node_modules/react-query/es/react/useQuery.js","./useQueries":"../node_modules/react-query/es/react/useQueries.js","./useInfiniteQuery":"../node_modules/react-query/es/react/useInfiniteQuery.js","./Hydrate":"../node_modules/react-query/es/react/Hydrate.js","./types":"../node_modules/react-query/es/react/types.js"}],"../node_modules/react-query/es/index.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _core = require("./core");
+
+Object.keys(_core).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (key in exports && exports[key] === _core[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function () {
+      return _core[key];
+    }
+  });
+});
+
+var _react = require("./react");
+
+Object.keys(_react).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (key in exports && exports[key] === _react[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function () {
+      return _react[key];
+    }
+  });
+});
+},{"./core":"../node_modules/react-query/es/core/index.js","./react":"../node_modules/react-query/es/react/index.js"}],"../node_modules/@babel/runtime/helpers/esm/objectWithoutPropertiesLoose.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = _objectWithoutPropertiesLoose;
+
+function _objectWithoutPropertiesLoose(source, excluded) {
+  if (source == null) return {};
+  var target = {};
+  var sourceKeys = Object.keys(source);
+  var key, i;
+
+  for (i = 0; i < sourceKeys.length; i++) {
+    key = sourceKeys[i];
+    if (excluded.indexOf(key) >= 0) continue;
+    target[key] = source[key];
+  }
+
+  return target;
+}
+},{}],"../node_modules/remove-accents/index.js":[function(require,module,exports) {
+var characterMap = {
+	"À": "A",
+	"Á": "A",
+	"Â": "A",
+	"Ã": "A",
+	"Ä": "A",
+	"Å": "A",
+	"Ấ": "A",
+	"Ắ": "A",
+	"Ẳ": "A",
+	"Ẵ": "A",
+	"Ặ": "A",
+	"Æ": "AE",
+	"Ầ": "A",
+	"Ằ": "A",
+	"Ȃ": "A",
+	"Ç": "C",
+	"Ḉ": "C",
+	"È": "E",
+	"É": "E",
+	"Ê": "E",
+	"Ë": "E",
+	"Ế": "E",
+	"Ḗ": "E",
+	"Ề": "E",
+	"Ḕ": "E",
+	"Ḝ": "E",
+	"Ȇ": "E",
+	"Ì": "I",
+	"Í": "I",
+	"Î": "I",
+	"Ï": "I",
+	"Ḯ": "I",
+	"Ȋ": "I",
+	"Ð": "D",
+	"Ñ": "N",
+	"Ò": "O",
+	"Ó": "O",
+	"Ô": "O",
+	"Õ": "O",
+	"Ö": "O",
+	"Ø": "O",
+	"Ố": "O",
+	"Ṍ": "O",
+	"Ṓ": "O",
+	"Ȏ": "O",
+	"Ù": "U",
+	"Ú": "U",
+	"Û": "U",
+	"Ü": "U",
+	"Ý": "Y",
+	"à": "a",
+	"á": "a",
+	"â": "a",
+	"ã": "a",
+	"ä": "a",
+	"å": "a",
+	"ấ": "a",
+	"ắ": "a",
+	"ẳ": "a",
+	"ẵ": "a",
+	"ặ": "a",
+	"æ": "ae",
+	"ầ": "a",
+	"ằ": "a",
+	"ȃ": "a",
+	"ç": "c",
+	"ḉ": "c",
+	"è": "e",
+	"é": "e",
+	"ê": "e",
+	"ë": "e",
+	"ế": "e",
+	"ḗ": "e",
+	"ề": "e",
+	"ḕ": "e",
+	"ḝ": "e",
+	"ȇ": "e",
+	"ì": "i",
+	"í": "i",
+	"î": "i",
+	"ï": "i",
+	"ḯ": "i",
+	"ȋ": "i",
+	"ð": "d",
+	"ñ": "n",
+	"ò": "o",
+	"ó": "o",
+	"ô": "o",
+	"õ": "o",
+	"ö": "o",
+	"ø": "o",
+	"ố": "o",
+	"ṍ": "o",
+	"ṓ": "o",
+	"ȏ": "o",
+	"ù": "u",
+	"ú": "u",
+	"û": "u",
+	"ü": "u",
+	"ý": "y",
+	"ÿ": "y",
+	"Ā": "A",
+	"ā": "a",
+	"Ă": "A",
+	"ă": "a",
+	"Ą": "A",
+	"ą": "a",
+	"Ć": "C",
+	"ć": "c",
+	"Ĉ": "C",
+	"ĉ": "c",
+	"Ċ": "C",
+	"ċ": "c",
+	"Č": "C",
+	"č": "c",
+	"C̆": "C",
+	"c̆": "c",
+	"Ď": "D",
+	"ď": "d",
+	"Đ": "D",
+	"đ": "d",
+	"Ē": "E",
+	"ē": "e",
+	"Ĕ": "E",
+	"ĕ": "e",
+	"Ė": "E",
+	"ė": "e",
+	"Ę": "E",
+	"ę": "e",
+	"Ě": "E",
+	"ě": "e",
+	"Ĝ": "G",
+	"Ǵ": "G",
+	"ĝ": "g",
+	"ǵ": "g",
+	"Ğ": "G",
+	"ğ": "g",
+	"Ġ": "G",
+	"ġ": "g",
+	"Ģ": "G",
+	"ģ": "g",
+	"Ĥ": "H",
+	"ĥ": "h",
+	"Ħ": "H",
+	"ħ": "h",
+	"Ḫ": "H",
+	"ḫ": "h",
+	"Ĩ": "I",
+	"ĩ": "i",
+	"Ī": "I",
+	"ī": "i",
+	"Ĭ": "I",
+	"ĭ": "i",
+	"Į": "I",
+	"į": "i",
+	"İ": "I",
+	"ı": "i",
+	"Ĳ": "IJ",
+	"ĳ": "ij",
+	"Ĵ": "J",
+	"ĵ": "j",
+	"Ķ": "K",
+	"ķ": "k",
+	"Ḱ": "K",
+	"ḱ": "k",
+	"K̆": "K",
+	"k̆": "k",
+	"Ĺ": "L",
+	"ĺ": "l",
+	"Ļ": "L",
+	"ļ": "l",
+	"Ľ": "L",
+	"ľ": "l",
+	"Ŀ": "L",
+	"ŀ": "l",
+	"Ł": "l",
+	"ł": "l",
+	"Ḿ": "M",
+	"ḿ": "m",
+	"M̆": "M",
+	"m̆": "m",
+	"Ń": "N",
+	"ń": "n",
+	"Ņ": "N",
+	"ņ": "n",
+	"Ň": "N",
+	"ň": "n",
+	"ŉ": "n",
+	"N̆": "N",
+	"n̆": "n",
+	"Ō": "O",
+	"ō": "o",
+	"Ŏ": "O",
+	"ŏ": "o",
+	"Ő": "O",
+	"ő": "o",
+	"Œ": "OE",
+	"œ": "oe",
+	"P̆": "P",
+	"p̆": "p",
+	"Ŕ": "R",
+	"ŕ": "r",
+	"Ŗ": "R",
+	"ŗ": "r",
+	"Ř": "R",
+	"ř": "r",
+	"R̆": "R",
+	"r̆": "r",
+	"Ȓ": "R",
+	"ȓ": "r",
+	"Ś": "S",
+	"ś": "s",
+	"Ŝ": "S",
+	"ŝ": "s",
+	"Ş": "S",
+	"Ș": "S",
+	"ș": "s",
+	"ş": "s",
+	"Š": "S",
+	"š": "s",
+	"Ţ": "T",
+	"ţ": "t",
+	"ț": "t",
+	"Ț": "T",
+	"Ť": "T",
+	"ť": "t",
+	"Ŧ": "T",
+	"ŧ": "t",
+	"T̆": "T",
+	"t̆": "t",
+	"Ũ": "U",
+	"ũ": "u",
+	"Ū": "U",
+	"ū": "u",
+	"Ŭ": "U",
+	"ŭ": "u",
+	"Ů": "U",
+	"ů": "u",
+	"Ű": "U",
+	"ű": "u",
+	"Ų": "U",
+	"ų": "u",
+	"Ȗ": "U",
+	"ȗ": "u",
+	"V̆": "V",
+	"v̆": "v",
+	"Ŵ": "W",
+	"ŵ": "w",
+	"Ẃ": "W",
+	"ẃ": "w",
+	"X̆": "X",
+	"x̆": "x",
+	"Ŷ": "Y",
+	"ŷ": "y",
+	"Ÿ": "Y",
+	"Y̆": "Y",
+	"y̆": "y",
+	"Ź": "Z",
+	"ź": "z",
+	"Ż": "Z",
+	"ż": "z",
+	"Ž": "Z",
+	"ž": "z",
+	"ſ": "s",
+	"ƒ": "f",
+	"Ơ": "O",
+	"ơ": "o",
+	"Ư": "U",
+	"ư": "u",
+	"Ǎ": "A",
+	"ǎ": "a",
+	"Ǐ": "I",
+	"ǐ": "i",
+	"Ǒ": "O",
+	"ǒ": "o",
+	"Ǔ": "U",
+	"ǔ": "u",
+	"Ǖ": "U",
+	"ǖ": "u",
+	"Ǘ": "U",
+	"ǘ": "u",
+	"Ǚ": "U",
+	"ǚ": "u",
+	"Ǜ": "U",
+	"ǜ": "u",
+	"Ứ": "U",
+	"ứ": "u",
+	"Ṹ": "U",
+	"ṹ": "u",
+	"Ǻ": "A",
+	"ǻ": "a",
+	"Ǽ": "AE",
+	"ǽ": "ae",
+	"Ǿ": "O",
+	"ǿ": "o",
+	"Þ": "TH",
+	"þ": "th",
+	"Ṕ": "P",
+	"ṕ": "p",
+	"Ṥ": "S",
+	"ṥ": "s",
+	"X́": "X",
+	"x́": "x",
+	"Ѓ": "Г",
+	"ѓ": "г",
+	"Ќ": "К",
+	"ќ": "к",
+	"A̋": "A",
+	"a̋": "a",
+	"E̋": "E",
+	"e̋": "e",
+	"I̋": "I",
+	"i̋": "i",
+	"Ǹ": "N",
+	"ǹ": "n",
+	"Ồ": "O",
+	"ồ": "o",
+	"Ṑ": "O",
+	"ṑ": "o",
+	"Ừ": "U",
+	"ừ": "u",
+	"Ẁ": "W",
+	"ẁ": "w",
+	"Ỳ": "Y",
+	"ỳ": "y",
+	"Ȁ": "A",
+	"ȁ": "a",
+	"Ȅ": "E",
+	"ȅ": "e",
+	"Ȉ": "I",
+	"ȉ": "i",
+	"Ȍ": "O",
+	"ȍ": "o",
+	"Ȑ": "R",
+	"ȑ": "r",
+	"Ȕ": "U",
+	"ȕ": "u",
+	"B̌": "B",
+	"b̌": "b",
+	"Č̣": "C",
+	"č̣": "c",
+	"Ê̌": "E",
+	"ê̌": "e",
+	"F̌": "F",
+	"f̌": "f",
+	"Ǧ": "G",
+	"ǧ": "g",
+	"Ȟ": "H",
+	"ȟ": "h",
+	"J̌": "J",
+	"ǰ": "j",
+	"Ǩ": "K",
+	"ǩ": "k",
+	"M̌": "M",
+	"m̌": "m",
+	"P̌": "P",
+	"p̌": "p",
+	"Q̌": "Q",
+	"q̌": "q",
+	"Ř̩": "R",
+	"ř̩": "r",
+	"Ṧ": "S",
+	"ṧ": "s",
+	"V̌": "V",
+	"v̌": "v",
+	"W̌": "W",
+	"w̌": "w",
+	"X̌": "X",
+	"x̌": "x",
+	"Y̌": "Y",
+	"y̌": "y",
+	"A̧": "A",
+	"a̧": "a",
+	"B̧": "B",
+	"b̧": "b",
+	"Ḑ": "D",
+	"ḑ": "d",
+	"Ȩ": "E",
+	"ȩ": "e",
+	"Ɛ̧": "E",
+	"ɛ̧": "e",
+	"Ḩ": "H",
+	"ḩ": "h",
+	"I̧": "I",
+	"i̧": "i",
+	"Ɨ̧": "I",
+	"ɨ̧": "i",
+	"M̧": "M",
+	"m̧": "m",
+	"O̧": "O",
+	"o̧": "o",
+	"Q̧": "Q",
+	"q̧": "q",
+	"U̧": "U",
+	"u̧": "u",
+	"X̧": "X",
+	"x̧": "x",
+	"Z̧": "Z",
+	"z̧": "z",
+};
+
+var chars = Object.keys(characterMap).join('|');
+var allAccents = new RegExp(chars, 'g');
+var firstAccent = new RegExp(chars, '');
+
+var removeAccents = function(string) {	
+	return string.replace(allAccents, function(match) {
+		return characterMap[match];
+	});
+};
+
+var hasAccents = function(string) {
+	return !!string.match(firstAccent);
+};
+
+module.exports = removeAccents;
+module.exports.has = hasAccents;
+module.exports.remove = removeAccents;
+
+},{}],"../node_modules/match-sorter/dist/match-sorter.esm.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.defaultBaseSortFn = void 0;
+exports.matchSorter = matchSorter;
+exports.rankings = void 0;
+
+var _extends2 = _interopRequireDefault(require("@babel/runtime/helpers/esm/extends"));
+
+var _removeAccents = _interopRequireDefault(require("remove-accents"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var rankings = {
+  CASE_SENSITIVE_EQUAL: 7,
+  EQUAL: 6,
+  STARTS_WITH: 5,
+  WORD_STARTS_WITH: 4,
+  CONTAINS: 3,
+  ACRONYM: 2,
+  MATCHES: 1,
+  NO_MATCH: 0
+};
+exports.rankings = rankings;
+matchSorter.rankings = rankings;
+
+var defaultBaseSortFn = function defaultBaseSortFn(a, b) {
+  return String(a.rankedValue).localeCompare(String(b.rankedValue));
+};
+/**
+ * Takes an array of items and a value and returns a new array with the items that match the given value
+ * @param {Array} items - the items to sort
+ * @param {String} value - the value to use for ranking
+ * @param {Object} options - Some options to configure the sorter
+ * @return {Array} - the new sorted array
+ */
+
+
+exports.defaultBaseSortFn = defaultBaseSortFn;
+
+function matchSorter(items, value, options) {
+  if (options === void 0) {
+    options = {};
+  }
+
+  var _options = options,
+      keys = _options.keys,
+      _options$threshold = _options.threshold,
+      threshold = _options$threshold === void 0 ? rankings.MATCHES : _options$threshold,
+      _options$baseSort = _options.baseSort,
+      baseSort = _options$baseSort === void 0 ? defaultBaseSortFn : _options$baseSort,
+      _options$sorter = _options.sorter,
+      sorter = _options$sorter === void 0 ? function (matchedItems) {
+    return matchedItems.sort(function (a, b) {
+      return sortRankedValues(a, b, baseSort);
+    });
+  } : _options$sorter;
+  var matchedItems = items.reduce(reduceItemsToRanked, []);
+  return sorter(matchedItems).map(function (_ref) {
+    var item = _ref.item;
+    return item;
+  });
+
+  function reduceItemsToRanked(matches, item, index) {
+    var rankingInfo = getHighestRanking(item, keys, value, options);
+    var rank = rankingInfo.rank,
+        _rankingInfo$keyThres = rankingInfo.keyThreshold,
+        keyThreshold = _rankingInfo$keyThres === void 0 ? threshold : _rankingInfo$keyThres;
+
+    if (rank >= keyThreshold) {
+      matches.push((0, _extends2.default)({}, rankingInfo, {
+        item: item,
+        index: index
+      }));
+    }
+
+    return matches;
+  }
+}
+/**
+ * Gets the highest ranking for value for the given item based on its values for the given keys
+ * @param {*} item - the item to rank
+ * @param {Array} keys - the keys to get values from the item for the ranking
+ * @param {String} value - the value to rank against
+ * @param {Object} options - options to control the ranking
+ * @return {{rank: Number, keyIndex: Number, keyThreshold: Number}} - the highest ranking
+ */
+
+
+function getHighestRanking(item, keys, value, options) {
+  if (!keys) {
+    // if keys is not specified, then we assume the item given is ready to be matched
+    var stringItem = item;
+    return {
+      // ends up being duplicate of 'item' in matches but consistent
+      rankedValue: stringItem,
+      rank: getMatchRanking(stringItem, value, options),
+      keyIndex: -1,
+      keyThreshold: options.threshold
+    };
+  }
+
+  var valuesToRank = getAllValuesToRank(item, keys);
+  return valuesToRank.reduce(function (_ref2, _ref3, i) {
+    var rank = _ref2.rank,
+        rankedValue = _ref2.rankedValue,
+        keyIndex = _ref2.keyIndex,
+        keyThreshold = _ref2.keyThreshold;
+    var itemValue = _ref3.itemValue,
+        attributes = _ref3.attributes;
+    var newRank = getMatchRanking(itemValue, value, options);
+    var newRankedValue = rankedValue;
+    var minRanking = attributes.minRanking,
+        maxRanking = attributes.maxRanking,
+        threshold = attributes.threshold;
+
+    if (newRank < minRanking && newRank >= rankings.MATCHES) {
+      newRank = minRanking;
+    } else if (newRank > maxRanking) {
+      newRank = maxRanking;
+    }
+
+    if (newRank > rank) {
+      rank = newRank;
+      keyIndex = i;
+      keyThreshold = threshold;
+      newRankedValue = itemValue;
+    }
+
+    return {
+      rankedValue: newRankedValue,
+      rank: rank,
+      keyIndex: keyIndex,
+      keyThreshold: keyThreshold
+    };
+  }, {
+    rankedValue: item,
+    rank: rankings.NO_MATCH,
+    keyIndex: -1,
+    keyThreshold: options.threshold
+  });
+}
+/**
+ * Gives a rankings score based on how well the two strings match.
+ * @param {String} testString - the string to test against
+ * @param {String} stringToRank - the string to rank
+ * @param {Object} options - options for the match (like keepDiacritics for comparison)
+ * @returns {Number} the ranking for how well stringToRank matches testString
+ */
+
+
+function getMatchRanking(testString, stringToRank, options) {
+  testString = prepareValueForComparison(testString, options);
+  stringToRank = prepareValueForComparison(stringToRank, options); // too long
+
+  if (stringToRank.length > testString.length) {
+    return rankings.NO_MATCH;
+  } // case sensitive equals
+
+
+  if (testString === stringToRank) {
+    return rankings.CASE_SENSITIVE_EQUAL;
+  } // Lower casing before further comparison
+
+
+  testString = testString.toLowerCase();
+  stringToRank = stringToRank.toLowerCase(); // case insensitive equals
+
+  if (testString === stringToRank) {
+    return rankings.EQUAL;
+  } // starts with
+
+
+  if (testString.startsWith(stringToRank)) {
+    return rankings.STARTS_WITH;
+  } // word starts with
+
+
+  if (testString.includes(" " + stringToRank)) {
+    return rankings.WORD_STARTS_WITH;
+  } // contains
+
+
+  if (testString.includes(stringToRank)) {
+    return rankings.CONTAINS;
+  } else if (stringToRank.length === 1) {
+    // If the only character in the given stringToRank
+    //   isn't even contained in the testString, then
+    //   it's definitely not a match.
+    return rankings.NO_MATCH;
+  } // acronym
+
+
+  if (getAcronym(testString).includes(stringToRank)) {
+    return rankings.ACRONYM;
+  } // will return a number between rankings.MATCHES and
+  // rankings.MATCHES + 1 depending  on how close of a match it is.
+
+
+  return getClosenessRanking(testString, stringToRank);
+}
+/**
+ * Generates an acronym for a string.
+ *
+ * @param {String} string the string for which to produce the acronym
+ * @returns {String} the acronym
+ */
+
+
+function getAcronym(string) {
+  var acronym = '';
+  var wordsInString = string.split(' ');
+  wordsInString.forEach(function (wordInString) {
+    var splitByHyphenWords = wordInString.split('-');
+    splitByHyphenWords.forEach(function (splitByHyphenWord) {
+      acronym += splitByHyphenWord.substr(0, 1);
+    });
+  });
+  return acronym;
+}
+/**
+ * Returns a score based on how spread apart the
+ * characters from the stringToRank are within the testString.
+ * A number close to rankings.MATCHES represents a loose match. A number close
+ * to rankings.MATCHES + 1 represents a tighter match.
+ * @param {String} testString - the string to test against
+ * @param {String} stringToRank - the string to rank
+ * @returns {Number} the number between rankings.MATCHES and
+ * rankings.MATCHES + 1 for how well stringToRank matches testString
+ */
+
+
+function getClosenessRanking(testString, stringToRank) {
+  var matchingInOrderCharCount = 0;
+  var charNumber = 0;
+
+  function findMatchingCharacter(matchChar, string, index) {
+    for (var j = index, J = string.length; j < J; j++) {
+      var stringChar = string[j];
+
+      if (stringChar === matchChar) {
+        matchingInOrderCharCount += 1;
+        return j + 1;
+      }
+    }
+
+    return -1;
+  }
+
+  function getRanking(spread) {
+    var spreadPercentage = 1 / spread;
+    var inOrderPercentage = matchingInOrderCharCount / stringToRank.length;
+    var ranking = rankings.MATCHES + inOrderPercentage * spreadPercentage;
+    return ranking;
+  }
+
+  var firstIndex = findMatchingCharacter(stringToRank[0], testString, 0);
+
+  if (firstIndex < 0) {
+    return rankings.NO_MATCH;
+  }
+
+  charNumber = firstIndex;
+
+  for (var i = 1, I = stringToRank.length; i < I; i++) {
+    var matchChar = stringToRank[i];
+    charNumber = findMatchingCharacter(matchChar, testString, charNumber);
+    var found = charNumber > -1;
+
+    if (!found) {
+      return rankings.NO_MATCH;
+    }
+  }
+
+  var spread = charNumber - firstIndex;
+  return getRanking(spread);
+}
+/**
+ * Sorts items that have a rank, index, and keyIndex
+ * @param {Object} a - the first item to sort
+ * @param {Object} b - the second item to sort
+ * @return {Number} -1 if a should come first, 1 if b should come first, 0 if equal
+ */
+
+
+function sortRankedValues(a, b, baseSort) {
+  var aFirst = -1;
+  var bFirst = 1;
+  var aRank = a.rank,
+      aKeyIndex = a.keyIndex;
+  var bRank = b.rank,
+      bKeyIndex = b.keyIndex;
+  var same = aRank === bRank;
+
+  if (same) {
+    if (aKeyIndex === bKeyIndex) {
+      // use the base sort function as a tie-breaker
+      return baseSort(a, b);
+    } else {
+      return aKeyIndex < bKeyIndex ? aFirst : bFirst;
+    }
+  } else {
+    return aRank > bRank ? aFirst : bFirst;
+  }
+}
+/**
+ * Prepares value for comparison by stringifying it, removing diacritics (if specified)
+ * @param {String} value - the value to clean
+ * @param {Object} options - {keepDiacritics: whether to remove diacritics}
+ * @return {String} the prepared value
+ */
+
+
+function prepareValueForComparison(value, _ref4) {
+  var keepDiacritics = _ref4.keepDiacritics; // value might not actually be a string at this point (we don't get to choose)
+  // so part of preparing the value for comparison is ensure that it is a string
+
+  value = "" + value; // toString
+
+  if (!keepDiacritics) {
+    value = (0, _removeAccents.default)(value);
+  }
+
+  return value;
+}
+/**
+ * Gets value for key in item at arbitrarily nested keypath
+ * @param {Object} item - the item
+ * @param {Object|Function} key - the potentially nested keypath or property callback
+ * @return {Array} - an array containing the value(s) at the nested keypath
+ */
+
+
+function getItemValues(item, key) {
+  if (typeof key === 'object') {
+    key = key.key;
+  }
+
+  var value;
+
+  if (typeof key === 'function') {
+    value = key(item);
+  } else if (item == null) {
+    value = null;
+  } else if (Object.hasOwnProperty.call(item, key)) {
+    value = item[key];
+  } else if (key.includes('.')) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    return getNestedValues(key, item);
+  } else {
+    value = null;
+  } // because `value` can also be undefined
+
+
+  if (value == null) {
+    return [];
+  }
+
+  if (Array.isArray(value)) {
+    return value;
+  }
+
+  return [String(value)];
+}
+/**
+ * Given path: "foo.bar.baz"
+ * And item: {foo: {bar: {baz: 'buzz'}}}
+ *   -> 'buzz'
+ * @param path a dot-separated set of keys
+ * @param item the item to get the value from
+ */
+
+
+function getNestedValues(path, item) {
+  var keys = path.split('.');
+  var values = [item];
+
+  for (var i = 0, I = keys.length; i < I; i++) {
+    var nestedKey = keys[i];
+    var nestedValues = [];
+
+    for (var j = 0, J = values.length; j < J; j++) {
+      var nestedItem = values[j];
+      if (nestedItem == null) continue;
+
+      if (Object.hasOwnProperty.call(nestedItem, nestedKey)) {
+        var nestedValue = nestedItem[nestedKey];
+
+        if (nestedValue != null) {
+          nestedValues.push(nestedValue);
+        }
+      } else if (nestedKey === '*') {
+        // ensure that values is an array
+        nestedValues = nestedValues.concat(nestedItem);
+      }
+    }
+
+    values = nestedValues;
+  }
+
+  if (Array.isArray(values[0])) {
+    // keep allowing the implicit wildcard for an array of strings at the end of
+    // the path; don't use `.flat()` because that's not available in node.js v10
+    var result = [];
+    return result.concat.apply(result, values);
+  } // Based on our logic it should be an array of strings by now...
+  // assuming the user's path terminated in strings
+
+
+  return values;
+}
+/**
+ * Gets all the values for the given keys in the given item and returns an array of those values
+ * @param item - the item from which the values will be retrieved
+ * @param keys - the keys to use to retrieve the values
+ * @return objects with {itemValue, attributes}
+ */
+
+
+function getAllValuesToRank(item, keys) {
+  var allValues = [];
+
+  for (var j = 0, J = keys.length; j < J; j++) {
+    var key = keys[j];
+    var attributes = getKeyAttributes(key);
+    var itemValues = getItemValues(item, key);
+
+    for (var i = 0, I = itemValues.length; i < I; i++) {
+      allValues.push({
+        itemValue: itemValues[i],
+        attributes: attributes
+      });
+    }
+  }
+
+  return allValues;
+}
+
+var defaultKeyAttributes = {
+  maxRanking: Infinity,
+  minRanking: -Infinity
+};
+/**
+ * Gets all the attributes for the given key
+ * @param key - the key from which the attributes will be retrieved
+ * @return object containing the key's attributes
+ */
+
+function getKeyAttributes(key) {
+  if (typeof key === 'string') {
+    return defaultKeyAttributes;
+  }
+
+  return (0, _extends2.default)({}, defaultKeyAttributes, key);
+}
+/*
+eslint
+  no-continue: "off",
+*/
+},{"@babel/runtime/helpers/esm/extends":"../node_modules/@babel/runtime/helpers/esm/extends.js","remove-accents":"../node_modules/remove-accents/index.js"}],"../node_modules/react-query/es/devtools/useLocalStorage.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = useLocalStorage;
+
+var _react = _interopRequireDefault(require("react"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var getItem = function getItem(key) {
+  try {
+    var itemValue = localStorage.getItem(key);
+
+    if (typeof itemValue === 'string') {
+      return JSON.parse(itemValue);
+    }
+
+    return undefined;
+  } catch (_unused) {
+    return undefined;
+  }
+};
+
+function useLocalStorage(key, defaultValue) {
+  var _React$useState = _react.default.useState(),
+      value = _React$useState[0],
+      setValue = _React$useState[1];
+
+  _react.default.useEffect(function () {
+    var initialValue = getItem(key);
+
+    if (typeof initialValue === 'undefined' || initialValue === null) {
+      setValue(typeof defaultValue === 'function' ? defaultValue() : defaultValue);
+    } else {
+      setValue(initialValue);
+    }
+  }, [defaultValue, key]);
+
+  var setter = _react.default.useCallback(function (updater) {
+    setValue(function (old) {
+      var newVal = updater;
+
+      if (typeof updater == 'function') {
+        newVal = updater(old);
+      }
+
+      try {
+        localStorage.setItem(key, JSON.stringify(newVal));
+      } catch (_unused2) {}
+
+      return newVal;
+    });
+  }, [key]);
+
+  return [value, setter];
+}
+},{"react":"../node_modules/react/index.js"}],"../node_modules/react-query/es/devtools/theme.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ThemeProvider = ThemeProvider;
+exports.defaultTheme = void 0;
+exports.useTheme = useTheme;
+
+var _extends2 = _interopRequireDefault(require("@babel/runtime/helpers/esm/extends"));
+
+var _objectWithoutPropertiesLoose2 = _interopRequireDefault(require("@babel/runtime/helpers/esm/objectWithoutPropertiesLoose"));
+
+var _react = _interopRequireDefault(require("react"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var defaultTheme = {
+  background: '#0b1521',
+  backgroundAlt: '#132337',
+  foreground: 'white',
+  gray: '#3f4e60',
+  grayAlt: '#222e3e',
+  inputBackgroundColor: '#fff',
+  inputTextColor: '#000',
+  success: '#00ab52',
+  danger: '#ff0085',
+  active: '#006bff',
+  warning: '#ffb200'
+};
+exports.defaultTheme = defaultTheme;
+
+var ThemeContext = /*#__PURE__*/_react.default.createContext(defaultTheme);
+
+function ThemeProvider(_ref) {
+  var theme = _ref.theme,
+      rest = (0, _objectWithoutPropertiesLoose2.default)(_ref, ["theme"]);
+  return /*#__PURE__*/_react.default.createElement(ThemeContext.Provider, (0, _extends2.default)({
+    value: theme
+  }, rest));
+}
+
+function useTheme() {
+  return _react.default.useContext(ThemeContext);
+}
+},{"@babel/runtime/helpers/esm/extends":"../node_modules/@babel/runtime/helpers/esm/extends.js","@babel/runtime/helpers/esm/objectWithoutPropertiesLoose":"../node_modules/@babel/runtime/helpers/esm/objectWithoutPropertiesLoose.js","react":"../node_modules/react/index.js"}],"../node_modules/react-query/es/devtools/useMediaQuery.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = useMediaQuery;
+
+var _react = _interopRequireDefault(require("react"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function useMediaQuery(query) {
+  // Keep track of the preference in state, start with the current match
+  var _React$useState = _react.default.useState(function () {
+    if (typeof window !== 'undefined') {
+      return window.matchMedia && window.matchMedia(query).matches;
+    }
+  }),
+      isMatch = _React$useState[0],
+      setIsMatch = _React$useState[1]; // Watch for changes
+
+
+  _react.default.useEffect(function () {
+    if (typeof window !== 'undefined') {
+      if (!window.matchMedia) {
+        return;
+      } // Create a matcher
+
+
+      var matcher = window.matchMedia(query); // Create our handler
+
+      var onChange = function onChange(_ref) {
+        var matches = _ref.matches;
+        return setIsMatch(matches);
+      }; // Listen for changes
+
+
+      matcher.addListener(onChange);
+      return function () {
+        // Stop listening for changes
+        matcher.removeListener(onChange);
+      };
+    }
+  }, [isMatch, query, setIsMatch]);
+
+  return isMatch;
+}
+},{"react":"../node_modules/react/index.js"}],"../node_modules/react-query/es/devtools/utils.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.displayValue = void 0;
+exports.getQueryStatusColor = getQueryStatusColor;
+exports.getQueryStatusLabel = getQueryStatusLabel;
+exports.isServer = void 0;
+exports.styled = styled;
+exports.useIsMounted = useIsMounted;
+exports.useSafeState = useSafeState;
+
+var _extends2 = _interopRequireDefault(require("@babel/runtime/helpers/esm/extends"));
+
+var _objectWithoutPropertiesLoose2 = _interopRequireDefault(require("@babel/runtime/helpers/esm/objectWithoutPropertiesLoose"));
+
+var _react = _interopRequireDefault(require("react"));
+
+var _theme = require("./theme");
+
+var _useMediaQuery = _interopRequireDefault(require("./useMediaQuery"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var isServer = typeof window === 'undefined';
+exports.isServer = isServer;
+
+function getQueryStatusColor(query, theme) {
+  return query.state.isFetching ? theme.active : !query.getObserversCount() ? theme.gray : query.isStale() ? theme.warning : theme.success;
+}
+
+function getQueryStatusLabel(query) {
+  return query.state.isFetching ? 'fetching' : !query.getObserversCount() ? 'inactive' : query.isStale() ? 'stale' : 'fresh';
+}
+
+function styled(type, newStyles, queries) {
+  if (queries === void 0) {
+    queries = {};
+  }
+
+  return /*#__PURE__*/_react.default.forwardRef(function (_ref, ref) {
+    var style = _ref.style,
+        rest = (0, _objectWithoutPropertiesLoose2.default)(_ref, ["style"]);
+    var theme = (0, _theme.useTheme)();
+    var mediaStyles = Object.entries(queries).reduce(function (current, _ref2) {
+      var key = _ref2[0],
+          value = _ref2[1]; // eslint-disable-next-line react-hooks/rules-of-hooks
+
+      return (0, _useMediaQuery.default)(key) ? (0, _extends2.default)({}, current, typeof value === 'function' ? value(rest, theme) : value) : current;
+    }, {});
+    return /*#__PURE__*/_react.default.createElement(type, (0, _extends2.default)({}, rest, {
+      style: (0, _extends2.default)({}, typeof newStyles === 'function' ? newStyles(rest, theme) : newStyles, style, mediaStyles),
+      ref: ref
+    }));
+  });
+}
+
+function useIsMounted() {
+  var mountedRef = _react.default.useRef(false);
+
+  var isMounted = _react.default.useCallback(function () {
+    return mountedRef.current;
+  }, []);
+
+  _react.default[isServer ? 'useEffect' : 'useLayoutEffect'](function () {
+    mountedRef.current = true;
+    return function () {
+      mountedRef.current = false;
+    };
+  }, []);
+
+  return isMounted;
+}
+/**
+ * This hook is a safe useState version which schedules state updates in microtasks
+ * to prevent updating a component state while React is rendering different components
+ * or when the component is not mounted anymore.
+ */
+
+
+function useSafeState(initialState) {
+  var isMounted = useIsMounted();
+
+  var _React$useState = _react.default.useState(initialState),
+      state = _React$useState[0],
+      setState = _React$useState[1];
+
+  var safeSetState = _react.default.useCallback(function (value) {
+    scheduleMicrotask(function () {
+      if (isMounted()) {
+        setState(value);
+      }
+    });
+  }, [isMounted]);
+
+  return [state, safeSetState];
+}
+/**
+ * Displays a string regardless the type of the data
+ * @param {unknown} value Value to be stringified
+ */
+
+
+var displayValue = function displayValue(value) {
+  var name = Object.getOwnPropertyNames(Object(value));
+  var newValue = typeof value === 'bigint' ? value.toString() + "n" : value;
+  return JSON.stringify(newValue, name);
+};
+/**
+ * Schedules a microtask.
+ * This can be useful to schedule state updates after rendering.
+ */
+
+
+exports.displayValue = displayValue;
+
+function scheduleMicrotask(callback) {
+  Promise.resolve().then(callback).catch(function (error) {
+    return setTimeout(function () {
+      throw error;
+    });
+  });
+}
+},{"@babel/runtime/helpers/esm/extends":"../node_modules/@babel/runtime/helpers/esm/extends.js","@babel/runtime/helpers/esm/objectWithoutPropertiesLoose":"../node_modules/@babel/runtime/helpers/esm/objectWithoutPropertiesLoose.js","react":"../node_modules/react/index.js","./theme":"../node_modules/react-query/es/devtools/theme.js","./useMediaQuery":"../node_modules/react-query/es/devtools/useMediaQuery.js"}],"../node_modules/react-query/es/devtools/styledComponents.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Select = exports.QueryKeys = exports.QueryKey = exports.Panel = exports.Input = exports.Code = exports.Button = exports.ActiveQueryPanel = void 0;
+
+var _utils = require("./utils");
+
+var Panel = (0, _utils.styled)('div', function (_props, theme) {
+  return {
+    fontSize: 'clamp(12px, 1.5vw, 14px)',
+    fontFamily: "sans-serif",
+    display: 'flex',
+    backgroundColor: theme.background,
+    color: theme.foreground
+  };
+}, {
+  '(max-width: 700px)': {
+    flexDirection: 'column'
+  },
+  '(max-width: 600px)': {
+    fontSize: '.9em' // flexDirection: 'column',
+
+  }
+});
+exports.Panel = Panel;
+var ActiveQueryPanel = (0, _utils.styled)('div', function () {
+  return {
+    flex: '1 1 500px',
+    display: 'flex',
+    flexDirection: 'column',
+    overflow: 'auto',
+    height: '100%'
+  };
+}, {
+  '(max-width: 700px)': function maxWidth700px(_props, theme) {
+    return {
+      borderTop: "2px solid " + theme.gray
+    };
+  }
+});
+exports.ActiveQueryPanel = ActiveQueryPanel;
+var Button = (0, _utils.styled)('button', function (props, theme) {
+  return {
+    appearance: 'none',
+    fontSize: '.9em',
+    fontWeight: 'bold',
+    background: theme.gray,
+    border: '0',
+    borderRadius: '.3em',
+    color: 'white',
+    padding: '.5em',
+    opacity: props.disabled ? '.5' : undefined,
+    cursor: 'pointer'
+  };
+});
+exports.Button = Button;
+var QueryKeys = (0, _utils.styled)('span', {
+  display: 'inline-block',
+  fontSize: '0.9em'
+});
+exports.QueryKeys = QueryKeys;
+var QueryKey = (0, _utils.styled)('span', {
+  display: 'inline-flex',
+  alignItems: 'center',
+  padding: '.2em .4em',
+  fontWeight: 'bold',
+  textShadow: '0 0 10px black',
+  borderRadius: '.2em'
+});
+exports.QueryKey = QueryKey;
+var Code = (0, _utils.styled)('code', {
+  fontSize: '.9em',
+  color: 'inherit',
+  background: 'inherit'
+});
+exports.Code = Code;
+var Input = (0, _utils.styled)('input', function (_props, theme) {
+  return {
+    backgroundColor: theme.inputBackgroundColor,
+    border: 0,
+    borderRadius: '.2em',
+    color: theme.inputTextColor,
+    fontSize: '.9em',
+    lineHeight: "1.3",
+    padding: '.3em .4em'
+  };
+});
+exports.Input = Input;
+var Select = (0, _utils.styled)('select', function (_props, theme) {
+  return {
+    display: "inline-block",
+    fontSize: ".9em",
+    fontFamily: "sans-serif",
+    fontWeight: 'normal',
+    lineHeight: "1.3",
+    padding: ".3em 1.5em .3em .5em",
+    height: 'auto',
+    border: 0,
+    borderRadius: ".2em",
+    appearance: "none",
+    WebkitAppearance: 'none',
+    backgroundColor: theme.inputBackgroundColor,
+    backgroundImage: "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='100' height='100' fill='%23444444'><polygon points='0,25 100,25 50,75'/></svg>\")",
+    backgroundRepeat: "no-repeat",
+    backgroundPosition: "right .55em center",
+    backgroundSize: ".65em auto, 100%",
+    color: theme.inputTextColor
+  };
+}, {
+  '(max-width: 500px)': {
+    display: 'none'
+  }
+});
+exports.Select = Select;
+},{"./utils":"../node_modules/react-query/es/devtools/utils.js"}],"../node_modules/react-query/es/devtools/Explorer.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Value = exports.SubEntries = exports.LabelButton = exports.Label = exports.Info = exports.Expander = exports.ExpandButton = exports.Entry = exports.DefaultRenderer = void 0;
+exports.chunkArray = chunkArray;
+exports.default = Explorer;
+
+var _objectWithoutPropertiesLoose2 = _interopRequireDefault(require("@babel/runtime/helpers/esm/objectWithoutPropertiesLoose"));
+
+var _extends2 = _interopRequireDefault(require("@babel/runtime/helpers/esm/extends"));
+
+var _react = _interopRequireDefault(require("react"));
+
+var _utils = require("./utils");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var Entry = (0, _utils.styled)('div', {
+  fontFamily: 'Menlo, monospace',
+  fontSize: '1em',
+  lineHeight: '1.7',
+  outline: 'none',
+  wordBreak: 'break-word'
+});
+exports.Entry = Entry;
+var Label = (0, _utils.styled)('span', {
+  color: 'white'
+});
+exports.Label = Label;
+var LabelButton = (0, _utils.styled)('button', {
+  cursor: 'pointer',
+  color: 'white'
+});
+exports.LabelButton = LabelButton;
+var ExpandButton = (0, _utils.styled)('button', {
+  cursor: 'pointer',
+  color: 'inherit',
+  font: 'inherit',
+  outline: 'inherit',
+  background: 'transparent',
+  border: 'none',
+  padding: 0
+});
+exports.ExpandButton = ExpandButton;
+var Value = (0, _utils.styled)('span', function (_props, theme) {
+  return {
+    color: theme.danger
+  };
+});
+exports.Value = Value;
+var SubEntries = (0, _utils.styled)('div', {
+  marginLeft: '.1em',
+  paddingLeft: '1em',
+  borderLeft: '2px solid rgba(0,0,0,.15)'
+});
+exports.SubEntries = SubEntries;
+var Info = (0, _utils.styled)('span', {
+  color: 'grey',
+  fontSize: '.7em'
+});
+exports.Info = Info;
+
+var Expander = function Expander(_ref) {
+  var expanded = _ref.expanded,
+      _ref$style = _ref.style,
+      style = _ref$style === void 0 ? {} : _ref$style;
+  return /*#__PURE__*/_react.default.createElement("span", {
+    style: (0, _extends2.default)({
+      display: 'inline-block',
+      transition: 'all .1s ease',
+      transform: "rotate(" + (expanded ? 90 : 0) + "deg) " + (style.transform || '')
+    }, style)
+  }, "\u25B6");
+};
+/**
+ * Chunk elements in the array by size
+ *
+ * when the array cannot be chunked evenly by size, the last chunk will be
+ * filled with the remaining elements
+ *
+ * @example
+ * chunkArray(['a','b', 'c', 'd', 'e'], 2) // returns [['a','b'], ['c', 'd'], ['e']]
+ */
+
+
+exports.Expander = Expander;
+
+function chunkArray(array, size) {
+  if (size < 1) return [];
+  var i = 0;
+  var result = [];
+
+  while (i < array.length) {
+    result.push(array.slice(i, i + size));
+    i = i + size;
+  }
+
+  return result;
+}
+
+var DefaultRenderer = function DefaultRenderer(_ref2) {
+  var HandleEntry = _ref2.HandleEntry,
+      label = _ref2.label,
+      value = _ref2.value,
+      _ref2$subEntries = _ref2.subEntries,
+      subEntries = _ref2$subEntries === void 0 ? [] : _ref2$subEntries,
+      _ref2$subEntryPages = _ref2.subEntryPages,
+      subEntryPages = _ref2$subEntryPages === void 0 ? [] : _ref2$subEntryPages,
+      type = _ref2.type,
+      _ref2$expanded = _ref2.expanded,
+      expanded = _ref2$expanded === void 0 ? false : _ref2$expanded,
+      toggleExpanded = _ref2.toggleExpanded,
+      pageSize = _ref2.pageSize;
+
+  var _React$useState = _react.default.useState([]),
+      expandedPages = _React$useState[0],
+      setExpandedPages = _React$useState[1];
+
+  return /*#__PURE__*/_react.default.createElement(Entry, {
+    key: label
+  }, (subEntryPages == null ? void 0 : subEntryPages.length) ? /*#__PURE__*/_react.default.createElement(_react.default.Fragment, null, /*#__PURE__*/_react.default.createElement(ExpandButton, {
+    onClick: function onClick() {
+      return toggleExpanded();
+    }
+  }, /*#__PURE__*/_react.default.createElement(Expander, {
+    expanded: expanded
+  }), " ", label, ' ', /*#__PURE__*/_react.default.createElement(Info, null, String(type).toLowerCase() === 'iterable' ? '(Iterable) ' : '', subEntries.length, " ", subEntries.length > 1 ? "items" : "item")), expanded ? subEntryPages.length === 1 ? /*#__PURE__*/_react.default.createElement(SubEntries, null, subEntries.map(function (entry) {
+    return /*#__PURE__*/_react.default.createElement(HandleEntry, {
+      key: entry.label,
+      entry: entry
+    });
+  })) : /*#__PURE__*/_react.default.createElement(SubEntries, null, subEntryPages.map(function (entries, index) {
+    return /*#__PURE__*/_react.default.createElement("div", {
+      key: index
+    }, /*#__PURE__*/_react.default.createElement(Entry, null, /*#__PURE__*/_react.default.createElement(LabelButton, {
+      onClick: function onClick() {
+        return setExpandedPages(function (old) {
+          return old.includes(index) ? old.filter(function (d) {
+            return d !== index;
+          }) : [].concat(old, [index]);
+        });
+      }
+    }, /*#__PURE__*/_react.default.createElement(Expander, {
+      expanded: expanded
+    }), " [", index * pageSize, " ...", ' ', index * pageSize + pageSize - 1, "]"), expandedPages.includes(index) ? /*#__PURE__*/_react.default.createElement(SubEntries, null, entries.map(function (entry) {
+      return /*#__PURE__*/_react.default.createElement(HandleEntry, {
+        key: entry.label,
+        entry: entry
+      });
+    })) : null));
+  })) : null) : /*#__PURE__*/_react.default.createElement(_react.default.Fragment, null, /*#__PURE__*/_react.default.createElement(Label, null, label, ":"), " ", /*#__PURE__*/_react.default.createElement(Value, null, (0, _utils.displayValue)(value))));
+};
+
+exports.DefaultRenderer = DefaultRenderer;
+
+function isIterable(x) {
+  return Symbol.iterator in x;
+}
+
+function Explorer(_ref3) {
+  var value = _ref3.value,
+      defaultExpanded = _ref3.defaultExpanded,
+      _ref3$renderer = _ref3.renderer,
+      renderer = _ref3$renderer === void 0 ? DefaultRenderer : _ref3$renderer,
+      _ref3$pageSize = _ref3.pageSize,
+      pageSize = _ref3$pageSize === void 0 ? 100 : _ref3$pageSize,
+      rest = (0, _objectWithoutPropertiesLoose2.default)(_ref3, ["value", "defaultExpanded", "renderer", "pageSize"]);
+
+  var _React$useState2 = _react.default.useState(Boolean(defaultExpanded)),
+      expanded = _React$useState2[0],
+      setExpanded = _React$useState2[1];
+
+  var toggleExpanded = _react.default.useCallback(function () {
+    return setExpanded(function (old) {
+      return !old;
+    });
+  }, []);
+
+  var type = typeof value;
+  var subEntries = [];
+
+  var makeProperty = function makeProperty(sub) {
+    var _ref4;
+
+    var subDefaultExpanded = defaultExpanded === true ? (_ref4 = {}, _ref4[sub.label] = true, _ref4) : defaultExpanded == null ? void 0 : defaultExpanded[sub.label];
+    return (0, _extends2.default)({}, sub, {
+      defaultExpanded: subDefaultExpanded
+    });
+  };
+
+  if (Array.isArray(value)) {
+    type = 'array';
+    subEntries = value.map(function (d, i) {
+      return makeProperty({
+        label: i.toString(),
+        value: d
+      });
+    });
+  } else if (value !== null && typeof value === 'object' && isIterable(value) && typeof value[Symbol.iterator] === 'function') {
+    type = 'Iterable';
+    subEntries = Array.from(value, function (val, i) {
+      return makeProperty({
+        label: i.toString(),
+        value: val
+      });
+    });
+  } else if (typeof value === 'object' && value !== null) {
+    type = 'object';
+    subEntries = Object.entries(value).map(function (_ref5) {
+      var key = _ref5[0],
+          val = _ref5[1];
+      return makeProperty({
+        label: key,
+        value: val
+      });
+    });
+  }
+
+  var subEntryPages = chunkArray(subEntries, pageSize);
+  return renderer((0, _extends2.default)({
+    HandleEntry: function HandleEntry(_ref6) {
+      var entry = _ref6.entry;
+      return /*#__PURE__*/_react.default.createElement(Explorer, (0, _extends2.default)({
+        value: value,
+        renderer: renderer
+      }, rest, entry));
+    },
+    type: type,
+    subEntries: subEntries,
+    subEntryPages: subEntryPages,
+    value: value,
+    expanded: expanded,
+    toggleExpanded: toggleExpanded,
+    pageSize: pageSize
+  }, rest));
+}
+},{"@babel/runtime/helpers/esm/objectWithoutPropertiesLoose":"../node_modules/@babel/runtime/helpers/esm/objectWithoutPropertiesLoose.js","@babel/runtime/helpers/esm/extends":"../node_modules/@babel/runtime/helpers/esm/extends.js","react":"../node_modules/react/index.js","./utils":"../node_modules/react-query/es/devtools/utils.js"}],"../node_modules/react-query/es/devtools/Logo.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.default = Logo;
+
+var _extends2 = _interopRequireDefault(require("@babel/runtime/helpers/esm/extends"));
+
+var React = _interopRequireWildcard(require("react"));
+
+function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function (nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
+
+function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+function Logo(props) {
+  return /*#__PURE__*/React.createElement("svg", (0, _extends2.default)({
+    width: "40px",
+    height: "40px",
+    viewBox: "0 0 190 190",
+    version: "1.1"
+  }, props), /*#__PURE__*/React.createElement("g", {
+    stroke: "none",
+    strokeWidth: "1",
+    fill: "none",
+    fillRule: "evenodd"
+  }, /*#__PURE__*/React.createElement("g", {
+    transform: "translate(-33.000000, 0.000000)"
+  }, /*#__PURE__*/React.createElement("path", {
+    d: "M72.7239712,61.3436237 C69.631224,46.362877 68.9675112,34.8727722 70.9666331,26.5293551 C72.1555965,21.5671678 74.3293088,17.5190846 77.6346064,14.5984631 C81.1241394,11.5150478 85.5360327,10.0020122 90.493257,10.0020122 C98.6712013,10.0020122 107.26826,13.7273214 116.455725,20.8044264 C120.20312,23.6910458 124.092437,27.170411 128.131651,31.2444746 C128.45314,30.8310265 128.816542,30.4410453 129.22143,30.0806152 C140.64098,19.9149716 150.255245,13.5989272 158.478408,11.1636507 C163.367899,9.715636 167.958526,9.57768202 172.138936,10.983031 C176.551631,12.4664684 180.06766,15.5329489 182.548314,19.8281091 C186.642288,26.9166735 187.721918,36.2310983 186.195595,47.7320243 C185.573451,52.4199112 184.50985,57.5263831 183.007094,63.0593153 C183.574045,63.1277086 184.142416,63.2532808 184.705041,63.4395297 C199.193932,68.2358678 209.453582,73.3937462 215.665021,79.2882839 C219.360669,82.7953831 221.773972,86.6998434 222.646365,91.0218204 C223.567176,95.5836746 222.669313,100.159332 220.191548,104.451297 C216.105211,111.529614 208.591643,117.11221 197.887587,121.534031 C193.589552,123.309539 188.726579,124.917559 183.293259,126.363748 C183.541176,126.92292 183.733521,127.516759 183.862138,128.139758 C186.954886,143.120505 187.618598,154.61061 185.619477,162.954027 C184.430513,167.916214 182.256801,171.964297 178.951503,174.884919 C175.46197,177.968334 171.050077,179.48137 166.092853,179.48137 C157.914908,179.48137 149.31785,175.756061 140.130385,168.678956 C136.343104,165.761613 132.410866,162.238839 128.325434,158.108619 C127.905075,158.765474 127.388968,159.376011 126.77857,159.919385 C115.35902,170.085028 105.744755,176.401073 97.5215915,178.836349 C92.6321009,180.284364 88.0414736,180.422318 83.8610636,179.016969 C79.4483686,177.533532 75.9323404,174.467051 73.4516862,170.171891 C69.3577116,163.083327 68.2780823,153.768902 69.8044053,142.267976 C70.449038,137.410634 71.56762,132.103898 73.1575891,126.339009 C72.5361041,126.276104 71.9120754,126.144816 71.2949591,125.940529 C56.8060684,121.144191 46.5464184,115.986312 40.3349789,110.091775 C36.6393312,106.584675 34.2260275,102.680215 33.3536352,98.3582381 C32.4328237,93.7963839 33.3306866,89.2207269 35.8084524,84.9287618 C39.8947886,77.8504443 47.4083565,72.2678481 58.1124133,67.8460273 C62.5385143,66.0176154 67.5637208,64.366822 73.1939394,62.8874674 C72.9933393,62.3969171 72.8349374,61.8811235 72.7239712,61.3436237 Z",
+    fill: "#002C4B",
+    fillRule: "nonzero",
+    transform: "translate(128.000000, 95.000000) scale(-1, 1) translate(-128.000000, -95.000000) "
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M113.396882,64 L142.608177,64 C144.399254,64 146.053521,64.958025 146.944933,66.5115174 L161.577138,92.0115174 C162.461464,93.5526583 162.461464,95.4473417 161.577138,96.9884826 L146.944933,122.488483 C146.053521,124.041975 144.399254,125 142.608177,125 L113.396882,125 C111.605806,125 109.951539,124.041975 109.060126,122.488483 L94.4279211,96.9884826 C93.543596,95.4473417 93.543596,93.5526583 94.4279211,92.0115174 L109.060126,66.5115174 C109.951539,64.958025 111.605806,64 113.396882,64 Z M138.987827,70.2765273 C140.779849,70.2765273 142.434839,71.2355558 143.325899,72.7903404 L154.343038,92.0138131 C155.225607,93.5537825 155.225607,95.4462175 154.343038,96.9861869 L143.325899,116.20966 C142.434839,117.764444 140.779849,118.723473 138.987827,118.723473 L117.017233,118.723473 C115.225211,118.723473 113.570221,117.764444 112.67916,116.20966 L101.662022,96.9861869 C100.779452,95.4462175 100.779452,93.5537825 101.662022,92.0138131 L112.67916,72.7903404 C113.570221,71.2355558 115.225211,70.2765273 117.017233,70.2765273 L138.987827,70.2765273 Z M135.080648,77.1414791 L120.924411,77.1414791 C119.134228,77.1414791 117.480644,78.0985567 116.5889,79.6508285 L116.5889,79.6508285 L109.489217,92.0093494 C108.603232,93.5515958 108.603232,95.4484042 109.489217,96.9906506 L109.489217,96.9906506 L116.5889,109.349172 C117.480644,110.901443 119.134228,111.858521 120.924411,111.858521 L120.924411,111.858521 L135.080648,111.858521 C136.870831,111.858521 138.524416,110.901443 139.41616,109.349172 L139.41616,109.349172 L146.515843,96.9906506 C147.401828,95.4484042 147.401828,93.5515958 146.515843,92.0093494 L146.515843,92.0093494 L139.41616,79.6508285 C138.524416,78.0985567 136.870831,77.1414791 135.080648,77.1414791 L135.080648,77.1414791 Z M131.319186,83.7122186 C133.108028,83.7122186 134.760587,84.6678753 135.652827,86.2183156 L138.983552,92.0060969 C139.87203,93.5500005 139.87203,95.4499995 138.983552,96.9939031 L135.652827,102.781684 C134.760587,104.332125 133.108028,105.287781 131.319186,105.287781 L124.685874,105.287781 C122.897032,105.287781 121.244473,104.332125 120.352233,102.781684 L117.021508,96.9939031 C116.13303,95.4499995 116.13303,93.5500005 117.021508,92.0060969 L120.352233,86.2183156 C121.244473,84.6678753 122.897032,83.7122186 124.685874,83.7122186 L131.319186,83.7122186 Z M128.003794,90.1848875 C126.459294,90.1848875 125.034382,91.0072828 124.263005,92.3424437 C123.491732,93.6774232 123.491732,95.3225768 124.263005,96.6575563 C125.034382,97.9927172 126.459294,98.8151125 128.001266,98.8151125 L128.001266,98.8151125 C129.545766,98.8151125 130.970678,97.9927172 131.742055,96.6575563 C132.513327,95.3225768 132.513327,93.6774232 131.742055,92.3424437 C130.970678,91.0072828 129.545766,90.1848875 128.003794,90.1848875 L128.003794,90.1848875 Z M93,94.5009646 L100.767764,94.5009646",
+    fill: "#FFD94C"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M87.8601729,108.357758 C89.1715224,107.608286 90.8360246,108.074601 91.5779424,109.399303 L91.5779424,109.399303 L92.0525843,110.24352 C95.8563392,116.982993 99.8190116,123.380176 103.940602,129.435068 C108.807881,136.585427 114.28184,143.82411 120.362479,151.151115 C121.316878,152.30114 121.184944,154.011176 120.065686,154.997937 L120.065686,154.997937 L119.454208,155.534625 C99.3465389,173.103314 86.2778188,176.612552 80.2480482,166.062341 C74.3500652,155.742717 76.4844915,136.982888 86.6513274,109.782853 C86.876818,109.179582 87.3045861,108.675291 87.8601729,108.357758 Z M173.534177,129.041504 C174.986131,128.785177 176.375496,129.742138 176.65963,131.194242 L176.65963,131.194242 L176.812815,131.986376 C181.782365,157.995459 178.283348,171 166.315764,171 C154.609745,171 139.708724,159.909007 121.612702,137.727022 C121.211349,137.235047 120.994572,136.617371 121,135.981509 C121.013158,134.480686 122.235785,133.274651 123.730918,133.287756 L123.730918,133.287756 L124.684654,133.294531 C132.305698,133.335994 139.714387,133.071591 146.910723,132.501323 C155.409039,131.82788 164.283523,130.674607 173.534177,129.041504 Z M180.408726,73.8119663 C180.932139,72.4026903 182.508386,71.6634537 183.954581,72.149012 L183.954581,72.149012 L184.742552,72.4154854 C210.583763,81.217922 220.402356,90.8916805 214.198332,101.436761 C208.129904,111.751366 190.484347,119.260339 161.26166,123.963678 C160.613529,124.067994 159.948643,123.945969 159.382735,123.618843 C158.047025,122.846729 157.602046,121.158214 158.388848,119.847438 L158.388848,119.847438 L158.889328,119.0105 C162.877183,112.31633 166.481358,105.654262 169.701854,99.0242957 C173.50501,91.1948179 177.073967,82.7907081 180.408726,73.8119663 Z M94.7383398,66.0363218 C95.3864708,65.9320063 96.0513565,66.0540315 96.6172646,66.3811573 C97.9529754,67.153271 98.3979538,68.8417862 97.6111517,70.1525615 L97.6111517,70.1525615 L97.1106718,70.9895001 C93.1228168,77.6836699 89.5186416,84.3457379 86.2981462,90.9757043 C82.49499,98.8051821 78.9260328,107.209292 75.5912744,116.188034 C75.0678608,117.59731 73.4916142,118.336546 72.045419,117.850988 L72.045419,117.850988 L71.2574475,117.584515 C45.4162372,108.782078 35.597644,99.1083195 41.8016679,88.5632391 C47.8700957,78.2486335 65.515653,70.7396611 94.7383398,66.0363218 Z M136.545792,34.4653746 C156.653461,16.8966864 169.722181,13.3874478 175.751952,23.9376587 C181.649935,34.2572826 179.515508,53.0171122 169.348673,80.2171474 C169.123182,80.8204179 168.695414,81.324709 168.139827,81.6422422 C166.828478,82.3917144 165.163975,81.9253986 164.422058,80.6006966 L164.422058,80.6006966 L163.947416,79.7564798 C160.143661,73.0170065 156.180988,66.6198239 152.059398,60.564932 C147.192119,53.4145727 141.71816,46.1758903 135.637521,38.8488847 C134.683122,37.6988602 134.815056,35.9888243 135.934314,35.0020629 L135.934314,35.0020629 Z M90.6842361,18 C102.390255,18 117.291276,29.0909926 135.387298,51.2729777 C135.788651,51.7649527 136.005428,52.3826288 136,53.0184911 C135.986842,54.5193144 134.764215,55.7253489 133.269082,55.7122445 L133.269082,55.7122445 L132.315346,55.7054689 C124.694302,55.6640063 117.285613,55.9284091 110.089277,56.4986773 C101.590961,57.17212 92.7164767,58.325393 83.4658235,59.9584962 C82.0138691,60.2148231 80.6245044,59.2578618 80.3403697,57.805758 L80.3403697,57.805758 L80.1871846,57.0136235 C75.2176347,31.0045412 78.7166519,18 90.6842361,18 Z",
+    fill: "#FF4154"
+  }))));
+}
+},{"@babel/runtime/helpers/esm/extends":"../node_modules/@babel/runtime/helpers/esm/extends.js","react":"../node_modules/react/index.js"}],"../node_modules/react-query/es/devtools/devtools.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.ReactQueryDevtools = ReactQueryDevtools;
+exports.ReactQueryDevtoolsPanel = void 0;
+
+var _extends2 = _interopRequireDefault(require("@babel/runtime/helpers/esm/extends"));
+
+var _objectWithoutPropertiesLoose2 = _interopRequireDefault(require("@babel/runtime/helpers/esm/objectWithoutPropertiesLoose"));
+
+var _react = _interopRequireDefault(require("react"));
+
+var _reactQuery = require("react-query");
+
+var _matchSorter = require("match-sorter");
+
+var _useLocalStorage7 = _interopRequireDefault(require("./useLocalStorage"));
+
+var _utils = require("./utils");
+
+var _styledComponents = require("./styledComponents");
+
+var _theme = require("./theme");
+
+var _Explorer = _interopRequireDefault(require("./Explorer"));
+
+var _Logo = _interopRequireDefault(require("./Logo"));
+
+var _utils2 = require("../core/utils");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var isServer = typeof window === 'undefined';
+
+function ReactQueryDevtools(_ref) {
+  var initialIsOpen = _ref.initialIsOpen,
+      _ref$panelProps = _ref.panelProps,
+      panelProps = _ref$panelProps === void 0 ? {} : _ref$panelProps,
+      _ref$closeButtonProps = _ref.closeButtonProps,
+      closeButtonProps = _ref$closeButtonProps === void 0 ? {} : _ref$closeButtonProps,
+      _ref$toggleButtonProp = _ref.toggleButtonProps,
+      toggleButtonProps = _ref$toggleButtonProp === void 0 ? {} : _ref$toggleButtonProp,
+      _ref$position = _ref.position,
+      position = _ref$position === void 0 ? 'bottom-left' : _ref$position,
+      _ref$containerElement = _ref.containerElement,
+      Container = _ref$containerElement === void 0 ? 'aside' : _ref$containerElement,
+      styleNonce = _ref.styleNonce;
+
+  var rootRef = _react.default.useRef(null);
+
+  var panelRef = _react.default.useRef(null);
+
+  var _useLocalStorage = (0, _useLocalStorage7.default)('reactQueryDevtoolsOpen', initialIsOpen),
+      isOpen = _useLocalStorage[0],
+      setIsOpen = _useLocalStorage[1];
+
+  var _useLocalStorage2 = (0, _useLocalStorage7.default)('reactQueryDevtoolsHeight', null),
+      devtoolsHeight = _useLocalStorage2[0],
+      setDevtoolsHeight = _useLocalStorage2[1];
+
+  var _useSafeState = (0, _utils.useSafeState)(false),
+      isResolvedOpen = _useSafeState[0],
+      setIsResolvedOpen = _useSafeState[1];
+
+  var _useSafeState2 = (0, _utils.useSafeState)(false),
+      isResizing = _useSafeState2[0],
+      setIsResizing = _useSafeState2[1];
+
+  var isMounted = (0, _utils.useIsMounted)();
+
+  var _handleDragStart = function handleDragStart(panelElement, startEvent) {
+    var _panelElement$getBoun;
+
+    if (startEvent.button !== 0) return; // Only allow left click for drag
+
+    setIsResizing(true);
+    var dragInfo = {
+      originalHeight: (_panelElement$getBoun = panelElement == null ? void 0 : panelElement.getBoundingClientRect().height) != null ? _panelElement$getBoun : 0,
+      pageY: startEvent.pageY
+    };
+
+    var run = function run(moveEvent) {
+      var delta = dragInfo.pageY - moveEvent.pageY;
+      var newHeight = (dragInfo == null ? void 0 : dragInfo.originalHeight) + delta;
+      setDevtoolsHeight(newHeight);
+
+      if (newHeight < 70) {
+        setIsOpen(false);
+      } else {
+        setIsOpen(true);
+      }
+    };
+
+    var unsub = function unsub() {
+      setIsResizing(false);
+      document.removeEventListener('mousemove', run);
+      document.removeEventListener('mouseUp', unsub);
+    };
+
+    document.addEventListener('mousemove', run);
+    document.addEventListener('mouseup', unsub);
+  };
+
+  _react.default.useEffect(function () {
+    setIsResolvedOpen(isOpen != null ? isOpen : false);
+  }, [isOpen, isResolvedOpen, setIsResolvedOpen]); // Toggle panel visibility before/after transition (depending on direction).
+  // Prevents focusing in a closed panel.
+
+
+  _react.default.useEffect(function () {
+    var ref = panelRef.current;
+
+    if (ref) {
+      var handlePanelTransitionStart = function handlePanelTransitionStart() {
+        if (ref && isResolvedOpen) {
+          ref.style.visibility = 'visible';
+        }
+      };
+
+      var handlePanelTransitionEnd = function handlePanelTransitionEnd() {
+        if (ref && !isResolvedOpen) {
+          ref.style.visibility = 'hidden';
+        }
+      };
+
+      ref.addEventListener('transitionstart', handlePanelTransitionStart);
+      ref.addEventListener('transitionend', handlePanelTransitionEnd);
+      return function () {
+        ref.removeEventListener('transitionstart', handlePanelTransitionStart);
+        ref.removeEventListener('transitionend', handlePanelTransitionEnd);
+      };
+    }
+  }, [isResolvedOpen]);
+
+  _react.default[isServer ? 'useEffect' : 'useLayoutEffect'](function () {
+    if (isResolvedOpen) {
+      var _rootRef$current, _rootRef$current$pare;
+
+      var previousValue = (_rootRef$current = rootRef.current) == null ? void 0 : (_rootRef$current$pare = _rootRef$current.parentElement) == null ? void 0 : _rootRef$current$pare.style.paddingBottom;
+
+      var run = function run() {
+        var _panelRef$current, _rootRef$current2;
+
+        var containerHeight = (_panelRef$current = panelRef.current) == null ? void 0 : _panelRef$current.getBoundingClientRect().height;
+
+        if ((_rootRef$current2 = rootRef.current) == null ? void 0 : _rootRef$current2.parentElement) {
+          rootRef.current.parentElement.style.paddingBottom = containerHeight + "px";
+        }
+      };
+
+      run();
+
+      if (typeof window !== 'undefined') {
+        window.addEventListener('resize', run);
+        return function () {
+          var _rootRef$current3;
+
+          window.removeEventListener('resize', run);
+
+          if (((_rootRef$current3 = rootRef.current) == null ? void 0 : _rootRef$current3.parentElement) && typeof previousValue === 'string') {
+            rootRef.current.parentElement.style.paddingBottom = previousValue;
+          }
+        };
+      }
+    }
+  }, [isResolvedOpen]);
+
+  var _panelProps$style = panelProps.style,
+      panelStyle = _panelProps$style === void 0 ? {} : _panelProps$style,
+      otherPanelProps = (0, _objectWithoutPropertiesLoose2.default)(panelProps, ["style"]);
+  var _closeButtonProps$sty = closeButtonProps.style,
+      closeButtonStyle = _closeButtonProps$sty === void 0 ? {} : _closeButtonProps$sty,
+      onCloseClick = closeButtonProps.onClick,
+      otherCloseButtonProps = (0, _objectWithoutPropertiesLoose2.default)(closeButtonProps, ["style", "onClick"]);
+  var _toggleButtonProps$st = toggleButtonProps.style,
+      toggleButtonStyle = _toggleButtonProps$st === void 0 ? {} : _toggleButtonProps$st,
+      onToggleClick = toggleButtonProps.onClick,
+      otherToggleButtonProps = (0, _objectWithoutPropertiesLoose2.default)(toggleButtonProps, ["style", "onClick"]); // Do not render on the server
+
+  if (!isMounted()) return null;
+  return /*#__PURE__*/_react.default.createElement(Container, {
+    ref: rootRef,
+    className: "ReactQueryDevtools",
+    "aria-label": "React Query Devtools"
+  }, /*#__PURE__*/_react.default.createElement(_theme.ThemeProvider, {
+    theme: _theme.defaultTheme
+  }, /*#__PURE__*/_react.default.createElement(ReactQueryDevtoolsPanel, (0, _extends2.default)({
+    ref: panelRef,
+    styleNonce: styleNonce
+  }, otherPanelProps, {
+    style: (0, _extends2.default)({
+      position: 'fixed',
+      bottom: '0',
+      right: '0',
+      zIndex: 99999,
+      width: '100%',
+      height: devtoolsHeight != null ? devtoolsHeight : 500,
+      maxHeight: '90%',
+      boxShadow: '0 0 20px rgba(0,0,0,.3)',
+      borderTop: "1px solid " + _theme.defaultTheme.gray,
+      transformOrigin: 'top',
+      // visibility will be toggled after transitions, but set initial state here
+      visibility: isOpen ? 'visible' : 'hidden'
+    }, panelStyle, isResizing ? {
+      transition: "none"
+    } : {
+      transition: "all .2s ease"
+    }, isResolvedOpen ? {
+      opacity: 1,
+      pointerEvents: 'all',
+      transform: "translateY(0) scale(1)"
+    } : {
+      opacity: 0,
+      pointerEvents: 'none',
+      transform: "translateY(15px) scale(1.02)"
+    }),
+    isOpen: isResolvedOpen,
+    setIsOpen: setIsOpen,
+    handleDragStart: function handleDragStart(e) {
+      return _handleDragStart(panelRef.current, e);
+    }
+  })), isResolvedOpen ? /*#__PURE__*/_react.default.createElement(_styledComponents.Button, (0, _extends2.default)({
+    type: "button",
+    "aria-controls": "ReactQueryDevtoolsPanel",
+    "aria-haspopup": "true",
+    "aria-expanded": "true"
+  }, otherCloseButtonProps, {
+    onClick: function onClick(e) {
+      setIsOpen(false);
+      onCloseClick && onCloseClick(e);
+    },
+    style: (0, _extends2.default)({
+      position: 'fixed',
+      zIndex: 99999,
+      margin: '.5em',
+      bottom: 0
+    }, position === 'top-right' ? {
+      right: '0'
+    } : position === 'top-left' ? {
+      left: '0'
+    } : position === 'bottom-right' ? {
+      right: '0'
+    } : {
+      left: '0'
+    }, closeButtonStyle)
+  }), "Close") : null), !isResolvedOpen ? /*#__PURE__*/_react.default.createElement("button", (0, _extends2.default)({
+    type: "button"
+  }, otherToggleButtonProps, {
+    "aria-label": "Open React Query Devtools",
+    "aria-controls": "ReactQueryDevtoolsPanel",
+    "aria-haspopup": "true",
+    "aria-expanded": "false",
+    onClick: function onClick(e) {
+      setIsOpen(true);
+      onToggleClick && onToggleClick(e);
+    },
+    style: (0, _extends2.default)({
+      background: 'none',
+      border: 0,
+      padding: 0,
+      position: 'fixed',
+      zIndex: 99999,
+      display: 'inline-flex',
+      fontSize: '1.5em',
+      margin: '.5em',
+      cursor: 'pointer',
+      width: 'fit-content'
+    }, position === 'top-right' ? {
+      top: '0',
+      right: '0'
+    } : position === 'top-left' ? {
+      top: '0',
+      left: '0'
+    } : position === 'bottom-right' ? {
+      bottom: '0',
+      right: '0'
+    } : {
+      bottom: '0',
+      left: '0'
+    }, toggleButtonStyle)
+  }), /*#__PURE__*/_react.default.createElement(_Logo.default, {
+    "aria-hidden": true
+  })) : null);
+}
+
+var getStatusRank = function getStatusRank(q) {
+  return q.state.isFetching ? 0 : !q.getObserversCount() ? 3 : q.isStale() ? 2 : 1;
+};
+
+var sortFns = {
+  'Status > Last Updated': function StatusLastUpdated(a, b) {
+    var _sortFns$LastUpdated;
+
+    return getStatusRank(a) === getStatusRank(b) ? (_sortFns$LastUpdated = sortFns['Last Updated']) == null ? void 0 : _sortFns$LastUpdated.call(sortFns, a, b) : getStatusRank(a) > getStatusRank(b) ? 1 : -1;
+  },
+  'Query Hash': function QueryHash(a, b) {
+    return a.queryHash > b.queryHash ? 1 : -1;
+  },
+  'Last Updated': function LastUpdated(a, b) {
+    return a.state.dataUpdatedAt < b.state.dataUpdatedAt ? 1 : -1;
+  }
+};
+
+var ReactQueryDevtoolsPanel = /*#__PURE__*/_react.default.forwardRef(function ReactQueryDevtoolsPanel(props, ref) {
+  var _activeQuery$state;
+
+  var _props$isOpen = props.isOpen,
+      isOpen = _props$isOpen === void 0 ? true : _props$isOpen,
+      styleNonce = props.styleNonce,
+      setIsOpen = props.setIsOpen,
+      handleDragStart = props.handleDragStart,
+      panelProps = (0, _objectWithoutPropertiesLoose2.default)(props, ["isOpen", "styleNonce", "setIsOpen", "handleDragStart"]);
+  var queryClient = (0, _reactQuery.useQueryClient)();
+  var queryCache = queryClient.getQueryCache();
+
+  var _useLocalStorage3 = (0, _useLocalStorage7.default)('reactQueryDevtoolsSortFn', Object.keys(sortFns)[0]),
+      sort = _useLocalStorage3[0],
+      setSort = _useLocalStorage3[1];
+
+  var _useLocalStorage4 = (0, _useLocalStorage7.default)('reactQueryDevtoolsFilter', ''),
+      filter = _useLocalStorage4[0],
+      setFilter = _useLocalStorage4[1];
+
+  var _useLocalStorage5 = (0, _useLocalStorage7.default)('reactQueryDevtoolsSortDesc', false),
+      sortDesc = _useLocalStorage5[0],
+      setSortDesc = _useLocalStorage5[1];
+
+  var sortFn = _react.default.useMemo(function () {
+    return sortFns[sort];
+  }, [sort]);
+
+  _react.default[isServer ? 'useEffect' : 'useLayoutEffect'](function () {
+    if (!sortFn) {
+      setSort(Object.keys(sortFns)[0]);
+    }
+  }, [setSort, sortFn]);
+
+  var _useSafeState3 = (0, _utils.useSafeState)(Object.values(queryCache.findAll())),
+      unsortedQueries = _useSafeState3[0],
+      setUnsortedQueries = _useSafeState3[1];
+
+  var _useLocalStorage6 = (0, _useLocalStorage7.default)('reactQueryDevtoolsActiveQueryHash', ''),
+      activeQueryHash = _useLocalStorage6[0],
+      setActiveQueryHash = _useLocalStorage6[1];
+
+  var queries = _react.default.useMemo(function () {
+    var sorted = [].concat(unsortedQueries).sort(sortFn);
+
+    if (sortDesc) {
+      sorted.reverse();
+    }
+
+    if (!filter) {
+      return sorted;
+    }
+
+    return (0, _matchSorter.matchSorter)(sorted, filter, {
+      keys: ['queryHash']
+    }).filter(function (d) {
+      return d.queryHash;
+    });
+  }, [sortDesc, sortFn, unsortedQueries, filter]);
+
+  var activeQuery = _react.default.useMemo(function () {
+    return queries.find(function (query) {
+      return query.queryHash === activeQueryHash;
+    });
+  }, [activeQueryHash, queries]);
+
+  var hasFresh = queries.filter(function (q) {
+    return (0, _utils.getQueryStatusLabel)(q) === 'fresh';
+  }).length;
+  var hasFetching = queries.filter(function (q) {
+    return (0, _utils.getQueryStatusLabel)(q) === 'fetching';
+  }).length;
+  var hasStale = queries.filter(function (q) {
+    return (0, _utils.getQueryStatusLabel)(q) === 'stale';
+  }).length;
+  var hasInactive = queries.filter(function (q) {
+    return (0, _utils.getQueryStatusLabel)(q) === 'inactive';
+  }).length;
+
+  _react.default.useEffect(function () {
+    if (isOpen) {
+      var unsubscribe = queryCache.subscribe(function () {
+        setUnsortedQueries(Object.values(queryCache.getAll()));
+      }); // re-subscribing after the panel is closed and re-opened won't trigger the callback,
+      // So we'll manually populate our state
+
+      setUnsortedQueries(Object.values(queryCache.getAll()));
+      return unsubscribe;
+    }
+
+    return undefined;
+  }, [isOpen, sort, sortFn, sortDesc, setUnsortedQueries, queryCache]);
+
+  var handleRefetch = function handleRefetch() {
+    var promise = activeQuery == null ? void 0 : activeQuery.fetch();
+    promise == null ? void 0 : promise.catch(_utils2.noop);
+  };
+
+  return /*#__PURE__*/_react.default.createElement(_theme.ThemeProvider, {
+    theme: _theme.defaultTheme
+  }, /*#__PURE__*/_react.default.createElement(_styledComponents.Panel, (0, _extends2.default)({
+    ref: ref,
+    className: "ReactQueryDevtoolsPanel",
+    "aria-label": "React Query Devtools Panel",
+    id: "ReactQueryDevtoolsPanel"
+  }, panelProps), /*#__PURE__*/_react.default.createElement("style", {
+    nonce: styleNonce,
+    dangerouslySetInnerHTML: {
+      __html: "\n            .ReactQueryDevtoolsPanel * {\n              scrollbar-color: " + _theme.defaultTheme.backgroundAlt + " " + _theme.defaultTheme.gray + ";\n            }\n\n            .ReactQueryDevtoolsPanel *::-webkit-scrollbar, .ReactQueryDevtoolsPanel scrollbar {\n              width: 1em;\n              height: 1em;\n            }\n\n            .ReactQueryDevtoolsPanel *::-webkit-scrollbar-track, .ReactQueryDevtoolsPanel scrollbar-track {\n              background: " + _theme.defaultTheme.backgroundAlt + ";\n            }\n\n            .ReactQueryDevtoolsPanel *::-webkit-scrollbar-thumb, .ReactQueryDevtoolsPanel scrollbar-thumb {\n              background: " + _theme.defaultTheme.gray + ";\n              border-radius: .5em;\n              border: 3px solid " + _theme.defaultTheme.backgroundAlt + ";\n            }\n          "
+    }
+  }), /*#__PURE__*/_react.default.createElement("div", {
+    style: {
+      position: 'absolute',
+      left: 0,
+      top: 0,
+      width: '100%',
+      height: '4px',
+      marginBottom: '-4px',
+      cursor: 'row-resize',
+      zIndex: 100000
+    },
+    onMouseDown: handleDragStart
+  }), /*#__PURE__*/_react.default.createElement("div", {
+    style: {
+      flex: '1 1 500px',
+      minHeight: '40%',
+      maxHeight: '100%',
+      overflow: 'auto',
+      borderRight: "1px solid " + _theme.defaultTheme.grayAlt,
+      display: isOpen ? 'flex' : 'none',
+      flexDirection: 'column'
+    }
+  }, /*#__PURE__*/_react.default.createElement("div", {
+    style: {
+      padding: '.5em',
+      background: _theme.defaultTheme.backgroundAlt,
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center'
+    }
+  }, /*#__PURE__*/_react.default.createElement("button", {
+    type: "button",
+    "aria-label": "Close React Query Devtools",
+    "aria-controls": "ReactQueryDevtoolsPanel",
+    "aria-haspopup": "true",
+    "aria-expanded": "true",
+    onClick: function onClick() {
+      return setIsOpen(false);
+    },
+    style: {
+      display: 'inline-flex',
+      background: 'none',
+      border: 0,
+      padding: 0,
+      marginRight: '.5em',
+      cursor: 'pointer'
+    }
+  }, /*#__PURE__*/_react.default.createElement(_Logo.default, {
+    "aria-hidden": true
+  })), /*#__PURE__*/_react.default.createElement("div", {
+    style: {
+      display: 'flex',
+      flexDirection: 'column'
+    }
+  }, /*#__PURE__*/_react.default.createElement(_styledComponents.QueryKeys, {
+    style: {
+      marginBottom: '.5em'
+    }
+  }, /*#__PURE__*/_react.default.createElement(_styledComponents.QueryKey, {
+    style: {
+      background: _theme.defaultTheme.success,
+      opacity: hasFresh ? 1 : 0.3
+    }
+  }, "fresh ", /*#__PURE__*/_react.default.createElement(_styledComponents.Code, null, "(", hasFresh, ")")), ' ', /*#__PURE__*/_react.default.createElement(_styledComponents.QueryKey, {
+    style: {
+      background: _theme.defaultTheme.active,
+      opacity: hasFetching ? 1 : 0.3
+    }
+  }, "fetching ", /*#__PURE__*/_react.default.createElement(_styledComponents.Code, null, "(", hasFetching, ")")), ' ', /*#__PURE__*/_react.default.createElement(_styledComponents.QueryKey, {
+    style: {
+      background: _theme.defaultTheme.warning,
+      color: 'black',
+      textShadow: '0',
+      opacity: hasStale ? 1 : 0.3
+    }
+  }, "stale ", /*#__PURE__*/_react.default.createElement(_styledComponents.Code, null, "(", hasStale, ")")), ' ', /*#__PURE__*/_react.default.createElement(_styledComponents.QueryKey, {
+    style: {
+      background: _theme.defaultTheme.gray,
+      opacity: hasInactive ? 1 : 0.3
+    }
+  }, "inactive ", /*#__PURE__*/_react.default.createElement(_styledComponents.Code, null, "(", hasInactive, ")"))), /*#__PURE__*/_react.default.createElement("div", {
+    style: {
+      display: 'flex',
+      alignItems: 'center'
+    }
+  }, /*#__PURE__*/_react.default.createElement(_styledComponents.Input, {
+    placeholder: "Filter",
+    "aria-label": "Filter by queryhash",
+    value: filter != null ? filter : '',
+    onChange: function onChange(e) {
+      return setFilter(e.target.value);
+    },
+    onKeyDown: function onKeyDown(e) {
+      if (e.key === 'Escape') setFilter('');
+    },
+    style: {
+      flex: '1',
+      marginRight: '.5em',
+      width: '100%'
+    }
+  }), !filter ? /*#__PURE__*/_react.default.createElement(_react.default.Fragment, null, /*#__PURE__*/_react.default.createElement(_styledComponents.Select, {
+    "aria-label": "Sort queries",
+    value: sort,
+    onChange: function onChange(e) {
+      return setSort(e.target.value);
+    },
+    style: {
+      flex: '1',
+      minWidth: 75,
+      marginRight: '.5em'
+    }
+  }, Object.keys(sortFns).map(function (key) {
+    return /*#__PURE__*/_react.default.createElement("option", {
+      key: key,
+      value: key
+    }, "Sort by ", key);
+  })), /*#__PURE__*/_react.default.createElement(_styledComponents.Button, {
+    type: "button",
+    onClick: function onClick() {
+      return setSortDesc(function (old) {
+        return !old;
+      });
+    },
+    style: {
+      padding: '.3em .4em'
+    }
+  }, sortDesc ? '⬇ Desc' : '⬆ Asc')) : null))), /*#__PURE__*/_react.default.createElement("div", {
+    style: {
+      overflowY: 'auto',
+      flex: '1'
+    }
+  }, queries.map(function (query, i) {
+    var isDisabled = query.getObserversCount() > 0 && !query.isActive();
+    return /*#__PURE__*/_react.default.createElement("div", {
+      key: query.queryHash || i,
+      role: "button",
+      "aria-label": "Open query details for " + query.queryHash,
+      onClick: function onClick() {
+        return setActiveQueryHash(activeQueryHash === query.queryHash ? '' : query.queryHash);
+      },
+      style: {
+        display: 'flex',
+        borderBottom: "solid 1px " + _theme.defaultTheme.grayAlt,
+        cursor: 'pointer',
+        background: query === activeQuery ? 'rgba(255,255,255,.1)' : undefined
+      }
+    }, /*#__PURE__*/_react.default.createElement("div", {
+      style: {
+        flex: '0 0 auto',
+        width: '2em',
+        height: '2em',
+        background: (0, _utils.getQueryStatusColor)(query, _theme.defaultTheme),
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        fontWeight: 'bold',
+        textShadow: (0, _utils.getQueryStatusLabel)(query) === 'stale' ? '0' : '0 0 10px black',
+        color: (0, _utils.getQueryStatusLabel)(query) === 'stale' ? 'black' : 'white'
+      }
+    }, query.getObserversCount()), isDisabled ? /*#__PURE__*/_react.default.createElement("div", {
+      style: {
+        flex: '0 0 auto',
+        height: '2em',
+        background: _theme.defaultTheme.gray,
+        display: 'flex',
+        alignItems: 'center',
+        fontWeight: 'bold',
+        padding: '0 0.5em'
+      }
+    }, "disabled") : null, /*#__PURE__*/_react.default.createElement(_styledComponents.Code, {
+      style: {
+        padding: '.5em'
+      }
+    }, "" + query.queryHash));
+  }))), activeQuery ? /*#__PURE__*/_react.default.createElement(_styledComponents.ActiveQueryPanel, null, /*#__PURE__*/_react.default.createElement("div", {
+    style: {
+      padding: '.5em',
+      background: _theme.defaultTheme.backgroundAlt,
+      position: 'sticky',
+      top: 0,
+      zIndex: 1
+    }
+  }, "Query Details"), /*#__PURE__*/_react.default.createElement("div", {
+    style: {
+      padding: '.5em'
+    }
+  }, /*#__PURE__*/_react.default.createElement("div", {
+    style: {
+      marginBottom: '.5em',
+      display: 'flex',
+      alignItems: 'start',
+      justifyContent: 'space-between'
+    }
+  }, /*#__PURE__*/_react.default.createElement(_styledComponents.Code, {
+    style: {
+      lineHeight: '1.8em'
+    }
+  }, /*#__PURE__*/_react.default.createElement("pre", {
+    style: {
+      margin: 0,
+      padding: 0,
+      overflow: 'auto'
+    }
+  }, JSON.stringify(activeQuery.queryKey, null, 2))), /*#__PURE__*/_react.default.createElement("span", {
+    style: {
+      padding: '0.3em .6em',
+      borderRadius: '0.4em',
+      fontWeight: 'bold',
+      textShadow: '0 2px 10px black',
+      background: (0, _utils.getQueryStatusColor)(activeQuery, _theme.defaultTheme),
+      flexShrink: 0
+    }
+  }, (0, _utils.getQueryStatusLabel)(activeQuery))), /*#__PURE__*/_react.default.createElement("div", {
+    style: {
+      marginBottom: '.5em',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between'
+    }
+  }, "Observers: ", /*#__PURE__*/_react.default.createElement(_styledComponents.Code, null, activeQuery.getObserversCount())), /*#__PURE__*/_react.default.createElement("div", {
+    style: {
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between'
+    }
+  }, "Last Updated:", ' ', /*#__PURE__*/_react.default.createElement(_styledComponents.Code, null, new Date(activeQuery.state.dataUpdatedAt).toLocaleTimeString()))), /*#__PURE__*/_react.default.createElement("div", {
+    style: {
+      background: _theme.defaultTheme.backgroundAlt,
+      padding: '.5em',
+      position: 'sticky',
+      top: 0,
+      zIndex: 1
+    }
+  }, "Actions"), /*#__PURE__*/_react.default.createElement("div", {
+    style: {
+      padding: '0.5em'
+    }
+  }, /*#__PURE__*/_react.default.createElement(_styledComponents.Button, {
+    type: "button",
+    onClick: handleRefetch,
+    disabled: activeQuery.state.isFetching,
+    style: {
+      background: _theme.defaultTheme.active
+    }
+  }, "Refetch"), ' ', /*#__PURE__*/_react.default.createElement(_styledComponents.Button, {
+    type: "button",
+    onClick: function onClick() {
+      return queryClient.invalidateQueries(activeQuery);
+    },
+    style: {
+      background: _theme.defaultTheme.warning,
+      color: _theme.defaultTheme.inputTextColor
+    }
+  }, "Invalidate"), ' ', /*#__PURE__*/_react.default.createElement(_styledComponents.Button, {
+    type: "button",
+    onClick: function onClick() {
+      return queryClient.resetQueries(activeQuery);
+    },
+    style: {
+      background: _theme.defaultTheme.gray
+    }
+  }, "Reset"), ' ', /*#__PURE__*/_react.default.createElement(_styledComponents.Button, {
+    type: "button",
+    onClick: function onClick() {
+      return queryClient.removeQueries(activeQuery);
+    },
+    style: {
+      background: _theme.defaultTheme.danger
+    }
+  }, "Remove")), /*#__PURE__*/_react.default.createElement("div", {
+    style: {
+      background: _theme.defaultTheme.backgroundAlt,
+      padding: '.5em',
+      position: 'sticky',
+      top: 0,
+      zIndex: 1
+    }
+  }, "Data Explorer"), /*#__PURE__*/_react.default.createElement("div", {
+    style: {
+      padding: '.5em'
+    }
+  }, /*#__PURE__*/_react.default.createElement(_Explorer.default, {
+    label: "Data",
+    value: activeQuery == null ? void 0 : (_activeQuery$state = activeQuery.state) == null ? void 0 : _activeQuery$state.data,
+    defaultExpanded: {}
+  })), /*#__PURE__*/_react.default.createElement("div", {
+    style: {
+      background: _theme.defaultTheme.backgroundAlt,
+      padding: '.5em',
+      position: 'sticky',
+      top: 0,
+      zIndex: 1
+    }
+  }, "Query Explorer"), /*#__PURE__*/_react.default.createElement("div", {
+    style: {
+      padding: '.5em'
+    }
+  }, /*#__PURE__*/_react.default.createElement(_Explorer.default, {
+    label: "Query",
+    value: activeQuery,
+    defaultExpanded: {
+      queryKey: true
+    }
+  }))) : null));
+});
+
+exports.ReactQueryDevtoolsPanel = ReactQueryDevtoolsPanel;
+},{"@babel/runtime/helpers/esm/extends":"../node_modules/@babel/runtime/helpers/esm/extends.js","@babel/runtime/helpers/esm/objectWithoutPropertiesLoose":"../node_modules/@babel/runtime/helpers/esm/objectWithoutPropertiesLoose.js","react":"../node_modules/react/index.js","react-query":"../node_modules/react-query/es/index.js","match-sorter":"../node_modules/match-sorter/dist/match-sorter.esm.js","./useLocalStorage":"../node_modules/react-query/es/devtools/useLocalStorage.js","./utils":"../node_modules/react-query/es/devtools/utils.js","./styledComponents":"../node_modules/react-query/es/devtools/styledComponents.js","./theme":"../node_modules/react-query/es/devtools/theme.js","./Explorer":"../node_modules/react-query/es/devtools/Explorer.js","./Logo":"../node_modules/react-query/es/devtools/Logo.js","../core/utils":"../node_modules/react-query/es/core/utils.js"}],"../node_modules/react-query/es/devtools/index.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+var _devtools = require("./devtools");
+
+Object.keys(_devtools).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (key in exports && exports[key] === _devtools[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function () {
+      return _devtools[key];
+    }
+  });
+});
+},{"./devtools":"../node_modules/react-query/es/devtools/devtools.js"}],"../node_modules/react-query/devtools/index.js":[function(require,module,exports) {
+if ("development" !== 'development') {
+  module.exports = {
+    ReactQueryDevtools: function () {
+      return null;
+    },
+    ReactQueryDevtoolsPanel: function () {
+      return null;
+    }
+  };
+} else {
+  module.exports = require('./development');
+}
+},{"./development":"../node_modules/react-query/es/devtools/index.js"}],"../node_modules/recoil/es/recoil.js":[function(require,module,exports) {
+"use strict";
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.waitForNone = exports.waitForAny = exports.waitForAllSettled = exports.waitForAll = exports.useSetRecoilState = exports.useRetain = exports.useResetRecoilState = exports.useRecoilValue_TRANSITION_SUPPORT_UNSTABLE = exports.useRecoilValueLoadable_TRANSITION_SUPPORT_UNSTABLE = exports.useRecoilValueLoadable = exports.useRecoilValue = exports.useRecoilTransaction_UNSTABLE = exports.useRecoilTransactionObserver_UNSTABLE = exports.useRecoilStoreID = exports.useRecoilState_TRANSITION_SUPPORT_UNSTABLE = exports.useRecoilStateLoadable = exports.useRecoilState = exports.useRecoilSnapshot = exports.useRecoilRefresher_UNSTABLE = exports.useRecoilCallback = exports.useRecoilBridgeAcrossReactRoots_UNSTABLE = exports.useGotoRecoilSnapshot = exports.useGetRecoilValueInfo_UNSTABLE = exports.snapshot_UNSTABLE = exports.selectorFamily = exports.selector = exports.retentionZone = exports.readOnlySelector = exports.noWait = exports.isRecoilValue = exports.errorSelector = exports.default = exports.constSelector = exports.atomFamily = exports.atom = exports.RecoilRoot = exports.RecoilLoadable = exports.DefaultValue = void 0;
+
+var _react = _interopRequireDefault(require("react"));
+
+var _reactDom = _interopRequireDefault(require("react-dom"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * 
+ * @format
+ */
+function err(message) {
+  const error = new Error(message); // In V8, Error objects keep the closure scope chain alive until the
+  // err.stack property is accessed.
+
+  if (error.stack === undefined) {
+    // IE sets the stack only if error is thrown
+    try {
+      throw error;
+    } catch (_) {} // eslint-disable-line fb-www/no-unused-catch-bindings, no-empty
+
+  }
+
+  return error;
+}
+
+var err_1 = err; // @oss-only
+
+var Recoil_err = err_1;
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * 
+ * @format
+ */
+// Split declaration and implementation to allow this function to pretend to
+// check for actual instance of Promise instead of something with a `then`
+// method.
+// eslint-disable-next-line no-redeclare
+
+function isPromise(p) {
+  return !!p && typeof p.then === 'function';
+}
+
+var Recoil_isPromise = isPromise;
+
+function nullthrows(x, message) {
+  if (x != null) {
+    return x;
+  }
+
+  throw Recoil_err(message !== null && message !== void 0 ? message : 'Got unexpected null or undefined');
+}
+
+var Recoil_nullthrows = nullthrows;
+
+function _defineProperty(obj, key, value) {
+  if (key in obj) {
+    Object.defineProperty(obj, key, {
+      value: value,
+      enumerable: true,
+      configurable: true,
+      writable: true
+    });
+  } else {
+    obj[key] = value;
+  }
+
+  return obj;
+}
+
+class BaseLoadable {
+  getValue() {
+    throw Recoil_err('BaseLoadable');
+  }
+
+  toPromise() {
+    throw Recoil_err('BaseLoadable');
+  }
+
+  valueMaybe() {
+    throw Recoil_err('BaseLoadable');
+  }
+
+  valueOrThrow() {
+    // $FlowFixMe[prop-missing]
+    throw Recoil_err(`Loadable expected value, but in "${this.state}" state`);
+  }
+
+  promiseMaybe() {
+    throw Recoil_err('BaseLoadable');
+  }
+
+  promiseOrThrow() {
+    // $FlowFixMe[prop-missing]
+    throw Recoil_err(`Loadable expected promise, but in "${this.state}" state`);
+  }
+
+  errorMaybe() {
+    throw Recoil_err('BaseLoadable');
+  }
+
+  errorOrThrow() {
+    // $FlowFixMe[prop-missing]
+    throw Recoil_err(`Loadable expected error, but in "${this.state}" state`);
+  }
+
+  is(other) {
+    // $FlowFixMe[prop-missing]
+    return other.state === this.state && other.contents === this.contents;
+  }
+
+  map(_map) {
+    throw Recoil_err('BaseLoadable');
+  }
+
+}
+
+class ValueLoadable extends BaseLoadable {
+  constructor(value) {
+    super();
+
+    _defineProperty(this, "state", 'hasValue');
+
+    _defineProperty(this, "contents", void 0);
+
+    this.contents = value;
+  }
+
+  getValue() {
+    return this.contents;
+  }
+
+  toPromise() {
+    return Promise.resolve(this.contents);
+  }
+
+  valueMaybe() {
+    return this.contents;
+  }
+
+  valueOrThrow() {
+    return this.contents;
+  }
+
+  promiseMaybe() {
+    return undefined;
+  }
+
+  errorMaybe() {
+    return undefined;
+  }
+
+  map(map) {
+    try {
+      const next = map(this.contents);
+      return Recoil_isPromise(next) ? loadableWithPromise(next) : isLoadable(next) ? next : loadableWithValue(next);
+    } catch (e) {
+      return Recoil_isPromise(e) ? // If we "suspended", then try again.
+      // errors and subsequent retries will be handled in 'loading' case
+      loadableWithPromise(e.next(() => this.map(map))) : loadableWithError(e);
+    }
+  }
+
+}
+
+class ErrorLoadable extends BaseLoadable {
+  constructor(error) {
+    super();
+
+    _defineProperty(this, "state", 'hasError');
+
+    _defineProperty(this, "contents", void 0);
+
+    this.contents = error;
+  }
+
+  getValue() {
+    throw this.contents;
+  }
+
+  toPromise() {
+    return Promise.reject(this.contents);
+  }
+
+  valueMaybe() {
+    return undefined;
+  }
+
+  promiseMaybe() {
+    return undefined;
+  }
+
+  errorMaybe() {
+    return this.contents;
+  }
+
+  errorOrThrow() {
+    return this.contents;
+  }
+
+  map(_map) {
+    // $FlowIssue[incompatible-return]
+    return this;
+  }
+
+}
+
+class LoadingLoadable extends BaseLoadable {
+  constructor(promise) {
+    super();
+
+    _defineProperty(this, "state", 'loading');
+
+    _defineProperty(this, "contents", void 0);
+
+    this.contents = promise;
+  }
+
+  getValue() {
+    throw this.contents;
+  }
+
+  toPromise() {
+    return this.contents;
+  }
+
+  valueMaybe() {
+    return undefined;
+  }
+
+  promiseMaybe() {
+    return this.contents;
+  }
+
+  promiseOrThrow() {
+    return this.contents;
+  }
+
+  errorMaybe() {
+    return undefined;
+  }
+
+  map(map) {
+    return loadableWithPromise(this.contents.then(value => {
+      const next = map(value);
+
+      if (isLoadable(next)) {
+        const nextLoadable = next;
+
+        switch (nextLoadable.state) {
+          case 'hasValue':
+            return nextLoadable.contents;
+
+          case 'hasError':
+            throw nextLoadable.contents;
+
+          case 'loading':
+            return nextLoadable.contents;
+        }
+      } // $FlowIssue[incompatible-return]
+
+
+      return next;
+    }).catch(e => {
+      if (Recoil_isPromise(e)) {
+        // we were "suspended," try again
+        return e.then(() => this.map(map).contents);
+      }
+
+      throw e;
+    }));
+  }
+
+}
+
+function loadableWithValue(value) {
+  return Object.freeze(new ValueLoadable(value));
+}
+
+function loadableWithError(error) {
+  return Object.freeze(new ErrorLoadable(error));
+}
+
+function loadableWithPromise(promise) {
+  return Object.freeze(new LoadingLoadable(promise));
+}
+
+function loadableLoading() {
+  return Object.freeze(new LoadingLoadable(new Promise(() => {})));
+}
+
+function loadableAllArray(inputs) {
+  return inputs.every(i => i.state === 'hasValue') ? loadableWithValue(inputs.map(i => i.contents)) : inputs.some(i => i.state === 'hasError') ? loadableWithError(Recoil_nullthrows(inputs.find(i => i.state === 'hasError'), 'Invalid loadable passed to loadableAll').contents) : loadableWithPromise(Promise.all(inputs.map(i => i.contents)));
+}
+
+function loadableAll(inputs) {
+  const unwrapedInputs = Array.isArray(inputs) ? inputs : Object.getOwnPropertyNames(inputs).map(key => inputs[key]);
+  const normalizedInputs = unwrapedInputs.map(x => isLoadable(x) ? x : Recoil_isPromise(x) ? loadableWithPromise(x) : loadableWithValue(x));
+  const output = loadableAllArray(normalizedInputs);
+  return Array.isArray(inputs) ? // $FlowIssue[incompatible-return]
+  output : // Object.getOwnPropertyNames() has consistent key ordering with ES6
+  // $FlowIssue[incompatible-call]
+  output.map(outputs => Object.getOwnPropertyNames(inputs).reduce((out, key, idx) => ({ ...out,
+    [key]: outputs[idx]
+  }), {}));
+}
+
+function isLoadable(x) {
+  return x instanceof BaseLoadable;
+}
+
+const LoadableStaticInterface = {
+  of: value => Recoil_isPromise(value) ? loadableWithPromise(value) : isLoadable(value) ? value : loadableWithValue(value),
+  error: error => loadableWithError(error),
+  // $FlowIssue[incompatible-return]
+  loading: () => loadableLoading(),
+  // $FlowIssue[unclear-type]
+  all: loadableAll,
+  isLoadable
+};
+var Recoil_Loadable = {
+  loadableWithValue,
+  loadableWithError,
+  loadableWithPromise,
+  loadableLoading,
+  loadableAll,
+  isLoadable,
+  RecoilLoadable: LoadableStaticInterface
+};
+var Recoil_Loadable_1 = Recoil_Loadable.loadableWithValue;
+var Recoil_Loadable_2 = Recoil_Loadable.loadableWithError;
+var Recoil_Loadable_3 = Recoil_Loadable.loadableWithPromise;
+var Recoil_Loadable_4 = Recoil_Loadable.loadableLoading;
+var Recoil_Loadable_5 = Recoil_Loadable.loadableAll;
+var Recoil_Loadable_6 = Recoil_Loadable.isLoadable;
+var Recoil_Loadable_7 = Recoil_Loadable.RecoilLoadable;
+var Recoil_Loadable$1 = /*#__PURE__*/Object.freeze({
+  __proto__: null,
+  loadableWithValue: Recoil_Loadable_1,
+  loadableWithError: Recoil_Loadable_2,
+  loadableWithPromise: Recoil_Loadable_3,
+  loadableLoading: Recoil_Loadable_4,
+  loadableAll: Recoil_Loadable_5,
+  isLoadable: Recoil_Loadable_6,
+  RecoilLoadable: Recoil_Loadable_7
+});
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * 
+ * @format
+ */
+
+const gks = new Map().set('recoil_hamt_2020', true).set('recoil_sync_external_store', true).set('recoil_suppress_rerender_in_callback', true).set('recoil_memory_managament_2020', true);
+
+function Recoil_gkx_OSS(gk) {
+  var _gks$get;
+
+  return (_gks$get = gks.get(gk)) !== null && _gks$get !== void 0 ? _gks$get : false;
+}
+
+Recoil_gkx_OSS.setPass = gk => {
+  gks.set(gk, true);
+};
+
+Recoil_gkx_OSS.setFail = gk => {
+  gks.set(gk, false);
+};
+
+Recoil_gkx_OSS.clear = () => {
+  gks.clear();
+};
+
+var Recoil_gkx = Recoil_gkx_OSS; // @oss-only
+
+var _createMutableSource, _useMutableSource, _useSyncExternalStore;
+
+const createMutableSource = // flowlint-next-line unclear-type:off
+(_createMutableSource = _react.default.createMutableSource) !== null && _createMutableSource !== void 0 ? _createMutableSource : _react.default.unstable_createMutableSource;
+const useMutableSource = // flowlint-next-line unclear-type:off
+(_useMutableSource = _react.default.useMutableSource) !== null && _useMutableSource !== void 0 ? _useMutableSource : _react.default.unstable_useMutableSource; // https://github.com/reactwg/react-18/discussions/86
+
+const useSyncExternalStore = // flowlint-next-line unclear-type:off
+(_useSyncExternalStore = _react.default.useSyncExternalStore) !== null && _useSyncExternalStore !== void 0 ? _useSyncExternalStore : // flowlint-next-line unclear-type:off
+_react.default.unstable_useSyncExternalStore;
+/**
+ * mode: The React API and approach to use for syncing state with React
+ * early: Re-renders from Recoil updates occur:
+ *    1) earlier
+ *    2) in sync with React updates in the same batch
+ *    3) before transaction observers instead of after.
+ * concurrent: Is the current mode compatible with Concurrent Mode and useTransition()
+ */
+
+function reactMode() {
+  // NOTE: This mode is currently broken with some Suspense cases
+  // see Recoil_selector-test.js
+  if (Recoil_gkx('recoil_transition_support')) {
+    return {
+      mode: 'TRANSITION_SUPPORT',
+      early: true,
+      concurrent: true
+    };
+  }
+
+  if (Recoil_gkx('recoil_sync_external_store') && useSyncExternalStore != null) {
+    return {
+      mode: 'SYNC_EXTERNAL_STORE',
+      early: true,
+      concurrent: false
+    };
+  }
+
+  if (Recoil_gkx('recoil_mutable_source') && useMutableSource != null && typeof window !== 'undefined' && !window.$disableRecoilValueMutableSource_TEMP_HACK_DO_NOT_USE) {
+    return Recoil_gkx('recoil_suppress_rerender_in_callback') ? {
+      mode: 'MUTABLE_SOURCE',
+      early: true,
+      concurrent: true
+    } : {
+      mode: 'MUTABLE_SOURCE',
+      early: false,
+      concurrent: false
+    };
+  }
+
+  return Recoil_gkx('recoil_suppress_rerender_in_callback') ? {
+    mode: 'LEGACY',
+    early: true,
+    concurrent: false
+  } : {
+    mode: 'LEGACY',
+    early: false,
+    concurrent: false
+  };
+} // TODO Need to figure out if there is a standard/open-source equivalent to see if hot module replacement is happening:
+
+
+function isFastRefreshEnabled() {
+  // @fb-only: const {isAcceptingUpdate} = require('__debug');
+  // @fb-only: return typeof isAcceptingUpdate === 'function' && isAcceptingUpdate();
+  return false; // @oss-only
+}
+
+var Recoil_ReactMode = {
+  createMutableSource,
+  useMutableSource,
+  useSyncExternalStore,
+  reactMode,
+  isFastRefreshEnabled
+};
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * 
+ * @format
+ */
+// eslint-disable-next-line no-unused-vars
+
+class AbstractRecoilValue {
+  constructor(newKey) {
+    _defineProperty(this, "key", void 0);
+
+    this.key = newKey;
+  }
+
+}
+
+class RecoilState extends AbstractRecoilValue {}
+
+class RecoilValueReadOnly extends AbstractRecoilValue {}
+
+function isRecoilValue(x) {
+  return x instanceof RecoilState || x instanceof RecoilValueReadOnly;
+}
+
+var Recoil_RecoilValue = {
+  AbstractRecoilValue,
+  RecoilState,
+  RecoilValueReadOnly,
+  isRecoilValue
+};
+var Recoil_RecoilValue_1 = Recoil_RecoilValue.AbstractRecoilValue;
+var Recoil_RecoilValue_2 = Recoil_RecoilValue.RecoilState;
+var Recoil_RecoilValue_3 = Recoil_RecoilValue.RecoilValueReadOnly;
+var Recoil_RecoilValue_4 = Recoil_RecoilValue.isRecoilValue;
+var Recoil_RecoilValue$1 = /*#__PURE__*/Object.freeze({
+  __proto__: null,
+  AbstractRecoilValue: Recoil_RecoilValue_1,
+  RecoilState: Recoil_RecoilValue_2,
+  RecoilValueReadOnly: Recoil_RecoilValue_3,
+  isRecoilValue: Recoil_RecoilValue_4
+});
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * 
+ * @format
+ */
+
+function sprintf(format, ...args) {
+  let index = 0;
+  return format.replace(/%s/g, () => String(args[index++]));
+}
+
+var sprintf_1 = sprintf;
+
+function expectationViolation(format, ...args) {
+  if ("development" !== "production") {
+    const message = sprintf_1.call(null, format, ...args);
+    const error = new Error(message);
+    error.name = 'Expectation Violation';
+    console.error(error);
+  }
+}
+
+var expectationViolation_1 = expectationViolation; // @oss-only
+
+var Recoil_expectationViolation = expectationViolation_1;
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * 
+ * @format
+ */
+
+/**
+ * Creates a new iterable whose output is generated by passing the input
+ * iterable's values through the mapper function.
+ */
+
+function mapIterable(iterable, callback) {
+  // Use generator to create iterable/iterator
+  return function* () {
+    let index = 0;
+
+    for (const value of iterable) {
+      yield callback(value, index++);
+    }
+  }();
+}
+
+var Recoil_mapIterable = mapIterable;
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * 
+ * @format
+ */
+
+function recoverableViolation(message, _projectName, {
+  error
+} = {}) {
+  if ("development" !== "production") {
+    console.error(message, error);
+  }
+
+  return null;
+}
+
+var recoverableViolation_1 = recoverableViolation; // @oss-only
+
+var Recoil_recoverableViolation = recoverableViolation_1;
+const {
+  isFastRefreshEnabled: isFastRefreshEnabled$1
+} = Recoil_ReactMode;
+
+class DefaultValue {}
+
+const DEFAULT_VALUE = new DefaultValue();
+
+class RecoilValueNotReady extends Error {
+  constructor(key) {
+    super(`Tried to set the value of Recoil selector ${key} using an updater function, but it is an async selector in a pending or error state; this is not supported.`);
+  }
+
+} // flowlint-next-line unclear-type:off
+
+
+const nodes = new Map(); // flowlint-next-line unclear-type:off
+
+const recoilValues = new Map();
+/* eslint-disable no-redeclare */
+
+function recoilValuesForKeys(keys) {
+  return Recoil_mapIterable(keys, key => Recoil_nullthrows(recoilValues.get(key)));
+}
+
+function registerNode(node) {
+  if (nodes.has(node.key)) {
+    const message = `Duplicate atom key "${node.key}". This is a FATAL ERROR in
+      production. But it is safe to ignore this warning if it occurred because of
+      hot module replacement.`;
+
+    if ("development" !== "production") {
+      // TODO Figure this out for open-source
+      if (!isFastRefreshEnabled$1()) {
+        Recoil_expectationViolation(message, 'recoil');
+      }
+    } else {
+      // @fb-only: recoverableViolation(message, 'recoil');
+      console.warn(message); // @oss-only
+    }
+  }
+
+  nodes.set(node.key, node);
+  const recoilValue = node.set == null ? new Recoil_RecoilValue$1.RecoilValueReadOnly(node.key) : new Recoil_RecoilValue$1.RecoilState(node.key);
+  recoilValues.set(node.key, recoilValue);
+  return recoilValue;
+}
+/* eslint-enable no-redeclare */
+
+
+class NodeMissingError extends Error {} // flowlint-next-line unclear-type:off
+
+
+function getNode(key) {
+  const node = nodes.get(key);
+
+  if (node == null) {
+    throw new NodeMissingError(`Missing definition for RecoilValue: "${key}""`);
+  }
+
+  return node;
+} // flowlint-next-line unclear-type:off
+
+
+function getNodeMaybe(key) {
+  return nodes.get(key);
+}
+
+const configDeletionHandlers = new Map();
+
+function deleteNodeConfigIfPossible(key) {
+  var _node$shouldDeleteCon;
+
+  if (!Recoil_gkx('recoil_memory_managament_2020')) {
+    return;
+  }
+
+  const node = nodes.get(key);
+
+  if (node !== null && node !== void 0 && (_node$shouldDeleteCon = node.shouldDeleteConfigOnRelease) !== null && _node$shouldDeleteCon !== void 0 && _node$shouldDeleteCon.call(node)) {
+    var _getConfigDeletionHan;
+
+    nodes.delete(key);
+    (_getConfigDeletionHan = getConfigDeletionHandler(key)) === null || _getConfigDeletionHan === void 0 ? void 0 : _getConfigDeletionHan();
+    configDeletionHandlers.delete(key);
+  }
+}
+
+function setConfigDeletionHandler(key, fn) {
+  if (!Recoil_gkx('recoil_memory_managament_2020')) {
+    return;
+  }
+
+  if (fn === undefined) {
+    configDeletionHandlers.delete(key);
+  } else {
+    configDeletionHandlers.set(key, fn);
+  }
+}
+
+function getConfigDeletionHandler(key) {
+  return configDeletionHandlers.get(key);
+}
+
+var Recoil_Node = {
+  nodes,
+  recoilValues,
+  registerNode,
+  getNode,
+  getNodeMaybe,
+  deleteNodeConfigIfPossible,
+  setConfigDeletionHandler,
+  getConfigDeletionHandler,
+  recoilValuesForKeys,
+  NodeMissingError,
+  DefaultValue,
+  DEFAULT_VALUE,
+  RecoilValueNotReady
+};
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * 
+ * @format
+ */
+
+function enqueueExecution(s, f) {
+  f();
+}
+
+var Recoil_Queue = {
+  enqueueExecution
+};
+
+function createCommonjsModule(fn, module) {
+  return module = {
+    exports: {}
+  }, fn(module, module.exports), module.exports;
+}
+
+var hamt_1 = createCommonjsModule(function (module) {
+  var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
+    return typeof obj;
+  } : function (obj) {
+    return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
+  };
+  /**
+      @fileOverview Hash Array Mapped Trie.
+  
+      Code based on: https://github.com/exclipy/pdata
+  */
+
+
+  var hamt = {}; // export
+
+  /* Configuration
+   ******************************************************************************/
+
+  var SIZE = 5;
+  var BUCKET_SIZE = Math.pow(2, SIZE);
+  var MASK = BUCKET_SIZE - 1;
+  var MAX_INDEX_NODE = BUCKET_SIZE / 2;
+  var MIN_ARRAY_NODE = BUCKET_SIZE / 4;
+  /*
+   ******************************************************************************/
+
+  var nothing = {};
+
+  var constant = function constant(x) {
+    return function () {
+      return x;
+    };
+  };
+  /**
+      Get 32 bit hash of string.
+  
+      Based on:
+      http://stackoverflow.com/questions/7616461/generate-a-hash-from-string-in-javascript-jquery
+  */
+
+
+  var hash = hamt.hash = function (str) {
+    var type = typeof str === 'undefined' ? 'undefined' : _typeof(str);
+    if (type === 'number') return str;
+    if (type !== 'string') str += '';
+    var hash = 0;
+
+    for (var i = 0, len = str.length; i < len; ++i) {
+      var c = str.charCodeAt(i);
+      hash = (hash << 5) - hash + c | 0;
+    }
+
+    return hash;
+  };
+  /* Bit Ops
+   ******************************************************************************/
+
+  /**
+      Hamming weight.
+  
+      Taken from: http://jsperf.com/hamming-weight
+  */
+
+
+  var popcount = function popcount(x) {
+    x -= x >> 1 & 0x55555555;
+    x = (x & 0x33333333) + (x >> 2 & 0x33333333);
+    x = x + (x >> 4) & 0x0f0f0f0f;
+    x += x >> 8;
+    x += x >> 16;
+    return x & 0x7f;
+  };
+
+  var hashFragment = function hashFragment(shift, h) {
+    return h >>> shift & MASK;
+  };
+
+  var toBitmap = function toBitmap(x) {
+    return 1 << x;
+  };
+
+  var fromBitmap = function fromBitmap(bitmap, bit) {
+    return popcount(bitmap & bit - 1);
+  };
+  /* Array Ops
+   ******************************************************************************/
+
+  /**
+      Set a value in an array.
+  
+      @param mutate Should the input array be mutated?
+      @param at Index to change.
+      @param v New value
+      @param arr Array.
+  */
+
+
+  var arrayUpdate = function arrayUpdate(mutate, at, v, arr) {
+    var out = arr;
+
+    if (!mutate) {
+      var len = arr.length;
+      out = new Array(len);
+
+      for (var i = 0; i < len; ++i) {
+        out[i] = arr[i];
+      }
+    }
+
+    out[at] = v;
+    return out;
+  };
+  /**
+      Remove a value from an array.
+  
+      @param mutate Should the input array be mutated?
+      @param at Index to remove.
+      @param arr Array.
+  */
+
+
+  var arraySpliceOut = function arraySpliceOut(mutate, at, arr) {
+    var newLen = arr.length - 1;
+    var i = 0;
+    var g = 0;
+    var out = arr;
+
+    if (mutate) {
+      i = g = at;
+    } else {
+      out = new Array(newLen);
+
+      while (i < at) {
+        out[g++] = arr[i++];
+      }
+    }
+
+    ++i;
+
+    while (i <= newLen) {
+      out[g++] = arr[i++];
+    }
+
+    if (mutate) {
+      out.length = newLen;
+    }
+
+    return out;
+  };
+  /**
+      Insert a value into an array.
+  
+      @param mutate Should the input array be mutated?
+      @param at Index to insert at.
+      @param v Value to insert,
+      @param arr Array.
+  */
+
+
+  var arraySpliceIn = function arraySpliceIn(mutate, at, v, arr) {
+    var len = arr.length;
+
+    if (mutate) {
+      var _i = len;
+
+      while (_i >= at) {
+        arr[_i--] = arr[_i];
+      }
+
+      arr[at] = v;
+      return arr;
+    }
+
+    var i = 0,
+        g = 0;
+    var out = new Array(len + 1);
+
+    while (i < at) {
+      out[g++] = arr[i++];
+    }
+
+    out[at] = v;
+
+    while (i < len) {
+      out[++g] = arr[i++];
+    }
+
+    return out;
+  };
+  /* Node Structures
+   ******************************************************************************/
+
+
+  var LEAF = 1;
+  var COLLISION = 2;
+  var INDEX = 3;
+  var ARRAY = 4;
+  /**
+      Empty node.
+  */
+
+  var empty = {
+    __hamt_isEmpty: true
+  };
+
+  var isEmptyNode = function isEmptyNode(x) {
+    return x === empty || x && x.__hamt_isEmpty;
+  };
+  /**
+      Leaf holding a value.
+  
+      @member edit Edit of the node.
+      @member hash Hash of key.
+      @member key Key.
+      @member value Value stored.
+  */
+
+
+  var Leaf = function Leaf(edit, hash, key, value) {
+    return {
+      type: LEAF,
+      edit: edit,
+      hash: hash,
+      key: key,
+      value: value,
+      _modify: Leaf__modify
+    };
+  };
+  /**
+      Leaf holding multiple values with the same hash but different keys.
+  
+      @member edit Edit of the node.
+      @member hash Hash of key.
+      @member children Array of collision children node.
+  */
+
+
+  var Collision = function Collision(edit, hash, children) {
+    return {
+      type: COLLISION,
+      edit: edit,
+      hash: hash,
+      children: children,
+      _modify: Collision__modify
+    };
+  };
+  /**
+      Internal node with a sparse set of children.
+  
+      Uses a bitmap and array to pack children.
+  
+    @member edit Edit of the node.
+      @member mask Bitmap that encode the positions of children in the array.
+      @member children Array of child nodes.
+  */
+
+
+  var IndexedNode = function IndexedNode(edit, mask, children) {
+    return {
+      type: INDEX,
+      edit: edit,
+      mask: mask,
+      children: children,
+      _modify: IndexedNode__modify
+    };
+  };
+  /**
+      Internal node with many children.
+  
+      @member edit Edit of the node.
+      @member size Number of children.
+      @member children Array of child nodes.
+  */
+
+
+  var ArrayNode = function ArrayNode(edit, size, children) {
+    return {
+      type: ARRAY,
+      edit: edit,
+      size: size,
+      children: children,
+      _modify: ArrayNode__modify
+    };
+  };
+  /**
+      Is `node` a leaf node?
+  */
+
+
+  var isLeaf = function isLeaf(node) {
+    return node === empty || node.type === LEAF || node.type === COLLISION;
+  };
+  /* Internal node operations.
+   ******************************************************************************/
+
+  /**
+      Expand an indexed node into an array node.
+  
+    @param edit Current edit.
+      @param frag Index of added child.
+      @param child Added child.
+      @param mask Index node mask before child added.
+      @param subNodes Index node children before child added.
+  */
+
+
+  var expand = function expand(edit, frag, child, bitmap, subNodes) {
+    var arr = [];
+    var bit = bitmap;
+    var count = 0;
+
+    for (var i = 0; bit; ++i) {
+      if (bit & 1) arr[i] = subNodes[count++];
+      bit >>>= 1;
+    }
+
+    arr[frag] = child;
+    return ArrayNode(edit, count + 1, arr);
+  };
+  /**
+      Collapse an array node into a indexed node.
+  
+    @param edit Current edit.
+      @param count Number of elements in new array.
+      @param removed Index of removed element.
+      @param elements Array node children before remove.
+  */
+
+
+  var pack = function pack(edit, count, removed, elements) {
+    var children = new Array(count - 1);
+    var g = 0;
+    var bitmap = 0;
+
+    for (var i = 0, len = elements.length; i < len; ++i) {
+      if (i !== removed) {
+        var elem = elements[i];
+
+        if (elem && !isEmptyNode(elem)) {
+          children[g++] = elem;
+          bitmap |= 1 << i;
+        }
+      }
+    }
+
+    return IndexedNode(edit, bitmap, children);
+  };
+  /**
+      Merge two leaf nodes.
+  
+      @param shift Current shift.
+      @param h1 Node 1 hash.
+      @param n1 Node 1.
+      @param h2 Node 2 hash.
+      @param n2 Node 2.
+  */
+
+
+  var mergeLeaves = function mergeLeaves(edit, shift, h1, n1, h2, n2) {
+    if (h1 === h2) return Collision(edit, h1, [n2, n1]);
+    var subH1 = hashFragment(shift, h1);
+    var subH2 = hashFragment(shift, h2);
+    return IndexedNode(edit, toBitmap(subH1) | toBitmap(subH2), subH1 === subH2 ? [mergeLeaves(edit, shift + SIZE, h1, n1, h2, n2)] : subH1 < subH2 ? [n1, n2] : [n2, n1]);
+  };
+  /**
+      Update an entry in a collision list.
+  
+      @param mutate Should mutation be used?
+      @param edit Current edit.
+      @param keyEq Key compare function.
+      @param hash Hash of collision.
+      @param list Collision list.
+      @param f Update function.
+      @param k Key to update.
+      @param size Size ref.
+  */
+
+
+  var updateCollisionList = function updateCollisionList(mutate, edit, keyEq, h, list, f, k, size) {
+    var len = list.length;
+
+    for (var i = 0; i < len; ++i) {
+      var child = list[i];
+
+      if (keyEq(k, child.key)) {
+        var value = child.value;
+
+        var _newValue = f(value);
+
+        if (_newValue === value) return list;
+
+        if (_newValue === nothing) {
+          --size.value;
+          return arraySpliceOut(mutate, i, list);
+        }
+
+        return arrayUpdate(mutate, i, Leaf(edit, h, k, _newValue), list);
+      }
+    }
+
+    var newValue = f();
+    if (newValue === nothing) return list;
+    ++size.value;
+    return arrayUpdate(mutate, len, Leaf(edit, h, k, newValue), list);
+  };
+
+  var canEditNode = function canEditNode(edit, node) {
+    return edit === node.edit;
+  };
+  /* Editing
+   ******************************************************************************/
+
+
+  var Leaf__modify = function Leaf__modify(edit, keyEq, shift, f, h, k, size) {
+    if (keyEq(k, this.key)) {
+      var _v = f(this.value);
+
+      if (_v === this.value) return this;else if (_v === nothing) {
+        --size.value;
+        return empty;
+      }
+
+      if (canEditNode(edit, this)) {
+        this.value = _v;
+        return this;
+      }
+
+      return Leaf(edit, h, k, _v);
+    }
+
+    var v = f();
+    if (v === nothing) return this;
+    ++size.value;
+    return mergeLeaves(edit, shift, this.hash, this, h, Leaf(edit, h, k, v));
+  };
+
+  var Collision__modify = function Collision__modify(edit, keyEq, shift, f, h, k, size) {
+    if (h === this.hash) {
+      var canEdit = canEditNode(edit, this);
+      var list = updateCollisionList(canEdit, edit, keyEq, this.hash, this.children, f, k, size);
+      if (list === this.children) return this;
+      return list.length > 1 ? Collision(edit, this.hash, list) : list[0]; // collapse single element collision list
+    }
+
+    var v = f();
+    if (v === nothing) return this;
+    ++size.value;
+    return mergeLeaves(edit, shift, this.hash, this, h, Leaf(edit, h, k, v));
+  };
+
+  var IndexedNode__modify = function IndexedNode__modify(edit, keyEq, shift, f, h, k, size) {
+    var mask = this.mask;
+    var children = this.children;
+    var frag = hashFragment(shift, h);
+    var bit = toBitmap(frag);
+    var indx = fromBitmap(mask, bit);
+    var exists = mask & bit;
+    var current = exists ? children[indx] : empty;
+
+    var child = current._modify(edit, keyEq, shift + SIZE, f, h, k, size);
+
+    if (current === child) return this;
+    var canEdit = canEditNode(edit, this);
+    var bitmap = mask;
+    var newChildren = void 0;
+
+    if (exists && isEmptyNode(child)) {
+      // remove
+      bitmap &= ~bit;
+      if (!bitmap) return empty;
+      if (children.length <= 2 && isLeaf(children[indx ^ 1])) return children[indx ^ 1]; // collapse
+
+      newChildren = arraySpliceOut(canEdit, indx, children);
+    } else if (!exists && !isEmptyNode(child)) {
+      // add
+      if (children.length >= MAX_INDEX_NODE) return expand(edit, frag, child, mask, children);
+      bitmap |= bit;
+      newChildren = arraySpliceIn(canEdit, indx, child, children);
+    } else {
+      // modify
+      newChildren = arrayUpdate(canEdit, indx, child, children);
+    }
+
+    if (canEdit) {
+      this.mask = bitmap;
+      this.children = newChildren;
+      return this;
+    }
+
+    return IndexedNode(edit, bitmap, newChildren);
+  };
+
+  var ArrayNode__modify = function ArrayNode__modify(edit, keyEq, shift, f, h, k, size) {
+    var count = this.size;
+    var children = this.children;
+    var frag = hashFragment(shift, h);
+    var child = children[frag];
+
+    var newChild = (child || empty)._modify(edit, keyEq, shift + SIZE, f, h, k, size);
+
+    if (child === newChild) return this;
+    var canEdit = canEditNode(edit, this);
+    var newChildren = void 0;
+
+    if (isEmptyNode(child) && !isEmptyNode(newChild)) {
+      // add
+      ++count;
+      newChildren = arrayUpdate(canEdit, frag, newChild, children);
+    } else if (!isEmptyNode(child) && isEmptyNode(newChild)) {
+      // remove
+      --count;
+      if (count <= MIN_ARRAY_NODE) return pack(edit, count, frag, children);
+      newChildren = arrayUpdate(canEdit, frag, empty, children);
+    } else {
+      // modify
+      newChildren = arrayUpdate(canEdit, frag, newChild, children);
+    }
+
+    if (canEdit) {
+      this.size = count;
+      this.children = newChildren;
+      return this;
+    }
+
+    return ArrayNode(edit, count, newChildren);
+  };
+
+  empty._modify = function (edit, keyEq, shift, f, h, k, size) {
+    var v = f();
+    if (v === nothing) return empty;
+    ++size.value;
+    return Leaf(edit, h, k, v);
+  };
+  /*
+   ******************************************************************************/
+
+
+  function Map(editable, edit, config, root, size) {
+    this._editable = editable;
+    this._edit = edit;
+    this._config = config;
+    this._root = root;
+    this._size = size;
+  }
+
+  Map.prototype.setTree = function (newRoot, newSize) {
+    if (this._editable) {
+      this._root = newRoot;
+      this._size = newSize;
+      return this;
+    }
+
+    return newRoot === this._root ? this : new Map(this._editable, this._edit, this._config, newRoot, newSize);
+  };
+  /* Queries
+   ******************************************************************************/
+
+  /**
+      Lookup the value for `key` in `map` using a custom `hash`.
+  
+      Returns the value or `alt` if none.
+  */
+
+
+  var tryGetHash = hamt.tryGetHash = function (alt, hash, key, map) {
+    var node = map._root;
+    var shift = 0;
+    var keyEq = map._config.keyEq;
+
+    while (true) {
+      switch (node.type) {
+        case LEAF:
+          {
+            return keyEq(key, node.key) ? node.value : alt;
+          }
+
+        case COLLISION:
+          {
+            if (hash === node.hash) {
+              var children = node.children;
+
+              for (var i = 0, len = children.length; i < len; ++i) {
+                var child = children[i];
+                if (keyEq(key, child.key)) return child.value;
+              }
+            }
+
+            return alt;
+          }
+
+        case INDEX:
+          {
+            var frag = hashFragment(shift, hash);
+            var bit = toBitmap(frag);
+
+            if (node.mask & bit) {
+              node = node.children[fromBitmap(node.mask, bit)];
+              shift += SIZE;
+              break;
+            }
+
+            return alt;
+          }
+
+        case ARRAY:
+          {
+            node = node.children[hashFragment(shift, hash)];
+
+            if (node) {
+              shift += SIZE;
+              break;
+            }
+
+            return alt;
+          }
+
+        default:
+          return alt;
+      }
+    }
+  };
+
+  Map.prototype.tryGetHash = function (alt, hash, key) {
+    return tryGetHash(alt, hash, key, this);
+  };
+  /**
+      Lookup the value for `key` in `map` using internal hash function.
+  
+      @see `tryGetHash`
+  */
+
+
+  var tryGet = hamt.tryGet = function (alt, key, map) {
+    return tryGetHash(alt, map._config.hash(key), key, map);
+  };
+
+  Map.prototype.tryGet = function (alt, key) {
+    return tryGet(alt, key, this);
+  };
+  /**
+      Lookup the value for `key` in `map` using a custom `hash`.
+  
+      Returns the value or `undefined` if none.
+  */
+
+
+  var getHash = hamt.getHash = function (hash, key, map) {
+    return tryGetHash(undefined, hash, key, map);
+  };
+
+  Map.prototype.getHash = function (hash, key) {
+    return getHash(hash, key, this);
+  };
+  /**
+      Lookup the value for `key` in `map` using internal hash function.
+  
+      @see `get`
+  */
+
+
+  var get = hamt.get = function (key, map) {
+    return tryGetHash(undefined, map._config.hash(key), key, map);
+  };
+
+  Map.prototype.get = function (key, alt) {
+    return tryGet(alt, key, this);
+  };
+  /**
+      Does an entry exist for `key` in `map`? Uses custom `hash`.
+  */
+
+
+  var hasHash = hamt.has = function (hash, key, map) {
+    return tryGetHash(nothing, hash, key, map) !== nothing;
+  };
+
+  Map.prototype.hasHash = function (hash, key) {
+    return hasHash(hash, key, this);
+  };
+  /**
+      Does an entry exist for `key` in `map`? Uses internal hash function.
+  */
+
+
+  var has = hamt.has = function (key, map) {
+    return hasHash(map._config.hash(key), key, map);
+  };
+
+  Map.prototype.has = function (key) {
+    return has(key, this);
+  };
+
+  var defKeyCompare = function defKeyCompare(x, y) {
+    return x === y;
+  };
+  /**
+      Create an empty map.
+  
+      @param config Configuration.
+  */
+
+
+  hamt.make = function (config) {
+    return new Map(0, 0, {
+      keyEq: config && config.keyEq || defKeyCompare,
+      hash: config && config.hash || hash
+    }, empty, 0);
+  };
+  /**
+      Empty map.
+  */
+
+
+  hamt.empty = hamt.make();
+  /**
+      Does `map` contain any elements?
+  */
+
+  var isEmpty = hamt.isEmpty = function (map) {
+    return map && !!isEmptyNode(map._root);
+  };
+
+  Map.prototype.isEmpty = function () {
+    return isEmpty(this);
+  };
+  /* Updates
+   ******************************************************************************/
+
+  /**
+      Alter the value stored for `key` in `map` using function `f` using
+      custom hash.
+  
+      `f` is invoked with the current value for `k` if it exists,
+      or no arguments if no such value exists. `modify` will always either
+      update or insert a value into the map.
+  
+      Returns a map with the modified value. Does not alter `map`.
+  */
+
+
+  var modifyHash = hamt.modifyHash = function (f, hash, key, map) {
+    var size = {
+      value: map._size
+    };
+
+    var newRoot = map._root._modify(map._editable ? map._edit : NaN, map._config.keyEq, 0, f, hash, key, size);
+
+    return map.setTree(newRoot, size.value);
+  };
+
+  Map.prototype.modifyHash = function (hash, key, f) {
+    return modifyHash(f, hash, key, this);
+  };
+  /**
+      Alter the value stored for `key` in `map` using function `f` using
+      internal hash function.
+  
+      @see `modifyHash`
+  */
+
+
+  var modify = hamt.modify = function (f, key, map) {
+    return modifyHash(f, map._config.hash(key), key, map);
+  };
+
+  Map.prototype.modify = function (key, f) {
+    return modify(f, key, this);
+  };
+  /**
+      Store `value` for `key` in `map` using custom `hash`.
+  
+      Returns a map with the modified value. Does not alter `map`.
+  */
+
+
+  var setHash = hamt.setHash = function (hash, key, value, map) {
+    return modifyHash(constant(value), hash, key, map);
+  };
+
+  Map.prototype.setHash = function (hash, key, value) {
+    return setHash(hash, key, value, this);
+  };
+  /**
+      Store `value` for `key` in `map` using internal hash function.
+  
+      @see `setHash`
+  */
+
+
+  var set = hamt.set = function (key, value, map) {
+    return setHash(map._config.hash(key), key, value, map);
+  };
+
+  Map.prototype.set = function (key, value) {
+    return set(key, value, this);
+  };
+  /**
+      Remove the entry for `key` in `map`.
+  
+      Returns a map with the value removed. Does not alter `map`.
+  */
+
+
+  var del = constant(nothing);
+
+  var removeHash = hamt.removeHash = function (hash, key, map) {
+    return modifyHash(del, hash, key, map);
+  };
+
+  Map.prototype.removeHash = Map.prototype.deleteHash = function (hash, key) {
+    return removeHash(hash, key, this);
+  };
+  /**
+      Remove the entry for `key` in `map` using internal hash function.
+  
+      @see `removeHash`
+  */
+
+
+  var remove = hamt.remove = function (key, map) {
+    return removeHash(map._config.hash(key), key, map);
+  };
+
+  Map.prototype.remove = Map.prototype.delete = function (key) {
+    return remove(key, this);
+  };
+  /* Mutation
+   ******************************************************************************/
+
+  /**
+      Mark `map` as mutable.
+   */
+
+
+  var beginMutation = hamt.beginMutation = function (map) {
+    return new Map(map._editable + 1, map._edit + 1, map._config, map._root, map._size);
+  };
+
+  Map.prototype.beginMutation = function () {
+    return beginMutation(this);
+  };
+  /**
+      Mark `map` as immutable.
+   */
+
+
+  var endMutation = hamt.endMutation = function (map) {
+    map._editable = map._editable && map._editable - 1;
+    return map;
+  };
+
+  Map.prototype.endMutation = function () {
+    return endMutation(this);
+  };
+  /**
+      Mutate `map` within the context of `f`.
+      @param f
+      @param map HAMT
+  */
+
+
+  var mutate = hamt.mutate = function (f, map) {
+    var transient = beginMutation(map);
+    f(transient);
+    return endMutation(transient);
+  };
+
+  Map.prototype.mutate = function (f) {
+    return mutate(f, this);
+  };
+  /* Traversal
+   ******************************************************************************/
+
+  /**
+      Apply a continuation.
+  */
+
+
+  var appk = function appk(k) {
+    return k && lazyVisitChildren(k[0], k[1], k[2], k[3], k[4]);
+  };
+  /**
+      Recursively visit all values stored in an array of nodes lazily.
+  */
+
+
+  var lazyVisitChildren = function lazyVisitChildren(len, children, i, f, k) {
+    while (i < len) {
+      var child = children[i++];
+      if (child && !isEmptyNode(child)) return lazyVisit(child, f, [len, children, i, f, k]);
+    }
+
+    return appk(k);
+  };
+  /**
+      Recursively visit all values stored in `node` lazily.
+  */
+
+
+  var lazyVisit = function lazyVisit(node, f, k) {
+    switch (node.type) {
+      case LEAF:
+        return {
+          value: f(node),
+          rest: k
+        };
+
+      case COLLISION:
+      case ARRAY:
+      case INDEX:
+        var children = node.children;
+        return lazyVisitChildren(children.length, children, 0, f, k);
+
+      default:
+        return appk(k);
+    }
+  };
+
+  var DONE = {
+    done: true
+  };
+  /**
+      Javascript iterator over a map.
+  */
+
+  function MapIterator(v) {
+    this.v = v;
+  }
+
+  MapIterator.prototype.next = function () {
+    if (!this.v) return DONE;
+    var v0 = this.v;
+    this.v = appk(v0.rest);
+    return v0;
+  };
+
+  MapIterator.prototype[Symbol.iterator] = function () {
+    return this;
+  };
+  /**
+      Lazily visit each value in map with function `f`.
+  */
+
+
+  var visit = function visit(map, f) {
+    return new MapIterator(lazyVisit(map._root, f));
+  };
+  /**
+      Get a Javascsript iterator of `map`.
+  
+      Iterates over `[key, value]` arrays.
+  */
+
+
+  var buildPairs = function buildPairs(x) {
+    return [x.key, x.value];
+  };
+
+  var entries = hamt.entries = function (map) {
+    return visit(map, buildPairs);
+  };
+
+  Map.prototype.entries = Map.prototype[Symbol.iterator] = function () {
+    return entries(this);
+  };
+  /**
+      Get array of all keys in `map`.
+  
+      Order is not guaranteed.
+  */
+
+
+  var buildKeys = function buildKeys(x) {
+    return x.key;
+  };
+
+  var keys = hamt.keys = function (map) {
+    return visit(map, buildKeys);
+  };
+
+  Map.prototype.keys = function () {
+    return keys(this);
+  };
+  /**
+      Get array of all values in `map`.
+  
+      Order is not guaranteed, duplicates are preserved.
+  */
+
+
+  var buildValues = function buildValues(x) {
+    return x.value;
+  };
+
+  var values = hamt.values = Map.prototype.values = function (map) {
+    return visit(map, buildValues);
+  };
+
+  Map.prototype.values = function () {
+    return values(this);
+  };
+  /* Fold
+   ******************************************************************************/
+
+  /**
+      Visit every entry in the map, aggregating data.
+  
+      Order of nodes is not guaranteed.
+  
+      @param f Function mapping accumulated value, value, and key to new value.
+      @param z Starting value.
+      @param m HAMT
+  */
+
+
+  var fold = hamt.fold = function (f, z, m) {
+    var root = m._root;
+    if (root.type === LEAF) return f(z, root.value, root.key);
+    var toVisit = [root.children];
+    var children = void 0;
+
+    while (children = toVisit.pop()) {
+      for (var i = 0, len = children.length; i < len;) {
+        var child = children[i++];
+
+        if (child && child.type) {
+          if (child.type === LEAF) z = f(z, child.value, child.key);else toVisit.push(child.children);
+        }
+      }
+    }
+
+    return z;
+  };
+
+  Map.prototype.fold = function (f, z) {
+    return fold(f, z, this);
+  };
+  /**
+      Visit every entry in the map, aggregating data.
+  
+      Order of nodes is not guaranteed.
+  
+      @param f Function invoked with value and key
+      @param map HAMT
+  */
+
+
+  var forEach = hamt.forEach = function (f, map) {
+    return fold(function (_, value, key) {
+      return f(value, key, map);
+    }, null, map);
+  };
+
+  Map.prototype.forEach = function (f) {
+    return forEach(f, this);
+  };
+  /* Aggregate
+   ******************************************************************************/
+
+  /**
+      Get the number of entries in `map`.
+  */
+
+
+  var count = hamt.count = function (map) {
+    return map._size;
+  };
+
+  Map.prototype.count = function () {
+    return count(this);
+  };
+
+  Object.defineProperty(Map.prototype, 'size', {
+    get: Map.prototype.count
+  });
+  /* Export
+   ******************************************************************************/
+
+  if (module.exports) {
+    module.exports = hamt;
+  } else {
+    undefined.hamt = hamt;
+  }
+});
+
+class BuiltInMap {
+  constructor(existing) {
+    _defineProperty(this, "_map", void 0);
+
+    this._map = new Map(existing === null || existing === void 0 ? void 0 : existing.entries());
+  }
+
+  keys() {
+    return this._map.keys();
+  }
+
+  entries() {
+    return this._map.entries();
+  }
+
+  get(k) {
+    return this._map.get(k);
+  }
+
+  has(k) {
+    return this._map.has(k);
+  }
+
+  set(k, v) {
+    this._map.set(k, v);
+
+    return this;
+  }
+
+  delete(k) {
+    this._map.delete(k);
+
+    return this;
+  }
+
+  clone() {
+    return persistentMap(this);
+  }
+
+  toMap() {
+    return new Map(this._map);
+  }
+
+}
+
+class HashArrayMappedTrieMap {
+  // Because hamt.empty is not a function there is no way to introduce type
+  // parameters on it, so empty is typed as HAMTPlusMap<string, mixed>.
+  // $FlowIssue
+  constructor(existing) {
+    _defineProperty(this, "_hamt", hamt_1.empty.beginMutation());
+
+    if (existing instanceof HashArrayMappedTrieMap) {
+      const h = existing._hamt.endMutation();
+
+      existing._hamt = h.beginMutation();
+      this._hamt = h.beginMutation();
+    } else if (existing) {
+      for (const [k, v] of existing.entries()) {
+        this._hamt.set(k, v);
+      }
+    }
+  }
+
+  keys() {
+    return this._hamt.keys();
+  }
+
+  entries() {
+    return this._hamt.entries();
+  }
+
+  get(k) {
+    return this._hamt.get(k);
+  }
+
+  has(k) {
+    return this._hamt.has(k);
+  }
+
+  set(k, v) {
+    this._hamt.set(k, v);
+
+    return this;
+  }
+
+  delete(k) {
+    this._hamt.delete(k);
+
+    return this;
+  }
+
+  clone() {
+    return persistentMap(this);
+  }
+
+  toMap() {
+    return new Map(this._hamt);
+  }
+
+}
+
+function persistentMap(existing) {
+  if (Recoil_gkx('recoil_hamt_2020')) {
+    return new HashArrayMappedTrieMap(existing);
+  } else {
+    return new BuiltInMap(existing);
+  }
+}
+
+var Recoil_PersistentMap = {
+  persistentMap
+};
+var Recoil_PersistentMap_1 = Recoil_PersistentMap.persistentMap;
+var Recoil_PersistentMap$1 = /*#__PURE__*/Object.freeze({
+  __proto__: null,
+  persistentMap: Recoil_PersistentMap_1
+});
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * 
+ * @format
+ */
+
+/**
+ * Returns a set containing all of the values from the first set that are not
+ * present in any of the subsequent sets.
+ *
+ * Note: this is written procedurally (i.e., without filterSet) for performant
+ * use in tight loops.
+ */
+
+function differenceSets(set, ...setsWithValuesToRemove) {
+  const ret = new Set();
+
+  FIRST: for (const value of set) {
+    for (const otherSet of setsWithValuesToRemove) {
+      if (otherSet.has(value)) {
+        continue FIRST;
+      }
+    }
+
+    ret.add(value);
+  }
+
+  return ret;
+}
+
+var Recoil_differenceSets = differenceSets;
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * 
+ * @format
+ */
+
+/**
+ * Returns a new Map object with the same keys as the original, but with the
+ * values replaced with the output of the given callback function.
+ */
+
+function mapMap(map, callback) {
+  const result = new Map();
+  map.forEach((value, key) => {
+    result.set(key, callback(value, key));
+  });
+  return result;
+}
+
+var Recoil_mapMap = mapMap;
+
+function makeGraph() {
+  return {
+    nodeDeps: new Map(),
+    nodeToNodeSubscriptions: new Map()
+  };
+}
+
+function cloneGraph(graph) {
+  return {
+    nodeDeps: Recoil_mapMap(graph.nodeDeps, s => new Set(s)),
+    nodeToNodeSubscriptions: Recoil_mapMap(graph.nodeToNodeSubscriptions, s => new Set(s))
+  };
+} // Note that this overwrites the deps of existing nodes, rather than unioning
+// the new deps with the old deps.
+
+
+function mergeDepsIntoGraph(key, newDeps, graph, // If olderGraph is given then we will not overwrite changes made to the given
+// graph compared with olderGraph:
+olderGraph) {
+  const {
+    nodeDeps,
+    nodeToNodeSubscriptions
+  } = graph;
+  const oldDeps = nodeDeps.get(key);
+
+  if (oldDeps && olderGraph && oldDeps !== olderGraph.nodeDeps.get(key)) {
+    return;
+  } // Update nodeDeps:
+
+
+  nodeDeps.set(key, newDeps); // Add new deps to nodeToNodeSubscriptions:
+
+  const addedDeps = oldDeps == null ? newDeps : Recoil_differenceSets(newDeps, oldDeps);
+
+  for (const dep of addedDeps) {
+    if (!nodeToNodeSubscriptions.has(dep)) {
+      nodeToNodeSubscriptions.set(dep, new Set());
+    }
+
+    const existing = Recoil_nullthrows(nodeToNodeSubscriptions.get(dep));
+    existing.add(key);
+  } // Remove removed deps from nodeToNodeSubscriptions:
+
+
+  if (oldDeps) {
+    const removedDeps = Recoil_differenceSets(oldDeps, newDeps);
+
+    for (const dep of removedDeps) {
+      if (!nodeToNodeSubscriptions.has(dep)) {
+        return;
+      }
+
+      const existing = Recoil_nullthrows(nodeToNodeSubscriptions.get(dep));
+      existing.delete(key);
+
+      if (existing.size === 0) {
+        nodeToNodeSubscriptions.delete(dep);
+      }
+    }
+  }
+}
+
+function saveDepsToStore(key, deps, store, version) {
+  var _storeState$nextTree, _storeState$previousT, _storeState$previousT2, _storeState$previousT3;
+
+  const storeState = store.getState();
+
+  if (!(version === storeState.currentTree.version || version === ((_storeState$nextTree = storeState.nextTree) === null || _storeState$nextTree === void 0 ? void 0 : _storeState$nextTree.version) || version === ((_storeState$previousT = storeState.previousTree) === null || _storeState$previousT === void 0 ? void 0 : _storeState$previousT.version))) {
+    Recoil_recoverableViolation('Tried to save dependencies to a discarded tree');
+  } // Merge the dependencies discovered into the store's dependency map
+  // for the version that was read:
+
+
+  const graph = store.getGraph(version);
+  mergeDepsIntoGraph(key, deps, graph); // If this version is not the latest version, also write these dependencies
+  // into later versions if they don't already have their own:
+
+  if (version === ((_storeState$previousT2 = storeState.previousTree) === null || _storeState$previousT2 === void 0 ? void 0 : _storeState$previousT2.version)) {
+    const currentGraph = store.getGraph(storeState.currentTree.version);
+    mergeDepsIntoGraph(key, deps, currentGraph, graph);
+  }
+
+  if (version === ((_storeState$previousT3 = storeState.previousTree) === null || _storeState$previousT3 === void 0 ? void 0 : _storeState$previousT3.version) || version === storeState.currentTree.version) {
+    var _storeState$nextTree2;
+
+    const nextVersion = (_storeState$nextTree2 = storeState.nextTree) === null || _storeState$nextTree2 === void 0 ? void 0 : _storeState$nextTree2.version;
+
+    if (nextVersion !== undefined) {
+      const nextGraph = store.getGraph(nextVersion);
+      mergeDepsIntoGraph(key, deps, nextGraph, graph);
+    }
+  }
+}
+
+var Recoil_Graph = {
+  cloneGraph,
+  graph: makeGraph,
+  saveDepsToStore
+};
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * 
+ * @format
+ */
+
+let nextTreeStateVersion = 0;
+
+const getNextTreeStateVersion = () => nextTreeStateVersion++;
+
+let nextStoreID = 0;
+
+const getNextStoreID = () => nextStoreID++;
+
+let nextComponentID = 0;
+
+const getNextComponentID = () => nextComponentID++;
+
+var Recoil_Keys = {
+  getNextTreeStateVersion,
+  getNextStoreID,
+  getNextComponentID
+};
+const {
+  persistentMap: persistentMap$1
+} = Recoil_PersistentMap$1;
+const {
+  graph
+} = Recoil_Graph;
+const {
+  getNextTreeStateVersion: getNextTreeStateVersion$1
+} = Recoil_Keys;
+
+function makeEmptyTreeState() {
+  const version = getNextTreeStateVersion$1();
+  return {
+    version,
+    stateID: version,
+    transactionMetadata: {},
+    dirtyAtoms: new Set(),
+    atomValues: persistentMap$1(),
+    nonvalidatedAtoms: persistentMap$1()
+  };
+}
+
+function makeEmptyStoreState() {
+  const currentTree = makeEmptyTreeState();
+  return {
+    currentTree,
+    nextTree: null,
+    previousTree: null,
+    commitDepth: 0,
+    knownAtoms: new Set(),
+    knownSelectors: new Set(),
+    transactionSubscriptions: new Map(),
+    nodeTransactionSubscriptions: new Map(),
+    nodeToComponentSubscriptions: new Map(),
+    queuedComponentCallbacks_DEPRECATED: [],
+    suspendedComponentResolvers: new Set(),
+    graphsByVersion: new Map().set(currentTree.version, graph()),
+    retention: {
+      referenceCounts: new Map(),
+      nodesRetainedByZone: new Map(),
+      retainablesToCheckForRelease: new Set()
+    },
+    nodeCleanupFunctions: new Map()
+  };
+}
+
+var Recoil_State = {
+  makeEmptyTreeState,
+  makeEmptyStoreState,
+  getNextTreeStateVersion: getNextTreeStateVersion$1
+};
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * 
+ * @format
+ */
+
+class RetentionZone {}
+
+function retentionZone() {
+  return new RetentionZone();
+}
+
+var Recoil_RetentionZone = {
+  RetentionZone,
+  retentionZone
+};
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * Utilities for working with built-in Maps and Sets without mutating them.
+ *
+ * @emails oncall+recoil
+ * 
+ * @format
+ */
+
+function setByAddingToSet(set, v) {
+  const next = new Set(set);
+  next.add(v);
+  return next;
+}
+
+function setByDeletingFromSet(set, v) {
+  const next = new Set(set);
+  next.delete(v);
+  return next;
+}
+
+function mapBySettingInMap(map, k, v) {
+  const next = new Map(map);
+  next.set(k, v);
+  return next;
+}
+
+function mapByUpdatingInMap(map, k, updater) {
+  const next = new Map(map);
+  next.set(k, updater(next.get(k)));
+  return next;
+}
+
+function mapByDeletingFromMap(map, k) {
+  const next = new Map(map);
+  next.delete(k);
+  return next;
+}
+
+function mapByDeletingMultipleFromMap(map, ks) {
+  const next = new Map(map);
+  ks.forEach(k => next.delete(k));
+  return next;
+}
+
+var Recoil_CopyOnWrite = {
+  setByAddingToSet,
+  setByDeletingFromSet,
+  mapBySettingInMap,
+  mapByUpdatingInMap,
+  mapByDeletingFromMap,
+  mapByDeletingMultipleFromMap
+};
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * 
+ * @format
+ */
+
+/**
+ * Creates a new iterable whose output is generated by passing the input
+ * iterable's values through the filter function.
+ */
+
+function* filterIterable(iterable, predicate) {
+  // Use generator to create iterable/iterator
+  let index = 0;
+
+  for (const value of iterable) {
+    if (predicate(value, index++)) {
+      yield value;
+    }
+  }
+}
+
+var Recoil_filterIterable = filterIterable;
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * 
+ * @format
+ */
+
+/**
+ * Return a proxy object based on the provided base and factories objects.
+ * The proxy will include all properties of the base object as-is.
+ * The factories object contains callbacks to obtain the values of the properies
+ * for its keys.
+ *
+ * This is useful for providing users an object where some properties may be
+ * lazily computed only on first access.
+ */
+// $FlowIssue[unclear-type]
+
+function lazyProxy(base, factories) {
+  const proxy = new Proxy(base, {
+    // Compute and cache lazy property if not already done.
+    get: (target, prop) => {
+      if (!(prop in target) && prop in factories) {
+        target[prop] = factories[prop]();
+      }
+
+      return target[prop];
+    },
+    // This method allows user to iterate keys as normal
+    ownKeys: target => {
+      return Object.keys(target);
+    }
+  }); // $FlowIssue[incompatible-return]
+
+  return proxy;
+}
+
+var Recoil_lazyProxy = lazyProxy;
+const {
+  getNode: getNode$1,
+  getNodeMaybe: getNodeMaybe$1,
+  recoilValuesForKeys: recoilValuesForKeys$1
+} = Recoil_Node;
+const {
+  RetentionZone: RetentionZone$1
+} = Recoil_RetentionZone;
+const {
+  setByAddingToSet: setByAddingToSet$1
+} = Recoil_CopyOnWrite; // flowlint-next-line unclear-type:off
+
+const emptySet = Object.freeze(new Set());
+
+class ReadOnlyRecoilValueError extends Error {}
+
+function initializeRetentionForNode(store, nodeKey, retainedBy) {
+  if (!Recoil_gkx('recoil_memory_managament_2020')) {
+    return () => undefined;
+  }
+
+  const {
+    nodesRetainedByZone
+  } = store.getState().retention;
+
+  function addToZone(zone) {
+    let set = nodesRetainedByZone.get(zone);
+
+    if (!set) {
+      nodesRetainedByZone.set(zone, set = new Set());
+    }
+
+    set.add(nodeKey);
+  }
+
+  if (retainedBy instanceof RetentionZone$1) {
+    addToZone(retainedBy);
+  } else if (Array.isArray(retainedBy)) {
+    for (const zone of retainedBy) {
+      addToZone(zone);
+    }
+  }
+
+  return () => {
+    if (!Recoil_gkx('recoil_memory_managament_2020')) {
+      return;
+    }
+
+    const {
+      retention
+    } = store.getState();
+
+    function deleteFromZone(zone) {
+      const set = retention.nodesRetainedByZone.get(zone);
+      set === null || set === void 0 ? void 0 : set.delete(nodeKey);
+
+      if (set && set.size === 0) {
+        retention.nodesRetainedByZone.delete(zone);
+      }
+    }
+
+    if (retainedBy instanceof RetentionZone$1) {
+      deleteFromZone(retainedBy);
+    } else if (Array.isArray(retainedBy)) {
+      for (const zone of retainedBy) {
+        deleteFromZone(zone);
+      }
+    }
+  };
+}
+
+function initializeNodeIfNewToStore(store, treeState, key, trigger) {
+  const storeState = store.getState();
+
+  if (storeState.nodeCleanupFunctions.has(key)) {
+    return;
+  }
+
+  const node = getNode$1(key);
+  const retentionCleanup = initializeRetentionForNode(store, key, node.retainedBy);
+  const nodeCleanup = node.init(store, treeState, trigger);
+  storeState.nodeCleanupFunctions.set(key, () => {
+    nodeCleanup();
+    retentionCleanup();
+  });
+}
+
+function initializeNode(store, key, trigger) {
+  initializeNodeIfNewToStore(store, store.getState().currentTree, key, trigger);
+}
+
+function cleanUpNode(store, key) {
+  var _state$nodeCleanupFun;
+
+  const state = store.getState();
+  (_state$nodeCleanupFun = state.nodeCleanupFunctions.get(key)) === null || _state$nodeCleanupFun === void 0 ? void 0 : _state$nodeCleanupFun();
+  state.nodeCleanupFunctions.delete(key);
+} // Get the current value loadable of a node and update the state.
+// Update dependencies and subscriptions for selectors.
+// Update saved value validation for atoms.
+
+
+function getNodeLoadable(store, state, key) {
+  initializeNodeIfNewToStore(store, state, key, 'get');
+  return getNode$1(key).get(store, state);
+} // Peek at the current value loadable for a node without any evaluation or state change
+
+
+function peekNodeLoadable(store, state, key) {
+  return getNode$1(key).peek(store, state);
+} // Write value directly to state bypassing the Node interface as the node
+// definitions may not have been loaded yet when processing the initial snapshot.
+
+
+function setUnvalidatedAtomValue_DEPRECATED(state, key, newValue) {
+  var _node$invalidate;
+
+  const node = getNodeMaybe$1(key);
+  node === null || node === void 0 ? void 0 : (_node$invalidate = node.invalidate) === null || _node$invalidate === void 0 ? void 0 : _node$invalidate.call(node, state);
+  return { ...state,
+    atomValues: state.atomValues.clone().delete(key),
+    nonvalidatedAtoms: state.nonvalidatedAtoms.clone().set(key, newValue),
+    dirtyAtoms: setByAddingToSet$1(state.dirtyAtoms, key)
+  };
+} // Return the discovered dependencies and values to be written by setting
+// a node value. (Multiple values may be written due to selectors getting to
+// set upstreams; deps may be discovered because of reads in updater functions.)
+
+
+function setNodeValue(store, state, key, newValue) {
+  const node = getNode$1(key);
+
+  if (node.set == null) {
+    throw new ReadOnlyRecoilValueError(`Attempt to set read-only RecoilValue: ${key}`);
+  }
+
+  const set = node.set; // so flow doesn't lose the above refinement.
+
+  initializeNodeIfNewToStore(store, state, key, 'set');
+  return set(store, state, newValue);
+}
+
+function peekNodeInfo(store, state, key) {
+  const storeState = store.getState();
+  const graph = store.getGraph(state.version);
+  const type = getNode$1(key).nodeType;
+  return Recoil_lazyProxy({
+    type
+  }, {
+    loadable: () => peekNodeLoadable(store, state, key),
+    isActive: () => storeState.knownAtoms.has(key) || storeState.knownSelectors.has(key),
+    isSet: () => type === 'selector' ? false : state.atomValues.has(key),
+    isModified: () => state.dirtyAtoms.has(key),
+    // Report current dependencies.  If the node hasn't been evaluated, then
+    // dependencies may be missing based on the current state.
+    deps: () => {
+      var _graph$nodeDeps$get;
+
+      return recoilValuesForKeys$1((_graph$nodeDeps$get = graph.nodeDeps.get(key)) !== null && _graph$nodeDeps$get !== void 0 ? _graph$nodeDeps$get : []);
+    },
+    // Reports all "current" subscribers.  Evaluating other nodes or
+    // previous in-progress async evaluations may introduce new subscribers.
+    subscribers: () => {
+      var _storeState$nodeToCom, _storeState$nodeToCom2;
+
+      return {
+        nodes: recoilValuesForKeys$1(Recoil_filterIterable(getDownstreamNodes(store, state, new Set([key])), nodeKey => nodeKey !== key)),
+        components: Recoil_mapIterable((_storeState$nodeToCom = (_storeState$nodeToCom2 = storeState.nodeToComponentSubscriptions.get(key)) === null || _storeState$nodeToCom2 === void 0 ? void 0 : _storeState$nodeToCom2.values()) !== null && _storeState$nodeToCom !== void 0 ? _storeState$nodeToCom : [], ([name]) => ({
+          name
+        }))
+      };
+    }
+  });
+} // Find all of the recursively dependent nodes
+
+
+function getDownstreamNodes(store, state, keys) {
+  const visitedNodes = new Set();
+  const visitingNodes = Array.from(keys);
+  const graph = store.getGraph(state.version);
+
+  for (let key = visitingNodes.pop(); key; key = visitingNodes.pop()) {
+    var _graph$nodeToNodeSubs;
+
+    visitedNodes.add(key);
+    const subscribedNodes = (_graph$nodeToNodeSubs = graph.nodeToNodeSubscriptions.get(key)) !== null && _graph$nodeToNodeSubs !== void 0 ? _graph$nodeToNodeSubs : emptySet;
+
+    for (const downstreamNode of subscribedNodes) {
+      if (!visitedNodes.has(downstreamNode)) {
+        visitingNodes.push(downstreamNode);
+      }
+    }
+  }
+
+  return visitedNodes;
+}
+
+var Recoil_FunctionalCore = {
+  getNodeLoadable,
+  peekNodeLoadable,
+  setNodeValue,
+  initializeNode,
+  cleanUpNode,
+  setUnvalidatedAtomValue_DEPRECATED,
+  peekNodeInfo,
+  getDownstreamNodes
+};
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * 
+ * @format
+ */
+
+let _invalidateMemoizedSnapshot = null;
+
+function setInvalidateMemoizedSnapshot(invalidate) {
+  _invalidateMemoizedSnapshot = invalidate;
+}
+
+function invalidateMemoizedSnapshot() {
+  var _invalidateMemoizedSn;
+
+  (_invalidateMemoizedSn = _invalidateMemoizedSnapshot) === null || _invalidateMemoizedSn === void 0 ? void 0 : _invalidateMemoizedSn();
+}
+
+var Recoil_SnapshotCache = {
+  setInvalidateMemoizedSnapshot,
+  invalidateMemoizedSnapshot
+};
+const {
+  getDownstreamNodes: getDownstreamNodes$1,
+  getNodeLoadable: getNodeLoadable$1,
+  setNodeValue: setNodeValue$1
+} = Recoil_FunctionalCore;
+const {
+  getNextComponentID: getNextComponentID$1
+} = Recoil_Keys;
+const {
+  getNode: getNode$2,
+  getNodeMaybe: getNodeMaybe$2
+} = Recoil_Node;
+const {
+  DefaultValue: DefaultValue$1,
+  RecoilValueNotReady: RecoilValueNotReady$1
+} = Recoil_Node;
+const {
+  reactMode: reactMode$1
+} = Recoil_ReactMode;
+const {
+  AbstractRecoilValue: AbstractRecoilValue$1,
+  RecoilState: RecoilState$1,
+  RecoilValueReadOnly: RecoilValueReadOnly$1,
+  isRecoilValue: isRecoilValue$1
+} = Recoil_RecoilValue$1;
+const {
+  invalidateMemoizedSnapshot: invalidateMemoizedSnapshot$1
+} = Recoil_SnapshotCache;
+
+function getRecoilValueAsLoadable(store, {
+  key
+}, treeState = store.getState().currentTree) {
+  var _storeState$nextTree, _storeState$previousT; // Reading from an older tree can cause bugs because the dependencies that we
+  // discover during the read are lost.
+
+
+  const storeState = store.getState();
+
+  if (!(treeState.version === storeState.currentTree.version || treeState.version === ((_storeState$nextTree = storeState.nextTree) === null || _storeState$nextTree === void 0 ? void 0 : _storeState$nextTree.version) || treeState.version === ((_storeState$previousT = storeState.previousTree) === null || _storeState$previousT === void 0 ? void 0 : _storeState$previousT.version))) {
+    Recoil_recoverableViolation('Tried to read from a discarded tree');
+  }
+
+  const loadable = getNodeLoadable$1(store, treeState, key);
+
+  if (loadable.state === 'loading') {
+    loadable.contents.catch(() => {
+      /**
+       * HACK: intercept thrown error here to prevent an uncaught promise exception. Ideally this would happen closer to selector
+       * execution (perhaps introducing a new ERROR class to be resolved by async selectors that are in an error state)
+       */
+      return;
+    });
+  }
+
+  return loadable;
+}
+
+function applyAtomValueWrites(atomValues, writes) {
+  const result = atomValues.clone();
+  writes.forEach((v, k) => {
+    if (v.state === 'hasValue' && v.contents instanceof DefaultValue$1) {
+      result.delete(k);
+    } else {
+      result.set(k, v);
+    }
+  });
+  return result;
+}
+
+function valueFromValueOrUpdater(store, state, {
+  key
+}, valueOrUpdater) {
+  if (typeof valueOrUpdater === 'function') {
+    // Updater form: pass in the current value. Throw if the current value
+    // is unavailable (namely when updating an async selector that's
+    // pending or errored):
+    const current = getNodeLoadable$1(store, state, key);
+
+    if (current.state === 'loading') {
+      throw new RecoilValueNotReady$1(key);
+    } else if (current.state === 'hasError') {
+      throw current.contents;
+    } // T itself may be a function, so our refinement is not sufficient:
+
+
+    return valueOrUpdater(current.contents); // flowlint-line unclear-type:off
+  } else {
+    return valueOrUpdater;
+  }
+}
+
+function applyAction(store, state, action) {
+  if (action.type === 'set') {
+    const {
+      recoilValue,
+      valueOrUpdater
+    } = action;
+    const newValue = valueFromValueOrUpdater(store, state, recoilValue, valueOrUpdater);
+    const writes = setNodeValue$1(store, state, recoilValue.key, newValue);
+
+    for (const [key, loadable] of writes.entries()) {
+      writeLoadableToTreeState(state, key, loadable);
+    }
+  } else if (action.type === 'setLoadable') {
+    const {
+      recoilValue: {
+        key
+      },
+      loadable
+    } = action;
+    writeLoadableToTreeState(state, key, loadable);
+  } else if (action.type === 'markModified') {
+    const {
+      recoilValue: {
+        key
+      }
+    } = action;
+    state.dirtyAtoms.add(key);
+  } else if (action.type === 'setUnvalidated') {
+    var _node$invalidate; // Write value directly to state bypassing the Node interface as the node
+    // definitions may not have been loaded yet when processing the initial snapshot.
+
+
+    const {
+      recoilValue: {
+        key
+      },
+      unvalidatedValue
+    } = action;
+    const node = getNodeMaybe$2(key);
+    node === null || node === void 0 ? void 0 : (_node$invalidate = node.invalidate) === null || _node$invalidate === void 0 ? void 0 : _node$invalidate.call(node, state);
+    state.atomValues.delete(key);
+    state.nonvalidatedAtoms.set(key, unvalidatedValue);
+    state.dirtyAtoms.add(key);
+  } else {
+    Recoil_recoverableViolation(`Unknown action ${action.type}`);
+  }
+}
+
+function writeLoadableToTreeState(state, key, loadable) {
+  if (loadable.state === 'hasValue' && loadable.contents instanceof DefaultValue$1) {
+    state.atomValues.delete(key);
+  } else {
+    state.atomValues.set(key, loadable);
+  }
+
+  state.dirtyAtoms.add(key);
+  state.nonvalidatedAtoms.delete(key);
+}
+
+function applyActionsToStore(store, actions) {
+  store.replaceState(state => {
+    const newState = copyTreeState(state);
+
+    for (const action of actions) {
+      applyAction(store, newState, action);
+    }
+
+    invalidateDownstreams(store, newState);
+    invalidateMemoizedSnapshot$1();
+    return newState;
+  });
+}
+
+function queueOrPerformStateUpdate(store, action) {
+  if (batchStack.length) {
+    const actionsByStore = batchStack[batchStack.length - 1];
+    let actions = actionsByStore.get(store);
+
+    if (!actions) {
+      actionsByStore.set(store, actions = []);
+    }
+
+    actions.push(action);
+  } else {
+    applyActionsToStore(store, [action]);
+  }
+}
+
+const batchStack = [];
+
+function batchStart() {
+  const actionsByStore = new Map();
+  batchStack.push(actionsByStore);
+  return () => {
+    for (const [store, actions] of actionsByStore) {
+      applyActionsToStore(store, actions);
+    }
+
+    const popped = batchStack.pop();
+
+    if (popped !== actionsByStore) {
+      Recoil_recoverableViolation('Incorrect order of batch popping');
+    }
+  };
+}
+
+function copyTreeState(state) {
+  return { ...state,
+    atomValues: state.atomValues.clone(),
+    nonvalidatedAtoms: state.nonvalidatedAtoms.clone(),
+    dirtyAtoms: new Set(state.dirtyAtoms)
+  };
+}
+
+function invalidateDownstreams(store, state) {
+  // Inform any nodes that were changed or downstream of changes so that they
+  // can clear out any caches as needed due to the update:
+  const downstreams = getDownstreamNodes$1(store, state, state.dirtyAtoms);
+
+  for (const key of downstreams) {
+    var _getNodeMaybe, _getNodeMaybe$invalid;
+
+    (_getNodeMaybe = getNodeMaybe$2(key)) === null || _getNodeMaybe === void 0 ? void 0 : (_getNodeMaybe$invalid = _getNodeMaybe.invalidate) === null || _getNodeMaybe$invalid === void 0 ? void 0 : _getNodeMaybe$invalid.call(_getNodeMaybe, state);
+  }
+}
+
+function setRecoilValue(store, recoilValue, valueOrUpdater) {
+  queueOrPerformStateUpdate(store, {
+    type: 'set',
+    recoilValue,
+    valueOrUpdater
+  });
+}
+
+function setRecoilValueLoadable(store, recoilValue, loadable) {
+  if (loadable instanceof DefaultValue$1) {
+    return setRecoilValue(store, recoilValue, loadable);
+  }
+
+  queueOrPerformStateUpdate(store, {
+    type: 'setLoadable',
+    recoilValue,
+    loadable: loadable
+  });
+}
+
+function markRecoilValueModified(store, recoilValue) {
+  queueOrPerformStateUpdate(store, {
+    type: 'markModified',
+    recoilValue
+  });
+}
+
+function setUnvalidatedRecoilValue(store, recoilValue, unvalidatedValue) {
+  queueOrPerformStateUpdate(store, {
+    type: 'setUnvalidated',
+    recoilValue,
+    unvalidatedValue
+  });
+}
+
+function subscribeToRecoilValue(store, {
+  key
+}, callback, componentDebugName = null) {
+  const subID = getNextComponentID$1();
+  const storeState = store.getState();
+
+  if (!storeState.nodeToComponentSubscriptions.has(key)) {
+    storeState.nodeToComponentSubscriptions.set(key, new Map());
+  }
+
+  Recoil_nullthrows(storeState.nodeToComponentSubscriptions.get(key)).set(subID, [componentDebugName !== null && componentDebugName !== void 0 ? componentDebugName : '<not captured>', callback]); // Handle the case that, during the same tick that we are subscribing, an atom
+  // has been updated by some effect handler. Otherwise we will miss the update.
+
+  const mode = reactMode$1();
+
+  if (mode.early && (mode.mode === 'LEGACY' || mode.mode === 'MUTABLE_SOURCE')) {
+    const nextTree = store.getState().nextTree;
+
+    if (nextTree && nextTree.dirtyAtoms.has(key)) {
+      callback(nextTree);
+    }
+  }
+
+  return {
+    release: () => {
+      const releaseStoreState = store.getState();
+      const subs = releaseStoreState.nodeToComponentSubscriptions.get(key);
+
+      if (subs === undefined || !subs.has(subID)) {
+        Recoil_recoverableViolation(`Subscription missing at release time for atom ${key}. This is a bug in Recoil.`);
+        return;
+      }
+
+      subs.delete(subID);
+
+      if (subs.size === 0) {
+        releaseStoreState.nodeToComponentSubscriptions.delete(key);
+      }
+    }
+  };
+}
+
+function refreshRecoilValue(store, recoilValue) {
+  var _node$clearCache;
+
+  const {
+    currentTree
+  } = store.getState();
+  const node = getNode$2(recoilValue.key);
+  (_node$clearCache = node.clearCache) === null || _node$clearCache === void 0 ? void 0 : _node$clearCache.call(node, store, currentTree);
+}
+
+var Recoil_RecoilValueInterface = {
+  RecoilValueReadOnly: RecoilValueReadOnly$1,
+  AbstractRecoilValue: AbstractRecoilValue$1,
+  RecoilState: RecoilState$1,
+  getRecoilValueAsLoadable,
+  setRecoilValue,
+  setRecoilValueLoadable,
+  markRecoilValueModified,
+  setUnvalidatedRecoilValue,
+  subscribeToRecoilValue,
+  isRecoilValue: isRecoilValue$1,
+  applyAtomValueWrites,
+  // TODO Remove export when deprecating initialStoreState_DEPRECATED in RecoilRoot
+  batchStart,
+  writeLoadableToTreeState,
+  invalidateDownstreams,
+  copyTreeState,
+  refreshRecoilValue
+};
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * 
+ * @format
+ */
+
+/**
+ * The someSet() method tests whether some elements in the given Set pass the
+ * test implemented by the provided function.
+ */
+
+function someSet(set, callback, context) {
+  const iterator = set.entries();
+  let current = iterator.next();
+
+  while (!current.done) {
+    const entry = current.value;
+
+    if (callback.call(context, entry[1], entry[0], set)) {
+      return true;
+    }
+
+    current = iterator.next();
+  }
+
+  return false;
+}
+
+var Recoil_someSet = someSet;
+const {
+  cleanUpNode: cleanUpNode$1
+} = Recoil_FunctionalCore;
+const {
+  deleteNodeConfigIfPossible: deleteNodeConfigIfPossible$1,
+  getNode: getNode$3
+} = Recoil_Node;
+const {
+  RetentionZone: RetentionZone$2
+} = Recoil_RetentionZone; // Components that aren't mounted after suspending for this long will be assumed
+// to be discarded and their resources released.
+
+const SUSPENSE_TIMEOUT_MS = 120000;
+const emptySet$1 = new Set();
+
+function releaseRetainablesNowOnCurrentTree(store, retainables) {
+  const storeState = store.getState();
+  const treeState = storeState.currentTree;
+
+  if (storeState.nextTree) {
+    Recoil_recoverableViolation('releaseNodesNowOnCurrentTree should only be called at the end of a batch');
+    return; // leak memory rather than erase something that's about to be used.
+  }
+
+  const nodes = new Set();
+
+  for (const r of retainables) {
+    if (r instanceof RetentionZone$2) {
+      for (const n of nodesRetainedByZone(storeState, r)) {
+        nodes.add(n);
+      }
+    } else {
+      nodes.add(r);
+    }
+  }
+
+  const releasableNodes = findReleasableNodes(store, nodes);
+
+  for (const node of releasableNodes) {
+    releaseNode(store, treeState, node);
+  }
+}
+
+function findReleasableNodes(store, searchFromNodes) {
+  const storeState = store.getState();
+  const treeState = storeState.currentTree;
+  const graph = store.getGraph(treeState.version);
+  const releasableNodes = new Set(); // mutated to collect answer
+
+  const nonReleasableNodes = new Set();
+  findReleasableNodesInner(searchFromNodes);
+  return releasableNodes;
+
+  function findReleasableNodesInner(searchFromNodes) {
+    const releasableNodesFoundThisIteration = new Set();
+    const downstreams = getDownstreamNodesInTopologicalOrder(store, treeState, searchFromNodes, releasableNodes, // don't descend into these
+    nonReleasableNodes // don't descend into these
+    ); // Find which of the downstream nodes are releasable and which are not:
+
+    for (const node of downstreams) {
+      var _storeState$retention; // Not releasable if configured to be retained forever:
+
+
+      if (getNode$3(node).retainedBy === 'recoilRoot') {
+        nonReleasableNodes.add(node);
+        continue;
+      } // Not releasable if retained directly by a component:
+
+
+      if (((_storeState$retention = storeState.retention.referenceCounts.get(node)) !== null && _storeState$retention !== void 0 ? _storeState$retention : 0) > 0) {
+        nonReleasableNodes.add(node);
+        continue;
+      } // Not releasable if retained by a zone:
+
+
+      if (zonesThatCouldRetainNode(node).some(z => storeState.retention.referenceCounts.get(z))) {
+        nonReleasableNodes.add(node);
+        continue;
+      } // Not releasable if it has a non-releasable child (which will already be in
+      // nonReleasableNodes because we are going in topological order):
+
+
+      const nodeChildren = graph.nodeToNodeSubscriptions.get(node);
+
+      if (nodeChildren && Recoil_someSet(nodeChildren, child => nonReleasableNodes.has(child))) {
+        nonReleasableNodes.add(node);
+        continue;
+      }
+
+      releasableNodes.add(node);
+      releasableNodesFoundThisIteration.add(node);
+    } // If we found any releasable nodes, we need to walk UP from those nodes to
+    // find whether their parents can now be released as well:
+
+
+    const parents = new Set();
+
+    for (const node of releasableNodesFoundThisIteration) {
+      for (const parent of (_graph$nodeDeps$get = graph.nodeDeps.get(node)) !== null && _graph$nodeDeps$get !== void 0 ? _graph$nodeDeps$get : emptySet$1) {
+        var _graph$nodeDeps$get;
+
+        if (!releasableNodes.has(parent)) {
+          parents.add(parent);
+        }
+      }
+    }
+
+    if (parents.size) {
+      findReleasableNodesInner(parents);
+    }
+  }
+} // Children before parents
+
+
+function getDownstreamNodesInTopologicalOrder(store, treeState, nodes, // Mutable set is destroyed in place
+doNotDescendInto1, doNotDescendInto2) {
+  const graph = store.getGraph(treeState.version);
+  const answer = [];
+  const visited = new Set();
+
+  while (nodes.size > 0) {
+    visit(Recoil_nullthrows(nodes.values().next().value));
+  }
+
+  return answer;
+
+  function visit(node) {
+    if (doNotDescendInto1.has(node) || doNotDescendInto2.has(node)) {
+      nodes.delete(node);
+      return;
+    }
+
+    if (visited.has(node)) {
+      return;
+    }
+
+    const children = graph.nodeToNodeSubscriptions.get(node);
+
+    if (children) {
+      for (const child of children) {
+        visit(child);
+      }
+    }
+
+    visited.add(node);
+    nodes.delete(node);
+    answer.push(node);
+  }
+}
+
+function releaseNode(store, treeState, node) {
+  if (!Recoil_gkx('recoil_memory_managament_2020')) {
+    return;
+  } // Atom effects, in-closure caches, etc.:
+
+
+  cleanUpNode$1(store, node); // Delete from store state:
+
+  const storeState = store.getState();
+  storeState.knownAtoms.delete(node);
+  storeState.knownSelectors.delete(node);
+  storeState.nodeTransactionSubscriptions.delete(node);
+  storeState.retention.referenceCounts.delete(node);
+  const zones = zonesThatCouldRetainNode(node);
+
+  for (const zone of zones) {
+    var _storeState$retention2;
+
+    (_storeState$retention2 = storeState.retention.nodesRetainedByZone.get(zone)) === null || _storeState$retention2 === void 0 ? void 0 : _storeState$retention2.delete(node);
+  } // Note that we DO NOT delete from nodeToComponentSubscriptions because this
+  // already happens when the last component that was retaining the node unmounts,
+  // and this could happen either before or after that.
+  // Delete from TreeState and dep graph:
+
+
+  treeState.atomValues.delete(node);
+  treeState.dirtyAtoms.delete(node);
+  treeState.nonvalidatedAtoms.delete(node);
+  const graph = storeState.graphsByVersion.get(treeState.version);
+
+  if (graph) {
+    const deps = graph.nodeDeps.get(node);
+
+    if (deps !== undefined) {
+      graph.nodeDeps.delete(node);
+
+      for (const dep of deps) {
+        var _graph$nodeToNodeSubs;
+
+        (_graph$nodeToNodeSubs = graph.nodeToNodeSubscriptions.get(dep)) === null || _graph$nodeToNodeSubs === void 0 ? void 0 : _graph$nodeToNodeSubs.delete(node);
+      }
+    } // No need to delete sub's deps as there should be no subs at this point.
+    // But an invariant would require deleting nodes in topological order.
+
+
+    graph.nodeToNodeSubscriptions.delete(node);
+  } // Node config (for family members only as their configs can be recreated, and
+  // only if they are not retained within any other Stores):
+
+
+  deleteNodeConfigIfPossible$1(node);
+}
+
+function nodesRetainedByZone(storeState, zone) {
+  var _storeState$retention3;
+
+  return (_storeState$retention3 = storeState.retention.nodesRetainedByZone.get(zone)) !== null && _storeState$retention3 !== void 0 ? _storeState$retention3 : emptySet$1;
+}
+
+function zonesThatCouldRetainNode(node) {
+  const retainedBy = getNode$3(node).retainedBy;
+
+  if (retainedBy === undefined || retainedBy === 'components' || retainedBy === 'recoilRoot') {
+    return [];
+  } else if (retainedBy instanceof RetentionZone$2) {
+    return [retainedBy];
+  } else {
+    return retainedBy; // it's an array of zones
+  }
+}
+
+function scheduleOrPerformPossibleReleaseOfRetainable(store, retainable) {
+  const state = store.getState();
+
+  if (state.nextTree) {
+    state.retention.retainablesToCheckForRelease.add(retainable);
+  } else {
+    releaseRetainablesNowOnCurrentTree(store, new Set([retainable]));
+  }
+}
+
+function updateRetainCount(store, retainable, delta) {
+  var _map$get;
+
+  if (!Recoil_gkx('recoil_memory_managament_2020')) {
+    return;
+  }
+
+  const map = store.getState().retention.referenceCounts;
+  const newCount = ((_map$get = map.get(retainable)) !== null && _map$get !== void 0 ? _map$get : 0) + delta;
+
+  if (newCount === 0) {
+    updateRetainCountToZero(store, retainable);
+  } else {
+    map.set(retainable, newCount);
+  }
+}
+
+function updateRetainCountToZero(store, retainable) {
+  if (!Recoil_gkx('recoil_memory_managament_2020')) {
+    return;
+  }
+
+  const map = store.getState().retention.referenceCounts;
+  map.delete(retainable);
+  scheduleOrPerformPossibleReleaseOfRetainable(store, retainable);
+}
+
+function releaseScheduledRetainablesNow(store) {
+  if (!Recoil_gkx('recoil_memory_managament_2020')) {
+    return;
+  }
+
+  const state = store.getState();
+  releaseRetainablesNowOnCurrentTree(store, state.retention.retainablesToCheckForRelease);
+  state.retention.retainablesToCheckForRelease.clear();
+}
+
+function retainedByOptionWithDefault(r) {
+  // The default will change from 'recoilRoot' to 'components' in the future.
+  return r === undefined ? 'recoilRoot' : r;
+}
+
+var Recoil_Retention = {
+  SUSPENSE_TIMEOUT_MS,
+  updateRetainCount,
+  updateRetainCountToZero,
+  releaseScheduledRetainablesNow,
+  retainedByOptionWithDefault
+};
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * 
+ * @format
+ *
+ * This is to export esstiential functions from react-dom
+ * for our web build
+ */
+
+const {
+  unstable_batchedUpdates
+} = _reactDom.default;
+var ReactBatchedUpdates = {
+  unstable_batchedUpdates
+};
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * 
+ * @format
+ *
+ * This is to export esstiential functions from react-dom
+ * for our web build
+ */
+// @fb-only: const {unstable_batchedUpdates} = require('ReactDOMComet');
+// prettier-ignore
+
+const {
+  unstable_batchedUpdates: unstable_batchedUpdates$1
+} = ReactBatchedUpdates; // @oss-only
+
+var Recoil_ReactBatchedUpdates = {
+  unstable_batchedUpdates: unstable_batchedUpdates$1
+};
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * 
+ * @format
+ */
+
+const {
+  batchStart: batchStart$1
+} = Recoil_RecoilValueInterface;
+const {
+  unstable_batchedUpdates: unstable_batchedUpdates$2
+} = Recoil_ReactBatchedUpdates;
+let batcher = unstable_batchedUpdates$2; // flowlint-next-line unclear-type:off
+
+/**
+ * Sets the provided batcher function as the batcher function used by Recoil.
+ *
+ * Set the batcher to a custom batcher for your renderer,
+ * if you use a renderer other than React DOM or React Native.
+ */
+
+const setBatcher = newBatcher => {
+  batcher = newBatcher;
+};
+/**
+ * Returns the current batcher function.
+ */
+
+
+const getBatcher = () => batcher;
+/**
+ * Calls the current batcher function and passes the
+ * provided callback function.
+ */
+
+
+const batchUpdates = callback => {
+  batcher(() => {
+    let batchEnd = () => undefined;
+
+    try {
+      batchEnd = batchStart$1();
+      callback();
+    } finally {
+      batchEnd();
+    }
+  });
+};
+
+var Recoil_Batching = {
+  getBatcher,
+  setBatcher,
+  batchUpdates
+};
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * 
+ * @format
+ */
+
+/**
+ * Combines multiple Iterables into a single Iterable.
+ * Traverses the input Iterables in the order provided and maintains the order
+ * of their elements.
+ *
+ * Example:
+ * ```
+ * const r = Array.from(concatIterables(['a', 'b'], ['c'], ['d', 'e', 'f']));
+ * r == ['a', 'b', 'c', 'd', 'e', 'f'];
+ * ```
+ */
+
+function* concatIterables(iters) {
+  for (const iter of iters) {
+    for (const val of iter) {
+      yield val;
+    }
+  }
+}
+
+var Recoil_concatIterables = concatIterables;
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * 
+ * @format
+ */
+
+/* eslint-disable fb-www/typeof-undefined */
+
+const isSSR = // $FlowFixMe(site=recoil) Window does not have a FlowType definition https://github.com/facebook/flow/issues/6709
+typeof Window === 'undefined' || typeof window === 'undefined';
+/* eslint-enable fb-www/typeof-undefined */
+
+const isWindow = value => !isSSR && ( // $FlowFixMe(site=recoil) Window does not have a FlowType definition https://github.com/facebook/flow/issues/6709
+value === window || value instanceof Window);
+
+const isReactNative = typeof navigator !== 'undefined' && navigator.product === 'ReactNative'; // eslint-disable-line fb-www/typeof-undefined
+
+var Recoil_Environment = {
+  isSSR,
+  isReactNative,
+  isWindow
+};
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * 
+ * @format
+ */
+
+/**
+ * Caches a function's results based on the key returned by the passed
+ * hashFunction.
+ */
+
+function memoizeWithArgsHash(fn, hashFunction) {
+  let cache;
+
+  const memoizedFn = (...args) => {
+    if (!cache) {
+      cache = {};
+    }
+
+    const key = hashFunction(...args);
+
+    if (!Object.hasOwnProperty.call(cache, key)) {
+      cache[key] = fn(...args);
+    }
+
+    return cache[key];
+  };
+
+  return memoizedFn;
+}
+/**
+ * Caches a function's results based on a comparison of the arguments.
+ * Only caches the last return of the function.
+ * Defaults to reference equality
+ */
+
+
+function memoizeOneWithArgsHash(fn, hashFunction) {
+  let lastKey;
+  let lastResult; // breaking cache when arguments change
+
+  const memoizedFn = (...args) => {
+    const key = hashFunction(...args);
+
+    if (lastKey === key) {
+      return lastResult;
+    }
+
+    lastKey = key;
+    lastResult = fn(...args);
+    return lastResult;
+  };
+
+  return memoizedFn;
+}
+/**
+ * Caches a function's results based on a comparison of the arguments.
+ * Only caches the last return of the function.
+ * Defaults to reference equality
+ */
+
+
+function memoizeOneWithArgsHashAndInvalidation(fn, hashFunction) {
+  let lastKey;
+  let lastResult; // breaking cache when arguments change
+
+  const memoizedFn = (...args) => {
+    const key = hashFunction(...args);
+
+    if (lastKey === key) {
+      return lastResult;
+    }
+
+    lastKey = key;
+    lastResult = fn(...args);
+    return lastResult;
+  };
+
+  const invalidate = () => {
+    lastKey = null;
+  };
+
+  return [memoizedFn, invalidate];
+}
+
+var Recoil_Memoize = {
+  memoizeWithArgsHash,
+  memoizeOneWithArgsHash,
+  memoizeOneWithArgsHashAndInvalidation
+};
+const {
+  batchUpdates: batchUpdates$1
+} = Recoil_Batching;
+const {
+  initializeNode: initializeNode$1,
+  peekNodeInfo: peekNodeInfo$1
+} = Recoil_FunctionalCore;
+const {
+  graph: graph$1
+} = Recoil_Graph;
+const {
+  getNextStoreID: getNextStoreID$1
+} = Recoil_Keys;
+const {
+  DEFAULT_VALUE: DEFAULT_VALUE$1,
+  recoilValues: recoilValues$1,
+  recoilValuesForKeys: recoilValuesForKeys$2
+} = Recoil_Node;
+const {
+  AbstractRecoilValue: AbstractRecoilValue$2,
+  getRecoilValueAsLoadable: getRecoilValueAsLoadable$1,
+  setRecoilValue: setRecoilValue$1,
+  setUnvalidatedRecoilValue: setUnvalidatedRecoilValue$1
+} = Recoil_RecoilValueInterface;
+const {
+  updateRetainCount: updateRetainCount$1
+} = Recoil_Retention;
+const {
+  setInvalidateMemoizedSnapshot: setInvalidateMemoizedSnapshot$1
+} = Recoil_SnapshotCache;
+const {
+  getNextTreeStateVersion: getNextTreeStateVersion$2,
+  makeEmptyStoreState: makeEmptyStoreState$1
+} = Recoil_State;
+const {
+  isSSR: isSSR$1
+} = Recoil_Environment;
+const {
+  memoizeOneWithArgsHashAndInvalidation: memoizeOneWithArgsHashAndInvalidation$1
+} = Recoil_Memoize; // Opaque at this surface because it's part of the public API from here.
+
+const retainWarning = `
+Recoil Snapshots only last for the duration of the callback they are provided to. To keep a Snapshot longer, do this:
+
+  const release = snapshot.retain();
+  try {
+    await doSomethingWithSnapshot(snapshot);
+  } finally {
+    release();
+  }
+
+This is currently a DEV-only warning but will become a thrown exception in the next release of Recoil.
+`; // A "Snapshot" is "read-only" and captures a specific set of values of atoms.
+// However, the data-flow-graph and selector values may evolve as selector
+// evaluation functions are executed and async selectors resolve.
+
+class Snapshot {
+  // eslint-disable-next-line fb-www/no-uninitialized-properties
+  constructor(storeState, parentStoreID) {
+    _defineProperty(this, "_store", void 0);
+
+    _defineProperty(this, "_refCount", 1);
+
+    _defineProperty(this, "getLoadable", recoilValue => {
+      this.checkRefCount_INTERNAL();
+      return getRecoilValueAsLoadable$1(this._store, recoilValue);
+    });
+
+    _defineProperty(this, "getPromise", recoilValue => {
+      this.checkRefCount_INTERNAL();
+      return this.getLoadable(recoilValue).toPromise();
+    });
+
+    _defineProperty(this, "getNodes_UNSTABLE", opt => {
+      this.checkRefCount_INTERNAL(); // TODO Deal with modified selectors
+
+      if ((opt === null || opt === void 0 ? void 0 : opt.isModified) === true) {
+        if ((opt === null || opt === void 0 ? void 0 : opt.isInitialized) === false) {
+          return [];
+        }
+
+        const state = this._store.getState().currentTree;
+
+        return recoilValuesForKeys$2(state.dirtyAtoms);
+      }
+
+      const knownAtoms = this._store.getState().knownAtoms;
+
+      const knownSelectors = this._store.getState().knownSelectors;
+
+      return (opt === null || opt === void 0 ? void 0 : opt.isInitialized) == null ? recoilValues$1.values() : opt.isInitialized === true ? recoilValuesForKeys$2(Recoil_concatIterables([knownAtoms, knownSelectors])) : Recoil_filterIterable(recoilValues$1.values(), ({
+        key
+      }) => !knownAtoms.has(key) && !knownSelectors.has(key));
+    });
+
+    _defineProperty(this, "getInfo_UNSTABLE", ({
+      key
+    }) => {
+      this.checkRefCount_INTERNAL(); // $FlowFixMe[escaped-generic]
+
+      return peekNodeInfo$1(this._store, this._store.getState().currentTree, key);
+    });
+
+    _defineProperty(this, "map", mapper => {
+      this.checkRefCount_INTERNAL();
+      const mutableSnapshot = new MutableSnapshot(this, batchUpdates$1);
+      mapper(mutableSnapshot); // if removing batchUpdates from `set` add it here
+
+      return mutableSnapshot;
+    });
+
+    _defineProperty(this, "asyncMap", async mapper => {
+      this.checkRefCount_INTERNAL();
+      const mutableSnapshot = new MutableSnapshot(this, batchUpdates$1);
+      mutableSnapshot.retain(); // Retain new snapshot during async mapper
+
+      await mapper(mutableSnapshot); // Continue to retain the new snapshot for the user, but auto-release it
+      // after the next tick, the same as a new synchronous snapshot.
+
+      mutableSnapshot.autoRelease_INTERNAL();
+      return mutableSnapshot;
+    });
+
+    this._store = {
+      storeID: getNextStoreID$1(),
+      parentStoreID,
+      getState: () => storeState,
+      replaceState: replacer => {
+        // no batching, so nextTree is never active
+        storeState.currentTree = replacer(storeState.currentTree);
+      },
+      getGraph: version => {
+        const graphs = storeState.graphsByVersion;
+
+        if (graphs.has(version)) {
+          return Recoil_nullthrows(graphs.get(version));
+        }
+
+        const newGraph = graph$1();
+        graphs.set(version, newGraph);
+        return newGraph;
+      },
+      subscribeToTransactions: () => ({
+        release: () => {}
+      }),
+      addTransactionMetadata: () => {
+        throw Recoil_err('Cannot subscribe to Snapshots');
+      }
+    }; // Initialize any nodes that are live in the parent store (primarily so that
+    // this snapshot gets counted towards the node's live stores count).
+    // TODO Optimize this when cloning snapshots for callbacks
+
+    for (const nodeKey of this._store.getState().knownAtoms) {
+      initializeNode$1(this._store, nodeKey, 'get');
+      updateRetainCount$1(this._store, nodeKey, 1);
+    }
+
+    this.autoRelease_INTERNAL();
+  }
+
+  retain() {
+    if (this._refCount <= 0) {
+      if ("development" !== "production") {
+        throw Recoil_err('Snapshot has already been released.');
+      } else {
+        Recoil_recoverableViolation('Attempt to retain() Snapshot that was already released.');
+      }
+    }
+
+    this._refCount++;
+    let released = false;
+    return () => {
+      if (!released) {
+        released = true;
+
+        this._release();
+      }
+    };
+  }
+  /**
+   * Release the snapshot on the next tick.  This means the snapshot is retained
+   * during the execution of the current function using it.
+   */
+
+
+  autoRelease_INTERNAL() {
+    if (!isSSR$1) {
+      window.setTimeout(() => this._release(), 0);
+    }
+  }
+
+  _release() {
+    this._refCount--;
+
+    if (this._refCount === 0) {
+      this._store.getState().nodeCleanupFunctions.forEach(cleanup => cleanup());
+
+      this._store.getState().nodeCleanupFunctions.clear();
+
+      if (!Recoil_gkx('recoil_memory_managament_2020')) {
+        return;
+      } // Temporarily nerfing this to allow us to find broken call sites without
+      // actually breaking anybody yet.
+      // for (const k of this._store.getState().knownAtoms) {
+      //   updateRetainCountToZero(this._store, k);
+      // }
+
+    } else if (this._refCount < 0) {
+      if ("development" !== "production") {
+        Recoil_recoverableViolation('Snapshot released an extra time.');
+      }
+    }
+  }
+
+  isRetained() {
+    return this._refCount > 0;
+  }
+
+  checkRefCount_INTERNAL() {
+    if (Recoil_gkx('recoil_memory_managament_2020') && this._refCount <= 0) {
+      if ("development" !== "production") {
+        Recoil_recoverableViolation(retainWarning);
+      } // What we will ship later:
+      // throw err(retainWarning);
+
+    }
+  }
+
+  getStore_INTERNAL() {
+    this.checkRefCount_INTERNAL();
+    return this._store;
+  }
+
+  getID() {
+    this.checkRefCount_INTERNAL();
+    return this._store.getState().currentTree.stateID;
+  }
+
+  getStoreID() {
+    this.checkRefCount_INTERNAL();
+    return this._store.storeID;
+  } // We want to allow the methods to be destructured and used as accessors
+  // eslint-disable-next-line fb-www/extra-arrow-initializer
+
+
+}
+
+function cloneStoreState(store, treeState, bumpVersion = false) {
+  const storeState = store.getState();
+  const version = bumpVersion ? getNextTreeStateVersion$2() : treeState.version;
+  return {
+    // Always clone the TreeState to isolate stores from accidental mutations.
+    // For example, reading a selector from a cloned snapshot shouldn't cache
+    // in the original treestate which may cause the original to skip
+    // initialization of upstream atoms.
+    currentTree: {
+      // TODO snapshots shouldn't really have versions because a new version number
+      // is always assigned when the snapshot is gone to.
+      version: bumpVersion ? version : treeState.version,
+      stateID: bumpVersion ? version : treeState.stateID,
+      transactionMetadata: { ...treeState.transactionMetadata
+      },
+      dirtyAtoms: new Set(treeState.dirtyAtoms),
+      atomValues: treeState.atomValues.clone(),
+      nonvalidatedAtoms: treeState.nonvalidatedAtoms.clone()
+    },
+    commitDepth: 0,
+    nextTree: null,
+    previousTree: null,
+    knownAtoms: new Set(storeState.knownAtoms),
+    // FIXME here's a copy
+    knownSelectors: new Set(storeState.knownSelectors),
+    // FIXME here's a copy
+    transactionSubscriptions: new Map(),
+    nodeTransactionSubscriptions: new Map(),
+    nodeToComponentSubscriptions: new Map(),
+    queuedComponentCallbacks_DEPRECATED: [],
+    suspendedComponentResolvers: new Set(),
+    graphsByVersion: new Map().set(version, store.getGraph(treeState.version)),
+    retention: {
+      referenceCounts: new Map(),
+      nodesRetainedByZone: new Map(),
+      retainablesToCheckForRelease: new Set()
+    },
+    // FIXME here's a copy
+    // Create blank cleanup handlers for atoms so snapshots don't re-run
+    // atom effects.
+    nodeCleanupFunctions: new Map(Recoil_mapIterable(storeState.nodeCleanupFunctions.entries(), ([key]) => [key, () => {}]))
+  };
+} // Factory to build a fresh snapshot
+
+
+function freshSnapshot(initializeState) {
+  const snapshot = new Snapshot(makeEmptyStoreState$1());
+  return initializeState != null ? snapshot.map(initializeState) : snapshot;
+} // Factory to clone a snapshot state
+
+
+const [memoizedCloneSnapshot, invalidateMemoizedSnapshot$2] = memoizeOneWithArgsHashAndInvalidation$1((store, version) => {
+  var _storeState$nextTree;
+
+  const storeState = store.getState();
+  const treeState = version === 'latest' ? (_storeState$nextTree = storeState.nextTree) !== null && _storeState$nextTree !== void 0 ? _storeState$nextTree : storeState.currentTree : Recoil_nullthrows(storeState.previousTree);
+  return new Snapshot(cloneStoreState(store, treeState), store.storeID);
+}, (store, version) => {
+  var _store$getState$nextT, _store$getState$previ;
+
+  return String(version) + String(store.storeID) + String((_store$getState$nextT = store.getState().nextTree) === null || _store$getState$nextT === void 0 ? void 0 : _store$getState$nextT.version) + String(store.getState().currentTree.version) + String((_store$getState$previ = store.getState().previousTree) === null || _store$getState$previ === void 0 ? void 0 : _store$getState$previ.version);
+}); // Avoid circular dependencies
+
+setInvalidateMemoizedSnapshot$1(invalidateMemoizedSnapshot$2);
+
+function cloneSnapshot(store, version = 'latest') {
+  const snapshot = memoizedCloneSnapshot(store, version);
+
+  if (!snapshot.isRetained()) {
+    invalidateMemoizedSnapshot$2();
+    return memoizedCloneSnapshot(store, version);
+  }
+
+  return snapshot;
+}
+
+class MutableSnapshot extends Snapshot {
+  constructor(snapshot, batch) {
+    super(cloneStoreState(snapshot.getStore_INTERNAL(), snapshot.getStore_INTERNAL().getState().currentTree, true), snapshot.getStoreID());
+
+    _defineProperty(this, "_batch", void 0);
+
+    _defineProperty(this, "set", (recoilState, newValueOrUpdater) => {
+      this.checkRefCount_INTERNAL();
+      const store = this.getStore_INTERNAL(); // This batchUpdates ensures this `set` is applied immediately and you can
+      // read the written value after calling `set`. I would like to remove this
+      // behavior and only batch in `Snapshot.map`, but this would be a breaking
+      // change potentially.
+
+      this._batch(() => {
+        updateRetainCount$1(store, recoilState.key, 1);
+        setRecoilValue$1(this.getStore_INTERNAL(), recoilState, newValueOrUpdater);
+      });
+    });
+
+    _defineProperty(this, "reset", recoilState => {
+      this.checkRefCount_INTERNAL();
+      const store = this.getStore_INTERNAL(); // See note at `set` about batched updates.
+
+      this._batch(() => {
+        updateRetainCount$1(store, recoilState.key, 1);
+        setRecoilValue$1(this.getStore_INTERNAL(), recoilState, DEFAULT_VALUE$1);
+      });
+    });
+
+    _defineProperty(this, "setUnvalidatedAtomValues_DEPRECATED", values => {
+      this.checkRefCount_INTERNAL();
+      const store = this.getStore_INTERNAL(); // See note at `set` about batched updates.
+
+      batchUpdates$1(() => {
+        for (const [k, v] of values.entries()) {
+          updateRetainCount$1(store, k, 1);
+          setUnvalidatedRecoilValue$1(store, new AbstractRecoilValue$2(k), v);
+        }
+      });
+    });
+
+    this._batch = batch;
+  } // We want to allow the methods to be destructured and used as accessors
+  // eslint-disable-next-line fb-www/extra-arrow-initializer
+
+
+}
+
+var Recoil_Snapshot = {
+  Snapshot,
+  MutableSnapshot,
+  freshSnapshot,
+  cloneSnapshot
+};
+var Recoil_Snapshot_1 = Recoil_Snapshot.Snapshot;
+var Recoil_Snapshot_2 = Recoil_Snapshot.MutableSnapshot;
+var Recoil_Snapshot_3 = Recoil_Snapshot.freshSnapshot;
+var Recoil_Snapshot_4 = Recoil_Snapshot.cloneSnapshot;
+var Recoil_Snapshot$1 = /*#__PURE__*/Object.freeze({
+  __proto__: null,
+  Snapshot: Recoil_Snapshot_1,
+  MutableSnapshot: Recoil_Snapshot_2,
+  freshSnapshot: Recoil_Snapshot_3,
+  cloneSnapshot: Recoil_Snapshot_4
+});
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * 
+ * @format
+ */
+
+function unionSets(...sets) {
+  const result = new Set();
+
+  for (const set of sets) {
+    for (const value of set) {
+      result.add(value);
+    }
+  }
+
+  return result;
+}
+
+var Recoil_unionSets = unionSets;
+const {
+  useRef
+} = _react.default;
+/**
+ * The same as `useRef()` except that if a function is specified then it will
+ * call that function to get the value to initialize the reference with.
+ * This is similar to how `useState()` behaves when given a function.  It allows
+ * the user to avoid generating the initial value for subsequent renders.
+ * The tradeoff is that to set the reference to a function itself you need to
+ * nest it: useRefInitOnce(() => () => {...});
+ */
+
+function useRefInitOnce(initialValue) {
+  // $FlowExpectedError[incompatible-call]
+  const ref = useRef(initialValue);
+
+  if (ref.current === initialValue && typeof initialValue === 'function') {
+    // $FlowExpectedError[incompatible-use]
+    ref.current = initialValue();
+  }
+
+  return ref;
+}
+
+var Recoil_useRefInitOnce = useRefInitOnce; // @fb-only: const RecoilusagelogEvent = require('RecoilusagelogEvent');
+// @fb-only: const RecoilUsageLogFalcoEvent = require('RecoilUsageLogFalcoEvent');
+// @fb-only: const URI = require('URI');
+
+const {
+  getNextTreeStateVersion: getNextTreeStateVersion$3,
+  makeEmptyStoreState: makeEmptyStoreState$2
+} = Recoil_State;
+const {
+  cleanUpNode: cleanUpNode$2,
+  getDownstreamNodes: getDownstreamNodes$2,
+  initializeNode: initializeNode$2,
+  setNodeValue: setNodeValue$2,
+  setUnvalidatedAtomValue_DEPRECATED: setUnvalidatedAtomValue_DEPRECATED$1
+} = Recoil_FunctionalCore;
+const {
+  graph: graph$2
+} = Recoil_Graph;
+const {
+  cloneGraph: cloneGraph$1
+} = Recoil_Graph;
+const {
+  getNextStoreID: getNextStoreID$2
+} = Recoil_Keys;
+const {
+  createMutableSource: createMutableSource$1,
+  reactMode: reactMode$2
+} = Recoil_ReactMode;
+const {
+  applyAtomValueWrites: applyAtomValueWrites$1
+} = Recoil_RecoilValueInterface;
+const {
+  releaseScheduledRetainablesNow: releaseScheduledRetainablesNow$1
+} = Recoil_Retention;
+const {
+  freshSnapshot: freshSnapshot$1
+} = Recoil_Snapshot$1;
+const {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef: useRef$1,
+  useState
+} = _react.default;
+
+function notInAContext() {
+  throw Recoil_err('This component must be used inside a <RecoilRoot> component.');
+}
+
+const defaultStore = Object.freeze({
+  storeID: getNextStoreID$2(),
+  getState: notInAContext,
+  replaceState: notInAContext,
+  getGraph: notInAContext,
+  subscribeToTransactions: notInAContext,
+  addTransactionMetadata: notInAContext
+});
+let stateReplacerIsBeingExecuted = false;
+
+function startNextTreeIfNeeded(store) {
+  if (stateReplacerIsBeingExecuted) {
+    throw Recoil_err('An atom update was triggered within the execution of a state updater function. State updater functions provided to Recoil must be pure functions.');
+  }
+
+  const storeState = store.getState();
+
+  if (storeState.nextTree === null) {
+    if (Recoil_gkx('recoil_memory_managament_2020') && Recoil_gkx('recoil_release_on_cascading_update_killswitch_2021')) {
+      // If this is a cascading update (that is, rendering due to one state change
+      // invokes a second state change), we won't have cleaned up retainables yet
+      // because this normally happens after notifying components. Do it before
+      // proceeding with the cascading update so that it remains predictable:
+      if (storeState.commitDepth > 0) {
+        releaseScheduledRetainablesNow$1(store);
+      }
+    }
+
+    const version = storeState.currentTree.version;
+    const nextVersion = getNextTreeStateVersion$3();
+    storeState.nextTree = { ...storeState.currentTree,
+      version: nextVersion,
+      stateID: nextVersion,
+      dirtyAtoms: new Set(),
+      transactionMetadata: {}
+    };
+    storeState.graphsByVersion.set(nextVersion, cloneGraph$1(Recoil_nullthrows(storeState.graphsByVersion.get(version))));
+  }
+}
+
+const AppContext = _react.default.createContext({
+  current: defaultStore
+});
+
+const useStoreRef = () => useContext(AppContext); // $FlowExpectedError[incompatible-call]
+
+
+const MutableSourceContext = _react.default.createContext(null);
+
+function useRecoilMutableSource() {
+  const mutableSource = useContext(MutableSourceContext);
+
+  if (mutableSource == null) {
+    Recoil_expectationViolation('Attempted to use a Recoil hook outside of a <RecoilRoot>. ' + '<RecoilRoot> must be an ancestor of any component that uses ' + 'Recoil hooks.');
+  }
+
+  return mutableSource;
+}
+
+function notifyComponents(store, storeState, treeState) {
+  const dependentNodes = getDownstreamNodes$2(store, treeState, treeState.dirtyAtoms);
+
+  for (const key of dependentNodes) {
+    const comps = storeState.nodeToComponentSubscriptions.get(key);
+
+    if (comps) {
+      for (const [_subID, [_debugName, callback]] of comps) {
+        callback(treeState);
+      }
+    }
+  }
+}
+
+function sendEndOfBatchNotifications(store) {
+  const storeState = store.getState();
+  const treeState = storeState.currentTree; // Inform transaction subscribers of the transaction:
+
+  const dirtyAtoms = treeState.dirtyAtoms;
+
+  if (dirtyAtoms.size) {
+    // Execute Node-specific subscribers before global subscribers
+    for (const [key, subscriptions] of storeState.nodeTransactionSubscriptions) {
+      if (dirtyAtoms.has(key)) {
+        for (const [_, subscription] of subscriptions) {
+          subscription(store);
+        }
+      }
+    }
+
+    for (const [_, subscription] of storeState.transactionSubscriptions) {
+      subscription(store);
+    }
+
+    if (!reactMode$2().early || storeState.suspendedComponentResolvers.size > 0) {
+      // Notifying components is needed to wake from suspense, even when using
+      // early rendering.
+      notifyComponents(store, storeState, treeState); // Wake all suspended components so the right one(s) can try to re-render.
+      // We need to wake up components not just when some asynchronous selector
+      // resolved, but also when changing synchronous values because this may cause
+      // a selector to change from asynchronous to synchronous, in which case there
+      // would be no follow-up asynchronous resolution to wake us up.
+      // TODO OPTIMIZATION Only wake up related downstream components
+
+      storeState.suspendedComponentResolvers.forEach(cb => cb());
+      storeState.suspendedComponentResolvers.clear();
+    }
+  } // Special behavior ONLY invoked by useInterface.
+  // FIXME delete queuedComponentCallbacks_DEPRECATED when deleting useInterface.
+
+
+  storeState.queuedComponentCallbacks_DEPRECATED.forEach(cb => cb(treeState));
+  storeState.queuedComponentCallbacks_DEPRECATED.splice(0, storeState.queuedComponentCallbacks_DEPRECATED.length);
+}
+
+function endBatch(store) {
+  const storeState = store.getState();
+  storeState.commitDepth++;
+
+  try {
+    const {
+      nextTree
+    } = storeState; // Ignore commits that are not because of Recoil transactions -- namely,
+    // because something above RecoilRoot re-rendered:
+
+    if (nextTree == null) {
+      return;
+    } // nextTree is now committed -- note that copying and reset occurs when
+    // a transaction begins, in startNextTreeIfNeeded:
+
+
+    storeState.previousTree = storeState.currentTree;
+    storeState.currentTree = nextTree;
+    storeState.nextTree = null;
+    sendEndOfBatchNotifications(store);
+
+    if (storeState.previousTree != null) {
+      storeState.graphsByVersion.delete(storeState.previousTree.version);
+    } else {
+      Recoil_recoverableViolation('Ended batch with no previous state, which is unexpected', 'recoil');
+    }
+
+    storeState.previousTree = null;
+
+    if (Recoil_gkx('recoil_memory_managament_2020')) {
+      // Only release retainables if there were no writes during the end of the
+      // batch.  This avoids releasing something we might be about to use.
+      if (nextTree == null) {
+        releaseScheduledRetainablesNow$1(store);
+      }
+    }
+  } finally {
+    storeState.commitDepth--;
+  }
+}
+/*
+ * The purpose of the Batcher is to observe when React batches end so that
+ * Recoil state changes can be batched. Whenever Recoil state changes, we call
+ * setState on the batcher. Then we wait for that change to be committed, which
+ * signifies the end of the batch. That's when we respond to the Recoil change.
+ */
+
+
+function Batcher({
+  setNotifyBatcherOfChange
+}) {
+  const storeRef = useStoreRef();
+  const [, setState] = useState([]);
+  setNotifyBatcherOfChange(() => setState({}));
+  useEffect(() => {
+    setNotifyBatcherOfChange(() => setState({})); // If an asynchronous selector resolves after the Batcher is unmounted,
+    // notifyBatcherOfChange will still be called. An error gets thrown whenever
+    // setState is called after a component is already unmounted, so this sets
+    // notifyBatcherOfChange to be a no-op.
+
+    return () => {
+      setNotifyBatcherOfChange(() => {});
+    };
+  }, [setNotifyBatcherOfChange]);
+  useEffect(() => {
+    // enqueueExecution runs this function immediately; it is only used to
+    // manipulate the order of useEffects during tests, since React seems to
+    // call useEffect in an unpredictable order sometimes.
+    Recoil_Queue.enqueueExecution('Batcher', () => {
+      endBatch(storeRef.current);
+    });
+  });
+  return null;
+}
+
+if ("development" !== "production") {
+  if (typeof window !== 'undefined' && !window.$recoilDebugStates) {
+    window.$recoilDebugStates = [];
+  }
+} // When removing this deprecated function, remove stateBySettingRecoilValue
+// which will no longer be needed.
+
+
+function initialStoreState_DEPRECATED(store, initializeState) {
+  const initial = makeEmptyStoreState$2();
+  initializeState({
+    // $FlowFixMe[escaped-generic]
+    set: (atom, value) => {
+      const state = initial.currentTree;
+      const writes = setNodeValue$2(store, state, atom.key, value);
+      const writtenNodes = new Set(writes.keys());
+      const nonvalidatedAtoms = state.nonvalidatedAtoms.clone();
+
+      for (const n of writtenNodes) {
+        nonvalidatedAtoms.delete(n);
+      }
+
+      initial.currentTree = { ...state,
+        dirtyAtoms: Recoil_unionSets(state.dirtyAtoms, writtenNodes),
+        atomValues: applyAtomValueWrites$1(state.atomValues, writes),
+        // NB: PLEASE un-export applyAtomValueWrites when deleting this code
+        nonvalidatedAtoms
+      };
+    },
+    setUnvalidatedAtomValues: atomValues => {
+      // FIXME replace this with a mutative loop
+      atomValues.forEach((v, k) => {
+        initial.currentTree = setUnvalidatedAtomValue_DEPRECATED$1(initial.currentTree, k, v);
+      });
+    }
+  });
+  return initial;
+} // Initialize state snapshot for <RecoilRoot> for the initializeState prop.
+// Atom effect initialization takes precedence over this prop.
+// Any atom effects will be run before initialization, but then cleaned up,
+// they are then re-run when used as part of rendering.  These semantics are
+// compatible with React StrictMode where effects may be re-run multiple times
+// but state initialization only happens once the first time.
+
+
+function initialStoreState(initializeState) {
+  // Initialize a snapshot and get its store
+  const snapshot = freshSnapshot$1(initializeState);
+  const storeState = snapshot.getStore_INTERNAL().getState(); // Counteract the snapshot auto-release
+
+  snapshot.retain(); // Cleanup any effects run during initialization and clear the handlers so
+  // they will re-initialize if used during rendering.  This allows atom effect
+  // initialization to take precedence over initializeState and be compatible
+  // with StrictMode semantics.
+
+  storeState.nodeCleanupFunctions.forEach(cleanup => cleanup());
+  storeState.nodeCleanupFunctions.clear();
+  return storeState;
+}
+
+let nextID = 0;
+
+function RecoilRoot_INTERNAL({
+  initializeState_DEPRECATED,
+  initializeState,
+  store_INTERNAL: storeProp,
+  // For use with React "context bridging"
+  children
+}) {
+  // prettier-ignore
+  // @fb-only: useEffect(() => {
+  // @fb-only: if (gkx('recoil_usage_logging')) {
+  // @fb-only: try {
+  // @fb-only: RecoilUsageLogFalcoEvent.log(() => ({
+  // @fb-only: type: RecoilusagelogEvent.RECOIL_ROOT_MOUNTED,
+  // @fb-only: path: URI.getRequestURI().getPath(),
+  // @fb-only: }));
+  // @fb-only: } catch {
+  // @fb-only: recoverableViolation(
+  // @fb-only: 'Error when logging Recoil Usage event',
+  // @fb-only: 'recoil',
+  // @fb-only: );
+  // @fb-only: }
+  // @fb-only: }
+  // @fb-only: }, []);
+  let storeStateRef; // eslint-disable-line prefer-const
+
+  const getGraph = version => {
+    const graphs = storeStateRef.current.graphsByVersion;
+
+    if (graphs.has(version)) {
+      return Recoil_nullthrows(graphs.get(version));
+    }
+
+    const newGraph = graph$2();
+    graphs.set(version, newGraph);
+    return newGraph;
+  };
+
+  const subscribeToTransactions = (callback, key) => {
+    if (key == null) {
+      // Global transaction subscriptions
+      const {
+        transactionSubscriptions
+      } = storeRef.current.getState();
+      const id = nextID++;
+      transactionSubscriptions.set(id, callback);
+      return {
+        release: () => {
+          transactionSubscriptions.delete(id);
+        }
+      };
+    } else {
+      // Node-specific transaction subscriptions:
+      const {
+        nodeTransactionSubscriptions
+      } = storeRef.current.getState();
+
+      if (!nodeTransactionSubscriptions.has(key)) {
+        nodeTransactionSubscriptions.set(key, new Map());
+      }
+
+      const id = nextID++;
+      Recoil_nullthrows(nodeTransactionSubscriptions.get(key)).set(id, callback);
+      return {
+        release: () => {
+          const subs = nodeTransactionSubscriptions.get(key);
+
+          if (subs) {
+            subs.delete(id);
+
+            if (subs.size === 0) {
+              nodeTransactionSubscriptions.delete(key);
+            }
+          }
+        }
+      };
+    }
+  };
+
+  const addTransactionMetadata = metadata => {
+    startNextTreeIfNeeded(storeRef.current);
+
+    for (const k of Object.keys(metadata)) {
+      Recoil_nullthrows(storeRef.current.getState().nextTree).transactionMetadata[k] = metadata[k];
+    }
+  };
+
+  const replaceState = replacer => {
+    startNextTreeIfNeeded(storeRef.current); // Use replacer to get the next state:
+
+    const nextTree = Recoil_nullthrows(storeStateRef.current.nextTree);
+    let replaced;
+
+    try {
+      stateReplacerIsBeingExecuted = true;
+      replaced = replacer(nextTree);
+    } finally {
+      stateReplacerIsBeingExecuted = false;
+    }
+
+    if (replaced === nextTree) {
+      return;
+    }
+
+    if ("development" !== "production") {
+      if (typeof window !== 'undefined') {
+        window.$recoilDebugStates.push(replaced); // TODO this shouldn't happen here because it's not batched
+      }
+    } // Save changes to nextTree and schedule a React update:
+
+
+    storeStateRef.current.nextTree = replaced;
+
+    if (reactMode$2().early) {
+      notifyComponents(storeRef.current, storeStateRef.current, replaced);
+    }
+
+    Recoil_nullthrows(notifyBatcherOfChange.current)();
+  };
+
+  const notifyBatcherOfChange = useRef$1(null);
+  const setNotifyBatcherOfChange = useCallback(x => {
+    notifyBatcherOfChange.current = x;
+  }, [notifyBatcherOfChange]);
+  const storeRef = Recoil_useRefInitOnce(() => storeProp !== null && storeProp !== void 0 ? storeProp : {
+    storeID: getNextStoreID$2(),
+    getState: () => storeStateRef.current,
+    replaceState,
+    getGraph,
+    subscribeToTransactions,
+    addTransactionMetadata
+  });
+
+  if (storeProp != null) {
+    storeRef.current = storeProp;
+  }
+
+  storeStateRef = Recoil_useRefInitOnce(() => initializeState_DEPRECATED != null ? initialStoreState_DEPRECATED(storeRef.current, initializeState_DEPRECATED) : initializeState != null ? initialStoreState(initializeState) : makeEmptyStoreState$2());
+  const mutableSource = useMemo(() => createMutableSource$1 === null || createMutableSource$1 === void 0 ? void 0 : createMutableSource$1(storeStateRef, () => storeStateRef.current.currentTree.version), [storeStateRef]); // Cleanup when the <RecoilRoot> is unmounted
+
+  useEffect(() => {
+    // React is free to call effect cleanup handlers and effects at will, the
+    // deps array is only an optimization.  For example, React strict mode
+    // will execute each effect twice for testing.  Therefore, we need symmetry
+    // to re-initialize all known atoms after they were cleaned up.
+    const store = storeRef.current;
+
+    for (const atomKey of new Set(store.getState().knownAtoms)) {
+      initializeNode$2(store, atomKey, 'get');
+    }
+
+    return () => {
+      for (const atomKey of store.getState().knownAtoms) {
+        cleanUpNode$2(store, atomKey);
+      }
+    };
+  }, [storeRef]);
+  return /*#__PURE__*/_react.default.createElement(AppContext.Provider, {
+    value: storeRef
+  }, /*#__PURE__*/_react.default.createElement(MutableSourceContext.Provider, {
+    value: mutableSource
+  }, /*#__PURE__*/_react.default.createElement(Batcher, {
+    setNotifyBatcherOfChange: setNotifyBatcherOfChange
+  }), children));
+}
+
+function RecoilRoot(props) {
+  const {
+    override,
+    ...propsExceptOverride
+  } = props;
+  const ancestorStoreRef = useStoreRef();
+
+  if (override === false && ancestorStoreRef.current !== defaultStore) {
+    // If ancestorStoreRef.current !== defaultStore, it means that this
+    // RecoilRoot is not nested within another.
+    return props.children;
+  }
+
+  return /*#__PURE__*/_react.default.createElement(RecoilRoot_INTERNAL, propsExceptOverride);
+}
+
+function useRecoilStoreID() {
+  return useStoreRef().current.storeID;
+}
+
+var Recoil_RecoilRoot = {
+  RecoilRoot,
+  useStoreRef,
+  useRecoilMutableSource,
+  useRecoilStoreID,
+  notifyComponents_FOR_TESTING: notifyComponents,
+  sendEndOfBatchNotifications_FOR_TESTING: sendEndOfBatchNotifications
+};
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * 
+ * @format
+ */
+
+function shallowArrayEqual(a, b) {
+  if (a === b) {
+    return true;
+  }
+
+  if (a.length !== b.length) {
+    return false;
+  }
+
+  for (let i = 0, l = a.length; i < l; i++) {
+    if (a[i] !== b[i]) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+var Recoil_shallowArrayEqual = shallowArrayEqual;
+const {
+  useEffect: useEffect$1,
+  useRef: useRef$2
+} = _react.default;
+
+function usePrevious(value) {
+  const ref = useRef$2();
+  useEffect$1(() => {
+    ref.current = value;
+  });
+  return ref.current;
+}
+
+var Recoil_usePrevious = usePrevious;
+const {
+  useStoreRef: useStoreRef$1
+} = Recoil_RecoilRoot;
+const {
+  SUSPENSE_TIMEOUT_MS: SUSPENSE_TIMEOUT_MS$1
+} = Recoil_Retention;
+const {
+  updateRetainCount: updateRetainCount$2
+} = Recoil_Retention;
+const {
+  RetentionZone: RetentionZone$3
+} = Recoil_RetentionZone;
+const {
+  useEffect: useEffect$2,
+  useRef: useRef$3
+} = _react.default;
+const {
+  isSSR: isSSR$2
+} = Recoil_Environment; // I don't see a way to avoid the any type here because we want to accept readable
+// and writable values with any type parameter, but normally with writable ones
+// RecoilState<SomeT> is not a subtype of RecoilState<mixed>.
+// flowlint-line unclear-type:off
+
+function useRetain(toRetain) {
+  if (!Recoil_gkx('recoil_memory_managament_2020')) {
+    return;
+  } // eslint-disable-next-line fb-www/react-hooks
+
+
+  return useRetain_ACTUAL(toRetain);
+}
+
+function useRetain_ACTUAL(toRetain) {
+  const array = Array.isArray(toRetain) ? toRetain : [toRetain];
+  const retainables = array.map(a => a instanceof RetentionZone$3 ? a : a.key);
+  const storeRef = useStoreRef$1();
+  useEffect$2(() => {
+    if (!Recoil_gkx('recoil_memory_managament_2020')) {
+      return;
+    }
+
+    const store = storeRef.current;
+
+    if (timeoutID.current && !isSSR$2) {
+      // Already performed a temporary retain on render, simply cancel the release
+      // of that temporary retain.
+      window.clearTimeout(timeoutID.current);
+      timeoutID.current = null;
+    } else {
+      for (const r of retainables) {
+        updateRetainCount$2(store, r, 1);
+      }
+    }
+
+    return () => {
+      for (const r of retainables) {
+        updateRetainCount$2(store, r, -1);
+      }
+    }; // eslint-disable-next-line fb-www/react-hooks-deps
+  }, [storeRef, ...retainables]); // We want to retain if the component suspends. This is terrible but the Suspense
+  // API affords us no better option. If we suspend and never commit after some
+  // seconds, then release. The 'actual' retain/release in the effect above
+  // cancels this.
+
+  const timeoutID = useRef$3();
+  const previousRetainables = Recoil_usePrevious(retainables);
+
+  if (!isSSR$2 && (previousRetainables === undefined || !Recoil_shallowArrayEqual(previousRetainables, retainables))) {
+    const store = storeRef.current;
+
+    for (const r of retainables) {
+      updateRetainCount$2(store, r, 1);
+    }
+
+    if (previousRetainables) {
+      for (const r of previousRetainables) {
+        updateRetainCount$2(store, r, -1);
+      }
+    }
+
+    if (timeoutID.current) {
+      window.clearTimeout(timeoutID.current);
+    }
+
+    timeoutID.current = window.setTimeout(() => {
+      timeoutID.current = null;
+
+      for (const r of retainables) {
+        updateRetainCount$2(store, r, -1);
+      }
+    }, SUSPENSE_TIMEOUT_MS$1);
+  }
+}
+
+var Recoil_useRetain = useRetain;
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * 
+ * @format
+ */
+
+/**
+ * THIS CODE HAS BEEN COMMENTED OUT INTENTIONALLY
+ *
+ * This technique of getting the component name is imperfect, since it both only
+ * works in a non-minified code base, and more importantly introduces performance
+ * problems since it relies in throwing errors which is an expensive operation.
+ *
+ * At some point we may want to reevaluate this technique hence why we have commented
+ * this code out, rather than delete it all together.
+ */
+// const {useRef} = require('react');
+// const gkx = require('recoil-shared/util/Recoil_gkx');
+// const stackTraceParser = require('recoil-shared/util/Recoil_stackTraceParser');
+
+function useComponentName() {
+  // const nameRef = useRef();
+  // if (__DEV__) {
+  //   if (gkx('recoil_infer_component_names')) {
+  //     if (nameRef.current === undefined) {
+  //       // There is no blessed way to determine the calling React component from
+  //       // within a hook. This hack uses the fact that hooks must start with 'use'
+  //       // and that hooks are either called by React Components or other hooks. It
+  //       // follows therefore, that to find the calling component, you simply need
+  //       // to look down the stack and find the first function which doesn't start
+  //       // with 'use'. We are only enabling this in dev for now, since once the
+  //       // codebase is minified, the naming assumptions no longer hold true.
+  //       // eslint-disable-next-line fb-www/no-new-error
+  //       const frames = stackTraceParser(new Error().stack);
+  //       for (const {methodName} of frames) {
+  //         // I observed cases where the frame was of the form 'Object.useXXX'
+  //         // hence why I'm searching for hooks following a word boundary
+  //         if (!methodName.match(/\buse[^\b]+$/)) {
+  //           return (nameRef.current = methodName);
+  //         }
+  //       }
+  //       nameRef.current = null;
+  //     }
+  //     return nameRef.current ?? '<unable to determine component name>';
+  //   }
+  // }
+  // @fb-only: return "<component name only available when both in dev mode and when passing GK 'recoil_infer_component_names'>";
+  return '<component name not available>'; // @oss-only
+}
+
+var Recoil_useComponentName = useComponentName;
+const {
+  batchUpdates: batchUpdates$2
+} = Recoil_Batching;
+const {
+  DEFAULT_VALUE: DEFAULT_VALUE$2
+} = Recoil_Node;
+const {
+  reactMode: reactMode$3,
+  useMutableSource: useMutableSource$1,
+  useSyncExternalStore: useSyncExternalStore$1
+} = Recoil_ReactMode;
+const {
+  useRecoilMutableSource: useRecoilMutableSource$1,
+  useStoreRef: useStoreRef$2
+} = Recoil_RecoilRoot;
+const {
+  isRecoilValue: isRecoilValue$2
+} = Recoil_RecoilValue$1;
+const {
+  AbstractRecoilValue: AbstractRecoilValue$3,
+  getRecoilValueAsLoadable: getRecoilValueAsLoadable$2,
+  setRecoilValue: setRecoilValue$2,
+  setUnvalidatedRecoilValue: setUnvalidatedRecoilValue$2,
+  subscribeToRecoilValue: subscribeToRecoilValue$1
+} = Recoil_RecoilValueInterface;
+const {
+  useCallback: useCallback$1,
+  useEffect: useEffect$3,
+  useMemo: useMemo$1,
+  useRef: useRef$4,
+  useState: useState$1
+} = _react.default;
+const {
+  setByAddingToSet: setByAddingToSet$2
+} = Recoil_CopyOnWrite;
+
+function handleLoadable(loadable, recoilValue, storeRef) {
+  // We can't just throw the promise we are waiting on to Suspense.  If the
+  // upstream dependencies change it may produce a state in which the component
+  // can render, but it would still be suspended on a Promise that may never resolve.
+  if (loadable.state === 'hasValue') {
+    return loadable.contents;
+  } else if (loadable.state === 'loading') {
+    const promise = new Promise(resolve => {
+      storeRef.current.getState().suspendedComponentResolvers.add(resolve);
+    }); // $FlowFixMe Flow(prop-missing) for integrating with tools that inspect thrown promises @fb-only
+    // @fb-only: promise.displayName = `Recoil State: ${recoilValue.key}`;
+
+    throw promise;
+  } else if (loadable.state === 'hasError') {
+    throw loadable.contents;
+  } else {
+    throw Recoil_err(`Invalid value of loadable atom "${recoilValue.key}"`);
+  }
+}
+
+function validateRecoilValue(recoilValue, hookName) {
+  if (!isRecoilValue$2(recoilValue)) {
+    throw Recoil_err(`Invalid argument to ${hookName}: expected an atom or selector but got ${String(recoilValue)}`);
+  }
+}
+/**
+ * Various things are broken with useRecoilInterface, particularly concurrent
+ * mode, React strict mode, and memory management. They will not be fixed.
+ * */
+
+
+function useRecoilInterface_DEPRECATED() {
+  const componentName = Recoil_useComponentName();
+  const storeRef = useStoreRef$2();
+  const [, forceUpdate] = useState$1([]);
+  const recoilValuesUsed = useRef$4(new Set());
+  recoilValuesUsed.current = new Set(); // Track the RecoilValues used just during this render
+
+  const previousSubscriptions = useRef$4(new Set());
+  const subscriptions = useRef$4(new Map());
+  const unsubscribeFrom = useCallback$1(key => {
+    const sub = subscriptions.current.get(key);
+
+    if (sub) {
+      sub.release();
+      subscriptions.current.delete(key);
+    }
+  }, [subscriptions]);
+  const updateState = useCallback$1((_state, key) => {
+    if (subscriptions.current.has(key)) {
+      forceUpdate([]);
+    }
+  }, []); // Effect to add/remove subscriptions as nodes are used
+
+  useEffect$3(() => {
+    const store = storeRef.current;
+    Recoil_differenceSets(recoilValuesUsed.current, previousSubscriptions.current).forEach(key => {
+      if (subscriptions.current.has(key)) {
+        Recoil_expectationViolation(`Double subscription to RecoilValue "${key}"`);
+        return;
+      }
+
+      const sub = subscribeToRecoilValue$1(store, new AbstractRecoilValue$3(key), state => updateState(state, key), componentName);
+      subscriptions.current.set(key, sub);
+      /**
+       * Since we're subscribing in an effect we need to update to the latest
+       * value of the atom since it may have changed since we rendered. We can
+       * go ahead and do that now, unless we're in the middle of a batch --
+       * in which case we should do it at the end of the batch, due to the
+       * following edge case: Suppose an atom is updated in another useEffect
+       * of this same component. Then the following sequence of events occur:
+       * 1. Atom is updated and subs fired (but we may not be subscribed
+       *    yet depending on order of effects, so we miss this) Updated value
+       *    is now in nextTree, but not currentTree.
+       * 2. This effect happens. We subscribe and update.
+       * 3. From the update we re-render and read currentTree, with old value.
+       * 4. Batcher's effect sets currentTree to nextTree.
+       * In this sequence we miss the update. To avoid that, add the update
+       * to queuedComponentCallback if a batch is in progress.
+       */
+      // FIXME delete queuedComponentCallbacks_DEPRECATED when deleting useInterface.
+
+      const state = store.getState();
+
+      if (state.nextTree) {
+        store.getState().queuedComponentCallbacks_DEPRECATED.push(() => {
+          updateState(store.getState(), key);
+        });
+      } else {
+        updateState(store.getState(), key);
+      }
+    });
+    Recoil_differenceSets(previousSubscriptions.current, recoilValuesUsed.current).forEach(key => {
+      unsubscribeFrom(key);
+    });
+    previousSubscriptions.current = recoilValuesUsed.current;
+  }); // Effect to unsubscribe from all when unmounting
+
+  useEffect$3(() => {
+    const currentSubscriptions = subscriptions.current; // Restore subscriptions that were cleared due to StrictMode running this effect twice
+
+    Recoil_differenceSets(recoilValuesUsed.current, new Set(currentSubscriptions.keys())).forEach(key => {
+      const sub = subscribeToRecoilValue$1(storeRef.current, new AbstractRecoilValue$3(key), state => updateState(state, key), componentName);
+      currentSubscriptions.set(key, sub);
+    });
+    return () => currentSubscriptions.forEach((_, key) => unsubscribeFrom(key));
+  }, [componentName, storeRef, unsubscribeFrom, updateState]);
+  return useMemo$1(() => {
+    // eslint-disable-next-line no-shadow
+    function useSetRecoilState(recoilState) {
+      if ("development" !== "production") {
+        validateRecoilValue(recoilState, 'useSetRecoilState');
+      }
+
+      return newValueOrUpdater => {
+        setRecoilValue$2(storeRef.current, recoilState, newValueOrUpdater);
+      };
+    } // eslint-disable-next-line no-shadow
+
+
+    function useResetRecoilState(recoilState) {
+      if ("development" !== "production") {
+        validateRecoilValue(recoilState, 'useResetRecoilState');
+      }
+
+      return () => setRecoilValue$2(storeRef.current, recoilState, DEFAULT_VALUE$2);
+    } // eslint-disable-next-line no-shadow
+
+
+    function useRecoilValueLoadable(recoilValue) {
+      var _storeState$nextTree;
+
+      if ("development" !== "production") {
+        validateRecoilValue(recoilValue, 'useRecoilValueLoadable');
+      }
+
+      if (!recoilValuesUsed.current.has(recoilValue.key)) {
+        recoilValuesUsed.current = setByAddingToSet$2(recoilValuesUsed.current, recoilValue.key);
+      } // TODO Restore optimization to memoize lookup
+
+
+      const storeState = storeRef.current.getState();
+      return getRecoilValueAsLoadable$2(storeRef.current, recoilValue, reactMode$3().early ? (_storeState$nextTree = storeState.nextTree) !== null && _storeState$nextTree !== void 0 ? _storeState$nextTree : storeState.currentTree : storeState.currentTree);
+    } // eslint-disable-next-line no-shadow
+
+
+    function useRecoilValue(recoilValue) {
+      if ("development" !== "production") {
+        validateRecoilValue(recoilValue, 'useRecoilValue');
+      }
+
+      const loadable = useRecoilValueLoadable(recoilValue);
+      return handleLoadable(loadable, recoilValue, storeRef);
+    } // eslint-disable-next-line no-shadow
+
+
+    function useRecoilState(recoilState) {
+      if ("development" !== "production") {
+        validateRecoilValue(recoilState, 'useRecoilState');
+      }
+
+      return [useRecoilValue(recoilState), useSetRecoilState(recoilState)];
+    } // eslint-disable-next-line no-shadow
+
+
+    function useRecoilStateLoadable(recoilState) {
+      if ("development" !== "production") {
+        validateRecoilValue(recoilState, 'useRecoilStateLoadable');
+      }
+
+      return [useRecoilValueLoadable(recoilState), useSetRecoilState(recoilState)];
+    }
+
+    return {
+      getRecoilValue: useRecoilValue,
+      getRecoilValueLoadable: useRecoilValueLoadable,
+      getRecoilState: useRecoilState,
+      getRecoilStateLoadable: useRecoilStateLoadable,
+      getSetRecoilState: useSetRecoilState,
+      getResetRecoilState: useResetRecoilState
+    };
+  }, [recoilValuesUsed, storeRef]);
+}
+
+const recoilComponentGetRecoilValueCount_FOR_TESTING = {
+  current: 0
+};
+
+function useRecoilValueLoadable_SYNC_EXTERNAL_STORE(recoilValue) {
+  const storeRef = useStoreRef$2();
+  const componentName = Recoil_useComponentName();
+  const getSnapshot = useCallback$1(() => {
+    var _storeState$nextTree2;
+
+    if ("development" !== "production") {
+      recoilComponentGetRecoilValueCount_FOR_TESTING.current++;
+    }
+
+    const store = storeRef.current;
+    const storeState = store.getState();
+    const treeState = reactMode$3().early ? (_storeState$nextTree2 = storeState.nextTree) !== null && _storeState$nextTree2 !== void 0 ? _storeState$nextTree2 : storeState.currentTree : storeState.currentTree;
+    const loadable = getRecoilValueAsLoadable$2(store, recoilValue, treeState);
+    return {
+      loadable,
+      key: recoilValue.key
+    };
+  }, [storeRef, recoilValue]); // Memoize the state to avoid unnecessary rerenders
+
+  const memoizePreviousSnapshot = useCallback$1(getState => {
+    let prevState;
+    return () => {
+      var _prevState, _prevState2;
+
+      const nextState = getState();
+
+      if ((_prevState = prevState) !== null && _prevState !== void 0 && _prevState.loadable.is(nextState.loadable) && ((_prevState2 = prevState) === null || _prevState2 === void 0 ? void 0 : _prevState2.key) === nextState.key) {
+        return prevState;
+      }
+
+      prevState = nextState;
+      return nextState;
+    };
+  }, []);
+  const getMemoizedSnapshot = useMemo$1(() => memoizePreviousSnapshot(getSnapshot), [getSnapshot, memoizePreviousSnapshot]);
+  const subscribe = useCallback$1(notify => {
+    const store = storeRef.current;
+    const subscription = subscribeToRecoilValue$1(store, recoilValue, notify, componentName);
+    return subscription.release;
+  }, [storeRef, recoilValue, componentName]);
+  return useSyncExternalStore$1(subscribe, getMemoizedSnapshot, // getSnapshot()
+  getMemoizedSnapshot // getServerSnapshot() for SSR support
+  ).loadable;
+}
+
+function useRecoilValueLoadable_MUTABLE_SOURCE(recoilValue) {
+  const storeRef = useStoreRef$2();
+  const getLoadable = useCallback$1(() => {
+    var _storeState$nextTree3;
+
+    const store = storeRef.current;
+    const storeState = store.getState();
+    const treeState = reactMode$3().early ? (_storeState$nextTree3 = storeState.nextTree) !== null && _storeState$nextTree3 !== void 0 ? _storeState$nextTree3 : storeState.currentTree : storeState.currentTree;
+    return getRecoilValueAsLoadable$2(store, recoilValue, treeState);
+  }, [storeRef, recoilValue]);
+  const getLoadableWithTesting = useCallback$1(() => {
+    if ("development" !== "production") {
+      recoilComponentGetRecoilValueCount_FOR_TESTING.current++;
+    }
+
+    return getLoadable();
+  }, [getLoadable]);
+  const componentName = Recoil_useComponentName();
+  const subscribe = useCallback$1((_storeState, notify) => {
+    const store = storeRef.current;
+    const subscription = subscribeToRecoilValue$1(store, recoilValue, () => {
+      if (!Recoil_gkx('recoil_suppress_rerender_in_callback')) {
+        return notify();
+      } // Only re-render if the value has changed.
+      // This will evaluate the atom/selector now as well as when the
+      // component renders, but that may help with prefetching.
+
+
+      const newLoadable = getLoadable();
+
+      if (!prevLoadableRef.current.is(newLoadable)) {
+        notify();
+      } // If the component is suspended then the effect setting prevLoadableRef
+      // will not run.  So, set the previous value here when its subscription
+      // is fired to wake it up.  We can't just rely on this, though, because
+      // this only executes when an atom/selector is dirty and the atom/selector
+      // passed to the hook can dynamically change.
+
+
+      prevLoadableRef.current = newLoadable;
+    }, componentName);
+    return subscription.release;
+  }, [storeRef, recoilValue, componentName, getLoadable]);
+  const source = useRecoilMutableSource$1();
+
+  if (source == null) {
+    throw Recoil_err('Recoil hooks must be used in components contained within a <RecoilRoot> component.');
+  }
+
+  const loadable = useMutableSource$1(source, getLoadableWithTesting, subscribe);
+  const prevLoadableRef = useRef$4(loadable);
+  useEffect$3(() => {
+    prevLoadableRef.current = loadable;
+  });
+  return loadable;
+}
+
+function useRecoilValueLoadable_TRANSITION_SUPPORT(recoilValue) {
+  const storeRef = useStoreRef$2();
+  const componentName = Recoil_useComponentName(); // Accessors to get the current state
+
+  const getLoadable = useCallback$1(() => {
+    var _storeState$nextTree4;
+
+    if ("development" !== "production") {
+      recoilComponentGetRecoilValueCount_FOR_TESTING.current++;
+    }
+
+    const store = storeRef.current;
+    const storeState = store.getState();
+    const treeState = reactMode$3().early ? (_storeState$nextTree4 = storeState.nextTree) !== null && _storeState$nextTree4 !== void 0 ? _storeState$nextTree4 : storeState.currentTree : storeState.currentTree;
+    return getRecoilValueAsLoadable$2(store, recoilValue, treeState);
+  }, [storeRef, recoilValue]);
+  const getState = useCallback$1(() => ({
+    loadable: getLoadable(),
+    key: recoilValue.key
+  }), [getLoadable, recoilValue.key]); // Memoize state snapshots
+
+  const updateState = useCallback$1(prevState => {
+    const nextState = getState();
+    return prevState.loadable.is(nextState.loadable) && prevState.key === nextState.key ? prevState : nextState;
+  }, [getState]); // Subscribe to Recoil state changes
+
+  useEffect$3(() => {
+    const subscription = subscribeToRecoilValue$1(storeRef.current, recoilValue, _state => {
+      setState(updateState);
+    }, componentName); // Update state in case we are using a different key
+
+    setState(updateState);
+    return subscription.release;
+  }, [componentName, recoilValue, storeRef, updateState]); // Get the current state
+
+  const [state, setState] = useState$1(getState); // If we changed keys, then return the state for the new key.
+  // This is important in case the old key would cause the component to suspend.
+  // We don't have to set the new state here since the subscribing effect above
+  // will do that.
+
+  return state.key !== recoilValue.key ? getState().loadable : state.loadable;
+}
+
+function useRecoilValueLoadable_LEGACY(recoilValue) {
+  const storeRef = useStoreRef$2();
+  const [, forceUpdate] = useState$1([]);
+  const componentName = Recoil_useComponentName();
+  const getLoadable = useCallback$1(() => {
+    var _storeState$nextTree5;
+
+    if ("development" !== "production") {
+      recoilComponentGetRecoilValueCount_FOR_TESTING.current++;
+    }
+
+    const store = storeRef.current;
+    const storeState = store.getState();
+    const treeState = reactMode$3().early ? (_storeState$nextTree5 = storeState.nextTree) !== null && _storeState$nextTree5 !== void 0 ? _storeState$nextTree5 : storeState.currentTree : storeState.currentTree;
+    return getRecoilValueAsLoadable$2(store, recoilValue, treeState);
+  }, [storeRef, recoilValue]);
+  const loadable = getLoadable();
+  const prevLoadableRef = useRef$4(loadable);
+  useEffect$3(() => {
+    prevLoadableRef.current = loadable;
+  });
+  useEffect$3(() => {
+    const store = storeRef.current;
+    const storeState = store.getState();
+    const subscription = subscribeToRecoilValue$1(store, recoilValue, _state => {
+      var _prevLoadableRef$curr;
+
+      if (!Recoil_gkx('recoil_suppress_rerender_in_callback')) {
+        return forceUpdate([]);
+      }
+
+      const newLoadable = getLoadable();
+
+      if (!((_prevLoadableRef$curr = prevLoadableRef.current) !== null && _prevLoadableRef$curr !== void 0 && _prevLoadableRef$curr.is(newLoadable))) {
+        forceUpdate(newLoadable);
+      }
+
+      prevLoadableRef.current = newLoadable;
+    }, componentName);
+    /**
+     * Since we're subscribing in an effect we need to update to the latest
+     * value of the atom since it may have changed since we rendered. We can
+     * go ahead and do that now, unless we're in the middle of a batch --
+     * in which case we should do it at the end of the batch, due to the
+     * following edge case: Suppose an atom is updated in another useEffect
+     * of this same component. Then the following sequence of events occur:
+     * 1. Atom is updated and subs fired (but we may not be subscribed
+     *    yet depending on order of effects, so we miss this) Updated value
+     *    is now in nextTree, but not currentTree.
+     * 2. This effect happens. We subscribe and update.
+     * 3. From the update we re-render and read currentTree, with old value.
+     * 4. Batcher's effect sets currentTree to nextTree.
+     * In this sequence we miss the update. To avoid that, add the update
+     * to queuedComponentCallback if a batch is in progress.
+     */
+
+    if (storeState.nextTree) {
+      store.getState().queuedComponentCallbacks_DEPRECATED.push(() => {
+        prevLoadableRef.current = null;
+        forceUpdate([]);
+      });
+    } else {
+      var _prevLoadableRef$curr2;
+
+      if (!Recoil_gkx('recoil_suppress_rerender_in_callback')) {
+        return forceUpdate([]);
+      }
+
+      const newLoadable = getLoadable();
+
+      if (!((_prevLoadableRef$curr2 = prevLoadableRef.current) !== null && _prevLoadableRef$curr2 !== void 0 && _prevLoadableRef$curr2.is(newLoadable))) {
+        forceUpdate(newLoadable);
+      }
+
+      prevLoadableRef.current = newLoadable;
+    }
+
+    return subscription.release;
+  }, [componentName, getLoadable, recoilValue, storeRef]);
+  return loadable;
+}
+/**
+  Like useRecoilValue(), but either returns the value if available or
+  just undefined if not available for any reason, such as pending or error.
+*/
+
+
+function useRecoilValueLoadable(recoilValue) {
+  if ("development" !== "production") {
+    validateRecoilValue(recoilValue, 'useRecoilValueLoadable');
+  }
+
+  if (Recoil_gkx('recoil_memory_managament_2020')) {
+    // eslint-disable-next-line fb-www/react-hooks
+    Recoil_useRetain(recoilValue);
+  }
+
+  return {
+    TRANSITION_SUPPORT: useRecoilValueLoadable_TRANSITION_SUPPORT,
+    SYNC_EXTERNAL_STORE: useRecoilValueLoadable_SYNC_EXTERNAL_STORE,
+    MUTABLE_SOURCE: useRecoilValueLoadable_MUTABLE_SOURCE,
+    LEGACY: useRecoilValueLoadable_LEGACY
+  }[reactMode$3().mode](recoilValue);
+}
+/**
+  Returns the value represented by the RecoilValue.
+  If the value is pending, it will throw a Promise to suspend the component,
+  if the value is an error it will throw it for the nearest React error boundary.
+  This will also subscribe the component for any updates in the value.
+  */
+
+
+function useRecoilValue(recoilValue) {
+  if ("development" !== "production") {
+    validateRecoilValue(recoilValue, 'useRecoilValue');
+  }
+
+  const storeRef = useStoreRef$2();
+  const loadable = useRecoilValueLoadable(recoilValue);
+  return handleLoadable(loadable, recoilValue, storeRef);
+}
+/**
+  Returns a function that allows the value of a RecoilState to be updated, but does
+  not subscribe the component to changes to that RecoilState.
+*/
+
+
+function useSetRecoilState(recoilState) {
+  if ("development" !== "production") {
+    validateRecoilValue(recoilState, 'useSetRecoilState');
+  }
+
+  const storeRef = useStoreRef$2();
+  return useCallback$1(newValueOrUpdater => {
+    setRecoilValue$2(storeRef.current, recoilState, newValueOrUpdater);
+  }, [storeRef, recoilState]);
+}
+/**
+  Returns a function that will reset the value of a RecoilState to its default
+*/
+
+
+function useResetRecoilState(recoilState) {
+  if ("development" !== "production") {
+    validateRecoilValue(recoilState, 'useResetRecoilState');
+  }
+
+  const storeRef = useStoreRef$2();
+  return useCallback$1(() => {
+    setRecoilValue$2(storeRef.current, recoilState, DEFAULT_VALUE$2);
+  }, [storeRef, recoilState]);
+}
+/**
+  Equivalent to useState(). Allows the value of the RecoilState to be read and written.
+  Subsequent updates to the RecoilState will cause the component to re-render. If the
+  RecoilState is pending, this will suspend the component and initiate the
+  retrieval of the value. If evaluating the RecoilState resulted in an error, this will
+  throw the error so that the nearest React error boundary can catch it.
+*/
+
+
+function useRecoilState(recoilState) {
+  if ("development" !== "production") {
+    validateRecoilValue(recoilState, 'useRecoilState');
+  }
+
+  return [useRecoilValue(recoilState), useSetRecoilState(recoilState)];
+}
+/**
+  Like useRecoilState(), but does not cause Suspense or React error handling. Returns
+  an object that indicates whether the RecoilState is available, pending, or
+  unavailable due to an error.
+*/
+
+
+function useRecoilStateLoadable(recoilState) {
+  if ("development" !== "production") {
+    validateRecoilValue(recoilState, 'useRecoilStateLoadable');
+  }
+
+  return [useRecoilValueLoadable(recoilState), useSetRecoilState(recoilState)];
+}
+
+function useSetUnvalidatedAtomValues() {
+  const storeRef = useStoreRef$2();
+  return (values, transactionMetadata = {}) => {
+    batchUpdates$2(() => {
+      storeRef.current.addTransactionMetadata(transactionMetadata);
+      values.forEach((value, key) => setUnvalidatedRecoilValue$2(storeRef.current, new AbstractRecoilValue$3(key), value));
+    });
+  };
+}
+/**
+ * Experimental variants of hooks with support for useTransition()
+ */
+
+
+function useRecoilValueLoadable_TRANSITION_SUPPORT_UNSTABLE(recoilValue) {
+  if ("development" !== "production") {
+    validateRecoilValue(recoilValue, 'useRecoilValueLoadable_TRANSITION_SUPPORT_UNSTABLE');
+
+    if (!reactMode$3().early) {
+      Recoil_recoverableViolation('Attepmt to use a hook with UNSTABLE_TRANSITION_SUPPORT in a rendering mode incompatible with concurrent rendering.  Try enabling the recoil_sync_external_store or recoil_transition_support GKs.');
+    }
+  }
+
+  if (Recoil_gkx('recoil_memory_managament_2020')) {
+    // eslint-disable-next-line fb-www/react-hooks
+    Recoil_useRetain(recoilValue);
+  }
+
+  return useRecoilValueLoadable_TRANSITION_SUPPORT(recoilValue);
+}
+
+function useRecoilValue_TRANSITION_SUPPORT_UNSTABLE(recoilValue) {
+  if ("development" !== "production") {
+    validateRecoilValue(recoilValue, 'useRecoilValue_TRANSITION_SUPPORT_UNSTABLE');
+  }
+
+  const storeRef = useStoreRef$2();
+  const loadable = useRecoilValueLoadable_TRANSITION_SUPPORT_UNSTABLE(recoilValue);
+  return handleLoadable(loadable, recoilValue, storeRef);
+}
+
+function useRecoilState_TRANSITION_SUPPORT_UNSTABLE(recoilState) {
+  if ("development" !== "production") {
+    validateRecoilValue(recoilState, 'useRecoilState_TRANSITION_SUPPORT_UNSTABLE');
+  }
+
+  return [useRecoilValue_TRANSITION_SUPPORT_UNSTABLE(recoilState), useSetRecoilState(recoilState)];
+}
+
+var Recoil_Hooks = {
+  recoilComponentGetRecoilValueCount_FOR_TESTING,
+  useRecoilInterface: useRecoilInterface_DEPRECATED,
+  useRecoilState,
+  useRecoilStateLoadable,
+  useRecoilValue,
+  useRecoilValueLoadable,
+  useResetRecoilState,
+  useSetRecoilState,
+  useSetUnvalidatedAtomValues,
+  useRecoilValueLoadable_TRANSITION_SUPPORT_UNSTABLE,
+  useRecoilValue_TRANSITION_SUPPORT_UNSTABLE,
+  useRecoilState_TRANSITION_SUPPORT_UNSTABLE
+};
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * 
+ * @format
+ */
+
+/**
+ * Returns a map containing all of the keys + values from the original map where
+ * the given callback returned true.
+ */
+
+function filterMap(map, callback) {
+  const result = new Map();
+
+  for (const [key, value] of map) {
+    if (callback(value, key)) {
+      result.set(key, value);
+    }
+  }
+
+  return result;
+}
+
+var Recoil_filterMap = filterMap;
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * 
+ * @format
+ */
+
+/**
+ * Returns a set containing all of the values from the original set where
+ * the given callback returned true.
+ */
+
+function filterSet(set, callback) {
+  const result = new Set();
+
+  for (const value of set) {
+    if (callback(value)) {
+      result.add(value);
+    }
+  }
+
+  return result;
+}
+
+var Recoil_filterSet = filterSet;
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * 
+ * @format
+ */
+
+function mergeMaps(...maps) {
+  const result = new Map();
+
+  for (let i = 0; i < maps.length; i++) {
+    const iterator = maps[i].keys();
+    let nextKey;
+
+    while (!(nextKey = iterator.next()).done) {
+      // $FlowFixMe[incompatible-call] - map/iterator knows nothing about flow types
+      result.set(nextKey.value, maps[i].get(nextKey.value));
+    }
+  }
+  /* $FlowFixMe[incompatible-return] (>=0.66.0 site=www,mobile) This comment
+   * suppresses an error found when Flow v0.66 was deployed. To see the error
+   * delete this comment and run Flow. */
+
+
+  return result;
+}
+
+var Recoil_mergeMaps = mergeMaps;
+const {
+  batchUpdates: batchUpdates$3
+} = Recoil_Batching;
+const {
+  DEFAULT_VALUE: DEFAULT_VALUE$3,
+  getNode: getNode$4,
+  nodes: nodes$1
+} = Recoil_Node;
+const {
+  useStoreRef: useStoreRef$3
+} = Recoil_RecoilRoot;
+const {
+  AbstractRecoilValue: AbstractRecoilValue$4,
+  setRecoilValueLoadable: setRecoilValueLoadable$1
+} = Recoil_RecoilValueInterface;
+const {
+  SUSPENSE_TIMEOUT_MS: SUSPENSE_TIMEOUT_MS$2
+} = Recoil_Retention;
+const {
+  cloneSnapshot: cloneSnapshot$1
+} = Recoil_Snapshot$1;
+const {
+  useCallback: useCallback$2,
+  useEffect: useEffect$4,
+  useRef: useRef$5,
+  useState: useState$2
+} = _react.default;
+const {
+  isSSR: isSSR$3
+} = Recoil_Environment;
+
+function useTransactionSubscription(callback) {
+  const storeRef = useStoreRef$3();
+  useEffect$4(() => {
+    const sub = storeRef.current.subscribeToTransactions(callback);
+    return sub.release;
+  }, [callback, storeRef]);
+}
+
+function externallyVisibleAtomValuesInState(state) {
+  const atomValues = state.atomValues.toMap();
+  const persistedAtomContentsValues = Recoil_mapMap(Recoil_filterMap(atomValues, (v, k) => {
+    const node = getNode$4(k);
+    const persistence = node.persistence_UNSTABLE;
+    return persistence != null && persistence.type !== 'none' && v.state === 'hasValue';
+  }), v => v.contents); // Merge in nonvalidated atoms; we may not have defs for them but they will
+  // all have persistence on or they wouldn't be there in the first place.
+
+  return Recoil_mergeMaps(state.nonvalidatedAtoms.toMap(), persistedAtomContentsValues);
+}
+/**
+  Calls the given callback after any atoms have been modified and the consequent
+  component re-renders have been committed. This is intended for persisting
+  the values of the atoms to storage. The stored values can then be restored
+  using the useSetUnvalidatedAtomValues hook.
+
+  The callback receives the following info:
+
+  atomValues: The current value of every atom that is both persistable (persistence
+              type not set to 'none') and whose value is available (not in an
+              error or loading state).
+
+  previousAtomValues: The value of every persistable and available atom before
+               the transaction began.
+
+  atomInfo: A map containing the persistence settings for each atom. Every key
+            that exists in atomValues will also exist in atomInfo.
+
+  modifiedAtoms: The set of atoms that were written to during the transaction.
+
+  transactionMetadata: Arbitrary information that was added via the
+          useSetUnvalidatedAtomValues hook. Useful for ignoring the useSetUnvalidatedAtomValues
+          transaction, to avoid loops.
+*/
+
+
+function useTransactionObservation_DEPRECATED(callback) {
+  useTransactionSubscription(useCallback$2(store => {
+    let previousTree = store.getState().previousTree;
+    const currentTree = store.getState().currentTree;
+
+    if (!previousTree) {
+      Recoil_recoverableViolation('Transaction subscribers notified without a previous tree being present -- this is a bug in Recoil');
+      previousTree = store.getState().currentTree; // attempt to trundle on
+    }
+
+    const atomValues = externallyVisibleAtomValuesInState(currentTree);
+    const previousAtomValues = externallyVisibleAtomValuesInState(previousTree);
+    const atomInfo = Recoil_mapMap(nodes$1, node => {
+      var _node$persistence_UNS, _node$persistence_UNS2, _node$persistence_UNS3, _node$persistence_UNS4;
+
+      return {
+        persistence_UNSTABLE: {
+          type: (_node$persistence_UNS = (_node$persistence_UNS2 = node.persistence_UNSTABLE) === null || _node$persistence_UNS2 === void 0 ? void 0 : _node$persistence_UNS2.type) !== null && _node$persistence_UNS !== void 0 ? _node$persistence_UNS : 'none',
+          backButton: (_node$persistence_UNS3 = (_node$persistence_UNS4 = node.persistence_UNSTABLE) === null || _node$persistence_UNS4 === void 0 ? void 0 : _node$persistence_UNS4.backButton) !== null && _node$persistence_UNS3 !== void 0 ? _node$persistence_UNS3 : false
+        }
+      };
+    }); // Filter on existance in atomValues so that externally-visible rules
+    // are also applied to modified atoms (specifically exclude selectors):
+
+    const modifiedAtoms = Recoil_filterSet(currentTree.dirtyAtoms, k => atomValues.has(k) || previousAtomValues.has(k));
+    callback({
+      atomValues,
+      previousAtomValues,
+      atomInfo,
+      modifiedAtoms,
+      transactionMetadata: { ...currentTree.transactionMetadata
+      }
+    });
+  }, [callback]));
+}
+
+function useRecoilTransactionObserver(callback) {
+  useTransactionSubscription(useCallback$2(store => {
+    const snapshot = cloneSnapshot$1(store, 'latest');
+    const previousSnapshot = cloneSnapshot$1(store, 'previous');
+    callback({
+      snapshot,
+      previousSnapshot
+    });
+  }, [callback]));
+} // Return a snapshot of the current state and subscribe to all state changes
+
+
+function useRecoilSnapshot() {
+  const storeRef = useStoreRef$3();
+  const [snapshot, setSnapshot] = useState$2(() => cloneSnapshot$1(storeRef.current));
+  const previousSnapshot = Recoil_usePrevious(snapshot);
+  const timeoutID = useRef$5();
+  const releaseRef = useRef$5();
+  useTransactionSubscription(useCallback$2(store => setSnapshot(cloneSnapshot$1(store)), [])); // Retain snapshot for duration component is mounted
+
+  useEffect$4(() => {
+    const release = snapshot.retain(); // Release the retain from the rendering call
+
+    if (timeoutID.current && !isSSR$3) {
+      var _releaseRef$current;
+
+      window.clearTimeout(timeoutID.current);
+      timeoutID.current = null;
+      (_releaseRef$current = releaseRef.current) === null || _releaseRef$current === void 0 ? void 0 : _releaseRef$current.call(releaseRef);
+      releaseRef.current = null;
+    }
+
+    return release;
+  }, [snapshot]); // Retain snapshot until above effect is run.
+  // Release after a threshold in case component is suspended.
+
+  if (previousSnapshot !== snapshot && !isSSR$3) {
+    // Release the previous snapshot
+    if (timeoutID.current) {
+      var _releaseRef$current2;
+
+      window.clearTimeout(timeoutID.current);
+      timeoutID.current = null;
+      (_releaseRef$current2 = releaseRef.current) === null || _releaseRef$current2 === void 0 ? void 0 : _releaseRef$current2.call(releaseRef);
+      releaseRef.current = null;
+    }
+
+    releaseRef.current = snapshot.retain();
+    timeoutID.current = window.setTimeout(() => {
+      var _releaseRef$current3;
+
+      timeoutID.current = null;
+      (_releaseRef$current3 = releaseRef.current) === null || _releaseRef$current3 === void 0 ? void 0 : _releaseRef$current3.call(releaseRef);
+      releaseRef.current = null;
+    }, SUSPENSE_TIMEOUT_MS$2);
+  }
+
+  return snapshot;
+}
+
+function gotoSnapshot(store, snapshot) {
+  var _storeState$nextTree;
+
+  const storeState = store.getState();
+  const prev = (_storeState$nextTree = storeState.nextTree) !== null && _storeState$nextTree !== void 0 ? _storeState$nextTree : storeState.currentTree;
+  const next = snapshot.getStore_INTERNAL().getState().currentTree;
+  batchUpdates$3(() => {
+    const keysToUpdate = new Set();
+
+    for (const keys of [prev.atomValues.keys(), next.atomValues.keys()]) {
+      for (const key of keys) {
+        var _prev$atomValues$get, _next$atomValues$get;
+
+        if (((_prev$atomValues$get = prev.atomValues.get(key)) === null || _prev$atomValues$get === void 0 ? void 0 : _prev$atomValues$get.contents) !== ((_next$atomValues$get = next.atomValues.get(key)) === null || _next$atomValues$get === void 0 ? void 0 : _next$atomValues$get.contents) && getNode$4(key).shouldRestoreFromSnapshots) {
+          keysToUpdate.add(key);
+        }
+      }
+    }
+
+    keysToUpdate.forEach(key => {
+      setRecoilValueLoadable$1(store, new AbstractRecoilValue$4(key), next.atomValues.has(key) ? Recoil_nullthrows(next.atomValues.get(key)) : DEFAULT_VALUE$3);
+    });
+    store.replaceState(state => ({ ...state,
+      stateID: snapshot.getID()
+    }));
+  });
+}
+
+function useGotoRecoilSnapshot() {
+  const storeRef = useStoreRef$3();
+  return useCallback$2(snapshot => gotoSnapshot(storeRef.current, snapshot), [storeRef]);
+}
+
+var Recoil_SnapshotHooks = {
+  useRecoilSnapshot,
+  gotoSnapshot,
+  useGotoRecoilSnapshot,
+  useRecoilTransactionObserver,
+  useTransactionObservation_DEPRECATED,
+  useTransactionSubscription_DEPRECATED: useTransactionSubscription
+};
+const {
+  peekNodeInfo: peekNodeInfo$2
+} = Recoil_FunctionalCore;
+const {
+  useStoreRef: useStoreRef$4
+} = Recoil_RecoilRoot;
+
+function useGetRecoilValueInfo() {
+  const storeRef = useStoreRef$4();
+  return ({
+    key
+  }) => peekNodeInfo$2(storeRef.current, storeRef.current.getState().currentTree, key);
+}
+
+var Recoil_useGetRecoilValueInfo = useGetRecoilValueInfo;
+const {
+  reactMode: reactMode$4
+} = Recoil_ReactMode;
+const {
+  RecoilRoot: RecoilRoot$1,
+  useStoreRef: useStoreRef$5
+} = Recoil_RecoilRoot;
+const {
+  useMemo: useMemo$2
+} = _react.default;
+
+function useRecoilBridgeAcrossReactRoots() {
+  // The test fails when using useMutableSource(), but only if act() is used
+  // for the nested root.  So, this may only be a testing environment issue.
+  if (reactMode$4().mode === 'MUTABLE_SOURCE') {
+    // eslint-disable-next-line fb-www/no-console
+    console.warn('Warning: There are known issues using useRecoilBridgeAcrossReactRoots() in recoil_mutable_source rendering mode.  Please consider upgrading to recoil_sync_external_store mode.');
+  }
+
+  const store = useStoreRef$5().current;
+  return useMemo$2(() => {
+    // eslint-disable-next-line no-shadow
+    function RecoilBridge({
+      children
+    }) {
+      return /*#__PURE__*/_react.default.createElement(RecoilRoot$1, {
+        store_INTERNAL: store
+      }, children);
+    }
+
+    return RecoilBridge;
+  }, [store]);
+}
+
+var Recoil_useRecoilBridgeAcrossReactRoots = useRecoilBridgeAcrossReactRoots;
+const {
+  loadableWithValue: loadableWithValue$1
+} = Recoil_Loadable$1;
+const {
+  initializeNode: initializeNode$3
+} = Recoil_FunctionalCore;
+const {
+  DEFAULT_VALUE: DEFAULT_VALUE$4,
+  getNode: getNode$5
+} = Recoil_Node;
+const {
+  copyTreeState: copyTreeState$1,
+  getRecoilValueAsLoadable: getRecoilValueAsLoadable$3,
+  invalidateDownstreams: invalidateDownstreams$1,
+  writeLoadableToTreeState: writeLoadableToTreeState$1
+} = Recoil_RecoilValueInterface;
+
+function isAtom(recoilValue) {
+  return getNode$5(recoilValue.key).nodeType === 'atom';
+}
+
+class TransactionInterfaceImpl {
+  constructor(store, treeState) {
+    _defineProperty(this, "_store", void 0);
+
+    _defineProperty(this, "_treeState", void 0);
+
+    _defineProperty(this, "_changes", void 0);
+
+    _defineProperty(this, "get", recoilValue => {
+      if (this._changes.has(recoilValue.key)) {
+        // $FlowFixMe[incompatible-return]
+        return this._changes.get(recoilValue.key);
+      }
+
+      if (!isAtom(recoilValue)) {
+        throw Recoil_err('Reading selectors within atomicUpdate is not supported');
+      }
+
+      const loadable = getRecoilValueAsLoadable$3(this._store, recoilValue, this._treeState);
+
+      if (loadable.state === 'hasValue') {
+        return loadable.contents;
+      } else if (loadable.state === 'hasError') {
+        throw loadable.contents;
+      } else {
+        throw Recoil_err(`Expected Recoil atom ${recoilValue.key} to have a value, but it is in a loading state.`);
+      }
+    });
+
+    _defineProperty(this, "set", (recoilState, valueOrUpdater) => {
+      if (!isAtom(recoilState)) {
+        throw Recoil_err('Setting selectors within atomicUpdate is not supported');
+      }
+
+      if (typeof valueOrUpdater === 'function') {
+        const current = this.get(recoilState);
+
+        this._changes.set(recoilState.key, valueOrUpdater(current)); // flowlint-line unclear-type:off
+
+      } else {
+        // Initialize atom and run effects if not initialized yet
+        initializeNode$3(this._store, recoilState.key, 'set');
+
+        this._changes.set(recoilState.key, valueOrUpdater);
+      }
+    });
+
+    _defineProperty(this, "reset", recoilState => {
+      this.set(recoilState, DEFAULT_VALUE$4);
+    });
+
+    this._store = store;
+    this._treeState = treeState;
+    this._changes = new Map();
+  } // Allow destructing
+  // eslint-disable-next-line fb-www/extra-arrow-initializer
+
+
+  newTreeState_INTERNAL() {
+    if (this._changes.size === 0) {
+      return this._treeState;
+    }
+
+    const newState = copyTreeState$1(this._treeState);
+
+    for (const [k, v] of this._changes) {
+      writeLoadableToTreeState$1(newState, k, loadableWithValue$1(v));
+    }
+
+    invalidateDownstreams$1(this._store, newState);
+    return newState;
+  }
+
+}
+
+function atomicUpdater(store) {
+  return fn => {
+    store.replaceState(treeState => {
+      const changeset = new TransactionInterfaceImpl(store, treeState);
+      fn(changeset);
+      return changeset.newTreeState_INTERNAL();
+    });
+  };
+}
+
+var Recoil_AtomicUpdates = {
+  atomicUpdater
+};
+var Recoil_AtomicUpdates_1 = Recoil_AtomicUpdates.atomicUpdater;
+var Recoil_AtomicUpdates$1 = /*#__PURE__*/Object.freeze({
+  __proto__: null,
+  atomicUpdater: Recoil_AtomicUpdates_1
+});
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * 
+ * @format
+ */
+
+function invariant(condition, message) {
+  if (!condition) {
+    throw new Error(message);
+  }
+}
+
+var invariant_1 = invariant; // @oss-only
+
+var Recoil_invariant = invariant_1;
+const {
+  atomicUpdater: atomicUpdater$1
+} = Recoil_AtomicUpdates$1;
+const {
+  batchUpdates: batchUpdates$4
+} = Recoil_Batching;
+const {
+  DEFAULT_VALUE: DEFAULT_VALUE$5
+} = Recoil_Node;
+const {
+  useStoreRef: useStoreRef$6
+} = Recoil_RecoilRoot;
+const {
+  refreshRecoilValue: refreshRecoilValue$1,
+  setRecoilValue: setRecoilValue$3
+} = Recoil_RecoilValueInterface;
+const {
+  cloneSnapshot: cloneSnapshot$2
+} = Recoil_Snapshot$1;
+const {
+  gotoSnapshot: gotoSnapshot$1
+} = Recoil_SnapshotHooks;
+const {
+  useCallback: useCallback$3
+} = _react.default;
+
+class Sentinel {}
+
+const SENTINEL = new Sentinel();
+
+function recoilCallback(store, fn, args, extraInterface) {
+  let ret = SENTINEL;
+  let releaseSnapshot;
+  batchUpdates$4(() => {
+    const errMsg = 'useRecoilCallback() expects a function that returns a function: ' + 'it accepts a function of the type (RecoilInterface) => (Args) => ReturnType ' + 'and returns a callback function (Args) => ReturnType, where RecoilInterface is ' + 'an object {snapshot, set, ...} and Args and ReturnType are the argument and return ' + 'types of the callback you want to create.  Please see the docs ' + 'at recoiljs.org for details.';
+
+    if (typeof fn !== 'function') {
+      throw Recoil_err(errMsg);
+    } // Clone the snapshot lazily to avoid overhead if the callback does not use it.
+    // Note that this means the snapshot may represent later state from when
+    // the callback was called if it first accesses the snapshot asynchronously.
+
+
+    const callbackInterface = Recoil_lazyProxy({ ...(extraInterface !== null && extraInterface !== void 0 ? extraInterface : {}),
+      // flowlint-line unclear-type:off
+      set: (node, newValue) => setRecoilValue$3(store, node, newValue),
+      reset: node => setRecoilValue$3(store, node, DEFAULT_VALUE$5),
+      refresh: node => refreshRecoilValue$1(store, node),
+      gotoSnapshot: snapshot => gotoSnapshot$1(store, snapshot),
+      transact_UNSTABLE: transaction => atomicUpdater$1(store)(transaction)
+    }, {
+      snapshot: () => {
+        const snapshot = cloneSnapshot$2(store);
+        releaseSnapshot = snapshot.retain();
+        return snapshot;
+      }
+    });
+    const callback = fn(callbackInterface);
+
+    if (typeof callback !== 'function') {
+      throw Recoil_err(errMsg);
+    }
+
+    ret = callback(...args);
+  });
+  !!(ret instanceof Sentinel) ? "development" !== "production" ? Recoil_invariant(false, 'batchUpdates should return immediately') : Recoil_invariant(false) : void 0;
+
+  if (Recoil_isPromise(ret)) {
+    ret.finally(() => {
+      var _releaseSnapshot;
+
+      (_releaseSnapshot = releaseSnapshot) === null || _releaseSnapshot === void 0 ? void 0 : _releaseSnapshot();
+    });
+  } else {
+    var _releaseSnapshot2;
+
+    (_releaseSnapshot2 = releaseSnapshot) === null || _releaseSnapshot2 === void 0 ? void 0 : _releaseSnapshot2();
+  }
+
+  return ret;
+}
+
+function useRecoilCallback(fn, deps) {
+  const storeRef = useStoreRef$6();
+  return useCallback$3( // $FlowIssue[incompatible-call]
+  (...args) => {
+    return recoilCallback(storeRef.current, fn, args);
+  }, deps != null ? [...deps, storeRef] : undefined // eslint-disable-line fb-www/react-hooks-deps
+  );
+}
+
+var Recoil_useRecoilCallback = {
+  recoilCallback,
+  useRecoilCallback
+};
+const {
+  useStoreRef: useStoreRef$7
+} = Recoil_RecoilRoot;
+const {
+  refreshRecoilValue: refreshRecoilValue$2
+} = Recoil_RecoilValueInterface;
+const {
+  useCallback: useCallback$4
+} = _react.default;
+
+function useRecoilRefresher(recoilValue) {
+  const storeRef = useStoreRef$7();
+  return useCallback$4(() => {
+    const store = storeRef.current;
+    refreshRecoilValue$2(store, recoilValue);
+  }, [recoilValue, storeRef]);
+}
+
+var Recoil_useRecoilRefresher = useRecoilRefresher;
+const {
+  atomicUpdater: atomicUpdater$2
+} = Recoil_AtomicUpdates$1;
+const {
+  useStoreRef: useStoreRef$8
+} = Recoil_RecoilRoot;
+const {
+  useMemo: useMemo$3
+} = _react.default;
+
+function useRecoilTransaction(fn, deps) {
+  const storeRef = useStoreRef$8();
+  return useMemo$3(() => (...args) => {
+    const atomicUpdate = atomicUpdater$2(storeRef.current);
+    atomicUpdate(transactionInterface => {
+      fn(transactionInterface)(...args);
+    });
+  }, deps != null ? [...deps, storeRef] : undefined // eslint-disable-line fb-www/react-hooks-deps
+  );
+}
+
+var Recoil_useRecoilTransaction = useRecoilTransaction;
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * 
+ * @format
+ */
+
+class WrappedValue {
+  constructor(value) {
+    _defineProperty(this, "value", void 0);
+
+    this.value = value;
+  }
+
+}
+
+var Recoil_Wrapper = {
+  WrappedValue
+};
+var Recoil_Wrapper_1 = Recoil_Wrapper.WrappedValue;
+var Recoil_Wrapper$1 = /*#__PURE__*/Object.freeze({
+  __proto__: null,
+  WrappedValue: Recoil_Wrapper_1
+});
+const {
+  isFastRefreshEnabled: isFastRefreshEnabled$2
+} = Recoil_ReactMode;
+
+class ChangedPathError extends Error {}
+
+class TreeCache {
+  constructor(options) {
+    var _options$onHit, _options$onSet, _options$mapNodeValue;
+
+    _defineProperty(this, "_name", void 0);
+
+    _defineProperty(this, "_numLeafs", void 0);
+
+    _defineProperty(this, "_root", void 0);
+
+    _defineProperty(this, "_onHit", void 0);
+
+    _defineProperty(this, "_onSet", void 0);
+
+    _defineProperty(this, "_mapNodeValue", void 0);
+
+    this._name = options === null || options === void 0 ? void 0 : options.name;
+    this._numLeafs = 0;
+    this._root = null;
+    this._onHit = (_options$onHit = options === null || options === void 0 ? void 0 : options.onHit) !== null && _options$onHit !== void 0 ? _options$onHit : () => {};
+    this._onSet = (_options$onSet = options === null || options === void 0 ? void 0 : options.onSet) !== null && _options$onSet !== void 0 ? _options$onSet : () => {};
+    this._mapNodeValue = (_options$mapNodeValue = options === null || options === void 0 ? void 0 : options.mapNodeValue) !== null && _options$mapNodeValue !== void 0 ? _options$mapNodeValue : val => val;
+  }
+
+  size() {
+    return this._numLeafs;
+  }
+
+  root() {
+    return this._root;
+  }
+
+  get(getNodeValue, handlers) {
+    var _this$getLeafNode;
+
+    return (_this$getLeafNode = this.getLeafNode(getNodeValue, handlers)) === null || _this$getLeafNode === void 0 ? void 0 : _this$getLeafNode.value;
+  }
+
+  getLeafNode(getNodeValue, handlers) {
+    if (this._root == null) {
+      return undefined;
+    } // Iterate down the tree based on the current node values until we hit a leaf
+
+
+    let node = this._root;
+
+    while (node) {
+      handlers === null || handlers === void 0 ? void 0 : handlers.onNodeVisit(node);
+
+      if (node.type === 'leaf') {
+        this._onHit(node);
+
+        return node;
+      }
+
+      const nodeValue = this._mapNodeValue(getNodeValue(node.nodeKey)); // $FlowFixMe[incompatible-type]
+
+
+      node = node.branches.get(nodeValue);
+    }
+
+    return undefined;
+  }
+
+  set(route, value, handlers) {
+    const addLeaf = () => {
+      var _node2, _node3, _this$_root2, _handlers$onNodeVisit2; // First, setup the branch nodes for the route:
+      // Iterate down the tree to find or add branch nodes following the route
+
+
+      let node;
+      let branchKey;
+
+      for (const [nodeKey, nodeValue] of route) {
+        var _node, _handlers$onNodeVisit, _this$_root; // If the previous root was a leaf, while we not have a get(), it means
+        // the selector has inconsistent values or implementation changed.
+
+
+        const root = this._root;
+
+        if ((root === null || root === void 0 ? void 0 : root.type) === 'leaf') {
+          throw this.invalidCacheError();
+        } // node now refers to the next node down in the tree
+
+
+        const parent = node;
+        node = parent ? parent.branches.get(branchKey) : root;
+        node = (_node = node) !== null && _node !== void 0 ? _node : {
+          type: 'branch',
+          nodeKey,
+          parent,
+          branches: new Map(),
+          branchKey
+        }; // If we found an existing node, confirm it has a consistent value
+
+        if (node.type !== 'branch' || node.nodeKey !== nodeKey) {
+          throw this.invalidCacheError();
+        } // Add the branch node to the tree
+
+
+        parent === null || parent === void 0 ? void 0 : parent.branches.set(branchKey, node);
+        handlers === null || handlers === void 0 ? void 0 : (_handlers$onNodeVisit = handlers.onNodeVisit) === null || _handlers$onNodeVisit === void 0 ? void 0 : _handlers$onNodeVisit.call(handlers, node); // Prepare for next iteration and install root if it is new.
+
+        branchKey = this._mapNodeValue(nodeValue);
+        this._root = (_this$_root = this._root) !== null && _this$_root !== void 0 ? _this$_root : node;
+      } // Second, setup the leaf node:
+      // If there is an existing leaf for this route confirm it is consistent
+
+
+      const oldLeaf = node ? (_node2 = node) === null || _node2 === void 0 ? void 0 : _node2.branches.get(branchKey) : this._root;
+
+      if (oldLeaf != null && (oldLeaf.type !== 'leaf' || oldLeaf.branchKey !== branchKey)) {
+        throw this.invalidCacheError();
+      } // Create a new or replacement leaf.
+
+
+      const leafNode = {
+        type: 'leaf',
+        value,
+        parent: node,
+        branchKey
+      }; // Install the leaf and call handlers
+
+      (_node3 = node) === null || _node3 === void 0 ? void 0 : _node3.branches.set(branchKey, leafNode);
+      this._root = (_this$_root2 = this._root) !== null && _this$_root2 !== void 0 ? _this$_root2 : leafNode;
+      this._numLeafs++;
+
+      this._onSet(leafNode);
+
+      handlers === null || handlers === void 0 ? void 0 : (_handlers$onNodeVisit2 = handlers.onNodeVisit) === null || _handlers$onNodeVisit2 === void 0 ? void 0 : _handlers$onNodeVisit2.call(handlers, leafNode);
+    };
+
+    try {
+      addLeaf();
+    } catch (error) {
+      // If the cache was stale or observed inconsistent values, such as with
+      // Fast Refresh, then clear it and rebuild with the new values.
+      if (error instanceof ChangedPathError) {
+        this.clear();
+        addLeaf();
+      } else {
+        throw error;
+      }
+    }
+  } // Returns true if leaf was actually deleted from the tree
+
+
+  delete(leaf) {
+    const root = this.root();
+
+    if (!root) {
+      return false;
+    }
+
+    if (leaf === root) {
+      this._root = null;
+      this._numLeafs = 0;
+      return true;
+    } // Iterate up from the leaf deleteing it from it's parent's branches.
+
+
+    let node = leaf.parent;
+    let branchKey = leaf.branchKey;
+
+    while (node) {
+      var _node4;
+
+      node.branches.delete(branchKey); // Stop iterating if we hit the root.
+
+      if (node === root) {
+        if (node.branches.size === 0) {
+          this._root = null;
+          this._numLeafs = 0;
+        } else {
+          this._numLeafs--;
+        }
+
+        return true;
+      } // Stop iterating if there are other branches since we don't need to
+      // remove any more nodes.
+
+
+      if (node.branches.size > 0) {
+        break;
+      } // Iterate up to our parent
+
+
+      branchKey = (_node4 = node) === null || _node4 === void 0 ? void 0 : _node4.branchKey;
+      node = node.parent;
+    } // Confirm that the leaf we are deleting is actually attached to our tree
+
+
+    for (; node !== root; node = node.parent) {
+      if (node == null) {
+        return false;
+      }
+    }
+
+    this._numLeafs--;
+    return true;
+  }
+
+  clear() {
+    this._numLeafs = 0;
+    this._root = null;
+  }
+
+  invalidCacheError() {
+    const CHANGED_PATH_ERROR_MESSAGE = isFastRefreshEnabled$2() ? 'Possible Fast Refresh module reload detected.  ' + 'This may also be caused by an selector returning inconsistent values. ' + 'Resetting cache.' : 'Invalid cache values.  This happens when selectors do not return ' + 'consistent values for the same input dependency values.  That may also ' + 'be caused when using Fast Refresh to change a selector implementation.  ' + 'Resetting cache.';
+    Recoil_recoverableViolation(CHANGED_PATH_ERROR_MESSAGE + (this._name != null ? ` - ${this._name}` : ''));
+    throw new ChangedPathError();
+  }
+
+}
+
+var Recoil_TreeCache = {
+  TreeCache
+};
+var Recoil_TreeCache_1 = Recoil_TreeCache.TreeCache;
+var Recoil_TreeCache$1 = /*#__PURE__*/Object.freeze({
+  __proto__: null,
+  TreeCache: Recoil_TreeCache_1
+});
+
+class LRUCache {
+  constructor(options) {
+    var _options$mapKey;
+
+    _defineProperty(this, "_maxSize", void 0);
+
+    _defineProperty(this, "_size", void 0);
+
+    _defineProperty(this, "_head", void 0);
+
+    _defineProperty(this, "_tail", void 0);
+
+    _defineProperty(this, "_map", void 0);
+
+    _defineProperty(this, "_keyMapper", void 0);
+
+    this._maxSize = options.maxSize;
+    this._size = 0;
+    this._head = null;
+    this._tail = null;
+    this._map = new Map();
+    this._keyMapper = (_options$mapKey = options.mapKey) !== null && _options$mapKey !== void 0 ? _options$mapKey : v => v;
+  }
+
+  head() {
+    return this._head;
+  }
+
+  tail() {
+    return this._tail;
+  }
+
+  size() {
+    return this._size;
+  }
+
+  maxSize() {
+    return this._maxSize;
+  }
+
+  has(key) {
+    return this._map.has(this._keyMapper(key));
+  }
+
+  get(key) {
+    const mappedKey = this._keyMapper(key);
+
+    const node = this._map.get(mappedKey);
+
+    if (!node) {
+      return undefined;
+    }
+
+    this.set(key, node.value);
+    return node.value;
+  }
+
+  set(key, val) {
+    const mappedKey = this._keyMapper(key);
+
+    const existingNode = this._map.get(mappedKey);
+
+    if (existingNode) {
+      this.delete(key);
+    }
+
+    const head = this.head();
+    const node = {
+      key,
+      right: head,
+      left: null,
+      value: val
+    };
+
+    if (head) {
+      head.left = node;
+    } else {
+      this._tail = node;
+    }
+
+    this._map.set(mappedKey, node);
+
+    this._head = node;
+    this._size++;
+
+    this._maybeDeleteLRU();
+  }
+
+  _maybeDeleteLRU() {
+    if (this.size() > this.maxSize()) {
+      this.deleteLru();
+    }
+  }
+
+  deleteLru() {
+    const tail = this.tail();
+
+    if (tail) {
+      this.delete(tail.key);
+    }
+  }
+
+  delete(key) {
+    const mappedKey = this._keyMapper(key);
+
+    if (!this._size || !this._map.has(mappedKey)) {
+      return;
+    }
+
+    const node = Recoil_nullthrows(this._map.get(mappedKey));
+    const right = node.right;
+    const left = node.left;
+
+    if (right) {
+      right.left = node.left;
+    }
+
+    if (left) {
+      left.right = node.right;
+    }
+
+    if (node === this.head()) {
+      this._head = right;
+    }
+
+    if (node === this.tail()) {
+      this._tail = left;
+    }
+
+    this._map.delete(mappedKey);
+
+    this._size--;
+  }
+
+  clear() {
+    this._size = 0;
+    this._head = null;
+    this._tail = null;
+    this._map = new Map();
+  }
+
+}
+
+var Recoil_LRUCache = {
+  LRUCache
+};
+var Recoil_LRUCache_1 = Recoil_LRUCache.LRUCache;
+var Recoil_LRUCache$1 = /*#__PURE__*/Object.freeze({
+  __proto__: null,
+  LRUCache: Recoil_LRUCache_1
+});
+const {
+  LRUCache: LRUCache$1
+} = Recoil_LRUCache$1;
+const {
+  TreeCache: TreeCache$1
+} = Recoil_TreeCache$1;
+
+function treeCacheLRU({
+  name,
+  maxSize,
+  mapNodeValue = v => v
+}) {
+  const lruCache = new LRUCache$1({
+    maxSize
+  });
+  const cache = new TreeCache$1({
+    name,
+    mapNodeValue,
+    onHit: node => {
+      lruCache.set(node, true);
+    },
+    onSet: node => {
+      const lruNode = lruCache.tail();
+      lruCache.set(node, true);
+
+      if (lruNode && cache.size() > maxSize) {
+        cache.delete(lruNode.key);
+      }
+    }
+  }); // $FlowFixMe[method-unbinding]
+
+  return cache;
+}
+
+var Recoil_treeCacheLRU = treeCacheLRU;
+const TIME_WARNING_THRESHOLD_MS = 15;
+
+function stringify(x, opt, key) {
+  // A optimization to avoid the more expensive JSON.stringify() for simple strings
+  // This may lose protection for u2028 and u2029, though.
+  if (typeof x === 'string' && !x.includes('"') && !x.includes('\\')) {
+    return `"${x}"`;
+  } // Handle primitive types
+
+
+  switch (typeof x) {
+    case 'undefined':
+      return '';
+    // JSON.stringify(undefined) returns undefined, but we always want to return a string
+
+    case 'boolean':
+      return x ? 'true' : 'false';
+
+    case 'number':
+    case 'symbol':
+      // case 'bigint': // BigInt is not supported in www
+      return String(x);
+
+    case 'string':
+      // Add surrounding quotes and escape internal quotes
+      return JSON.stringify(x);
+
+    case 'function':
+      if ((opt === null || opt === void 0 ? void 0 : opt.allowFunctions) !== true) {
+        throw Recoil_err('Attempt to serialize function in a Recoil cache key');
+      }
+
+      return `__FUNCTION(${x.name})__`;
+  }
+
+  if (x === null) {
+    return 'null';
+  } // Fallback case for unknown types
+
+
+  if (typeof x !== 'object') {
+    var _JSON$stringify;
+
+    return (_JSON$stringify = JSON.stringify(x)) !== null && _JSON$stringify !== void 0 ? _JSON$stringify : '';
+  } // Deal with all promises as equivalent for now.
+
+
+  if (Recoil_isPromise(x)) {
+    return '__PROMISE__';
+  } // Arrays handle recursive stringification
+
+
+  if (Array.isArray(x)) {
+    return `[${x.map((v, i) => stringify(v, opt, i.toString()))}]`;
+  } // If an object defines a toJSON() method, then use that to override the
+  // serialization.  This matches the behavior of JSON.stringify().
+  // Pass the key for compatibility.
+  // Immutable.js collections define this method to allow us to serialize them.
+
+
+  if (typeof x.toJSON === 'function') {
+    // flowlint-next-line unclear-type: off
+    return stringify(x.toJSON(key), opt, key);
+  } // For built-in Maps, sort the keys in a stable order instead of the
+  // default insertion order.  Support non-string keys.
+
+
+  if (x instanceof Map) {
+    const obj = {};
+
+    for (const [k, v] of x) {
+      // Stringify will escape any nested quotes
+      obj[typeof k === 'string' ? k : stringify(k, opt)] = v;
+    }
+
+    return stringify(obj, opt, key);
+  } // For built-in Sets, sort the keys in a stable order instead of the
+  // default insertion order.
+
+
+  if (x instanceof Set) {
+    return stringify(Array.from(x).sort((a, b) => stringify(a, opt).localeCompare(stringify(b, opt))), opt, key);
+  } // Anything else that is iterable serialize as an Array.
+
+
+  if (Symbol !== undefined && x[Symbol.iterator] != null && typeof x[Symbol.iterator] === 'function') {
+    // flowlint-next-line unclear-type: off
+    return stringify(Array.from(x), opt, key);
+  } // For all other Objects, sort the keys in a stable order.
+
+
+  return `{${Object.keys(x).filter(k => x[k] !== undefined).sort() // stringify the key to add quotes and escape any nested slashes or quotes.
+  .map(k => `${stringify(k, opt)}:${stringify(x[k], opt, k)}`).join(',')}}`;
+} // Utility similar to JSON.stringify() except:
+// * Serialize built-in Sets as an Array
+// * Serialize built-in Maps as an Object.  Supports non-string keys.
+// * Serialize other iterables as arrays
+// * Sort the keys of Objects and Maps to have a stable order based on string conversion.
+//    This overrides their default insertion order.
+// * Still uses toJSON() of any object to override serialization
+// * Support Symbols (though don't guarantee uniqueness)
+// * We could support BigInt, but Flow doesn't seem to like it.
+// See Recoil_stableStringify-test.js for examples
+
+
+function stableStringify(x, opt = {
+  allowFunctions: false
+}) {
+  if ("development" !== "production") {
+    if (typeof window !== 'undefined') {
+      const startTime = window.performance ? window.performance.now() : 0;
+      const str = stringify(x, opt);
+      const endTime = window.performance ? window.performance.now() : 0;
+
+      if (endTime - startTime > TIME_WARNING_THRESHOLD_MS) {
+        /* eslint-disable fb-www/no-console */
+        console.groupCollapsed(`Recoil: Spent ${endTime - startTime}ms computing a cache key`);
+        console.warn(x, str);
+        console.groupEnd();
+        /* eslint-enable fb-www/no-console */
+      }
+
+      return str;
+    }
+  }
+
+  return stringify(x, opt);
+}
+
+var Recoil_stableStringify = stableStringify;
+const {
+  TreeCache: TreeCache$2
+} = Recoil_TreeCache$1;
+const defaultPolicy = {
+  equality: 'reference',
+  eviction: 'keep-all',
+  maxSize: Infinity
+};
+
+function treeCacheFromPolicy({
+  equality = defaultPolicy.equality,
+  eviction = defaultPolicy.eviction,
+  maxSize = defaultPolicy.maxSize
+} = defaultPolicy, name) {
+  const valueMapper = getValueMapper(equality);
+  return getTreeCache(eviction, maxSize, valueMapper, name);
+}
+
+function getValueMapper(equality) {
+  switch (equality) {
+    case 'reference':
+      return val => val;
+
+    case 'value':
+      return val => Recoil_stableStringify(val);
+  }
+
+  throw Recoil_err(`Unrecognized equality policy ${equality}`);
+}
+
+function getTreeCache(eviction, maxSize, mapNodeValue, name) {
+  switch (eviction) {
+    case 'keep-all':
+      // $FlowFixMe[method-unbinding]
+      return new TreeCache$2({
+        name,
+        mapNodeValue
+      });
+
+    case 'lru':
+      return Recoil_treeCacheLRU({
+        name,
+        maxSize: Recoil_nullthrows(maxSize),
+        mapNodeValue
+      });
+
+    case 'most-recent':
+      return Recoil_treeCacheLRU({
+        name,
+        maxSize: 1,
+        mapNodeValue
+      });
+  }
+
+  throw Recoil_err(`Unrecognized eviction policy ${eviction}`);
+}
+
+var Recoil_treeCacheFromPolicy = treeCacheFromPolicy;
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * 
+ * @format
+ */
+
+function isNode(object) {
+  var _ownerDocument, _doc$defaultView;
+
+  if (typeof window === 'undefined') {
+    return false;
+  }
+
+  const doc = object != null ? (_ownerDocument = object.ownerDocument) !== null && _ownerDocument !== void 0 ? _ownerDocument : object : document;
+  const defaultView = (_doc$defaultView = doc.defaultView) !== null && _doc$defaultView !== void 0 ? _doc$defaultView : window;
+  return !!(object != null && (typeof defaultView.Node === 'function' ? object instanceof defaultView.Node : typeof object === 'object' && typeof object.nodeType === 'number' && typeof object.nodeName === 'string'));
+}
+
+var Recoil_isNode = isNode;
+const {
+  isReactNative: isReactNative$1,
+  isWindow: isWindow$1
+} = Recoil_Environment;
+
+function shouldNotBeFrozen(value) {
+  // Primitives and functions:
+  if (value === null || typeof value !== 'object') {
+    return true;
+  } // React elements:
+
+
+  switch (typeof value.$$typeof) {
+    case 'symbol':
+      return true;
+
+    case 'number':
+      return true;
+  } // Immutable structures:
+
+
+  if (value['@@__IMMUTABLE_ITERABLE__@@'] != null || value['@@__IMMUTABLE_KEYED__@@'] != null || value['@@__IMMUTABLE_INDEXED__@@'] != null || value['@@__IMMUTABLE_ORDERED__@@'] != null || value['@@__IMMUTABLE_RECORD__@@'] != null) {
+    return true;
+  } // DOM nodes:
+
+
+  if (Recoil_isNode(value)) {
+    return true;
+  }
+
+  if (Recoil_isPromise(value)) {
+    return true;
+  }
+
+  if (value instanceof Error) {
+    return true;
+  }
+
+  if (ArrayBuffer.isView(value)) {
+    return true;
+  } // Some environments, just as Jest, don't work with the instanceof check
+
+
+  if (!isReactNative$1 && isWindow$1(value)) {
+    return true;
+  }
+
+  return false;
+} // Recursively freeze a value to enforce it is read-only.
+// This may also have minimal performance improvements for enumerating
+// objects (based on browser implementations, of course)
+
+
+function deepFreezeValue(value) {
+  if (typeof value !== 'object' || shouldNotBeFrozen(value)) {
+    return;
+  }
+
+  Object.freeze(value); // Make all properties read-only
+
+  for (const key in value) {
+    // $FlowFixMe[method-unbinding] added when improving typing for this parameters
+    if (Object.prototype.hasOwnProperty.call(value, key)) {
+      const prop = value[key]; // Prevent infinite recurssion for circular references.
+
+      if (typeof prop === 'object' && prop != null && !Object.isFrozen(prop)) {
+        deepFreezeValue(prop);
+      }
+    }
+  }
+
+  Object.seal(value); // This also makes existing properties non-configurable.
+}
+
+var Recoil_deepFreezeValue = deepFreezeValue;
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * 
+ * @format
+ *
+ * This is a stub for some integration into FB internal stuff
+ */
+
+function startPerfBlock(_id) {
+  return () => null;
+}
+
+var Recoil_PerformanceTimings = {
+  startPerfBlock
+};
+const {
+  isLoadable: isLoadable$1,
+  loadableWithError: loadableWithError$1,
+  loadableWithPromise: loadableWithPromise$1,
+  loadableWithValue: loadableWithValue$2
+} = Recoil_Loadable$1;
+const {
+  WrappedValue: WrappedValue$1
+} = Recoil_Wrapper$1;
+const {
+  getNodeLoadable: getNodeLoadable$2,
+  peekNodeLoadable: peekNodeLoadable$1,
+  setNodeValue: setNodeValue$3
+} = Recoil_FunctionalCore;
+const {
+  saveDepsToStore: saveDepsToStore$1
+} = Recoil_Graph;
+const {
+  DEFAULT_VALUE: DEFAULT_VALUE$6,
+  RecoilValueNotReady: RecoilValueNotReady$2,
+  getConfigDeletionHandler: getConfigDeletionHandler$1,
+  getNode: getNode$6,
+  registerNode: registerNode$1
+} = Recoil_Node;
+const {
+  isRecoilValue: isRecoilValue$3
+} = Recoil_RecoilValue$1;
+const {
+  markRecoilValueModified: markRecoilValueModified$1
+} = Recoil_RecoilValueInterface;
+const {
+  retainedByOptionWithDefault: retainedByOptionWithDefault$1
+} = Recoil_Retention;
+const {
+  recoilCallback: recoilCallback$1
+} = Recoil_useRecoilCallback;
+const {
+  startPerfBlock: startPerfBlock$1
+} = Recoil_PerformanceTimings;
+
+class Canceled {}
+
+const CANCELED = new Canceled();
+/**
+ * An ExecutionID is an arbitrary ID that lets us distinguish executions from
+ * each other. This is necessary as we need a way of solving this problem:
+ * "given 3 async executions, only update state for the 'latest' execution when
+ * it finishes running regardless of when the other 2 finish". ExecutionIDs
+ * provide a convenient way of identifying executions so that we can track and
+ * manage them over time.
+ */
+
+const dependencyStack = []; // for detecting circular dependencies.
+
+const waitingStores = new Map();
+
+const getNewExecutionID = (() => {
+  let executionID = 0;
+  return () => executionID++;
+})();
+/* eslint-disable no-redeclare */
+
+
+function selector(options) {
+  let recoilValue = null;
+  const {
+    key,
+    get,
+    cachePolicy_UNSTABLE: cachePolicy
+  } = options;
+  const set = options.set != null ? options.set : undefined; // flow
+
+  if ("development" !== "production") {
+    if (typeof key !== 'string') {
+      throw Recoil_err('A key option with a unique string value must be provided when creating a selector.');
+    }
+
+    if (typeof get !== 'function') {
+      throw Recoil_err('Selectors must specify a get callback option to get the selector value.');
+    }
+  } // This is every discovered dependency across all executions
+
+
+  const discoveredDependencyNodeKeys = new Set();
+  const cache = Recoil_treeCacheFromPolicy(cachePolicy !== null && cachePolicy !== void 0 ? cachePolicy : {
+    equality: 'reference',
+    eviction: 'keep-all'
+  }, key);
+  const retainedBy = retainedByOptionWithDefault$1(options.retainedBy_UNSTABLE);
+  const executionInfoMap = new Map();
+  let liveStoresCount = 0;
+
+  function selectorIsLive() {
+    return !Recoil_gkx('recoil_memory_managament_2020') || liveStoresCount > 0;
+  }
+
+  function selectorInit(store) {
+    store.getState().knownSelectors.add(key);
+    liveStoresCount++;
+    return () => {
+      liveStoresCount--;
+    };
+  }
+
+  function selectorShouldDeleteConfigOnRelease() {
+    return getConfigDeletionHandler$1(key) !== undefined && !selectorIsLive();
+  }
+
+  function resolveAsync(store, state, executionID, loadable, depValues) {
+    setCache(state, loadable, depValues);
+    notifyStoresOfResolvedAsync(store, executionID);
+  }
+
+  function notifyStoresOfResolvedAsync(store, executionID) {
+    if (isLatestExecution(store, executionID)) {
+      clearExecutionInfo(store);
+    }
+
+    notifyWaitingStores(executionID, true);
+  }
+  /**
+   * Notify stores to pull the selector again if a new async dep was discovered.
+   * 1) Async selector adds a new dep but doesn't resolve yet.
+   *    Note that deps for an async selector are based on the state when the
+   *    evaluation started, in order to provide a consistent picture of state.
+   * 2) But, new value of dep based on the current state might cause the selector
+   *    to resolve or resolve differently.
+   * 3) Therefore, this notification will pull the selector based on the current
+   *    state for the components
+   */
+
+
+  function notifyStoresOfNewAsyncDep(store, executionID) {
+    if (isLatestExecution(store, executionID)) {
+      const executionInfo = Recoil_nullthrows(getExecutionInfo(store));
+      executionInfo.stateVersions.clear();
+      notifyWaitingStores(executionID, false);
+    }
+  }
+
+  function notifyWaitingStores(executionID, clearWaitlist) {
+    const stores = waitingStores.get(executionID);
+
+    if (stores != null) {
+      for (const waitingStore of stores) {
+        markRecoilValueModified$1(waitingStore, Recoil_nullthrows(recoilValue));
+      }
+
+      if (clearWaitlist) {
+        waitingStores.delete(executionID);
+      }
+    }
+  }
+
+  function markStoreWaitingForResolvedAsync(store, executionID) {
+    let stores = waitingStores.get(executionID);
+
+    if (stores == null) {
+      waitingStores.set(executionID, stores = new Set());
+    }
+
+    stores.add(store);
+  }
+  /**
+   * This function attaches a then() and a catch() to a promise that was
+   * returned from a selector's get() (either explicitly or implicitly by
+   * running a function that uses the "async" keyword). If a selector's get()
+   * returns a promise, we have two possibilities:
+   *
+   * 1. The promise will resolve, in which case it will have completely finished
+   *    executing without any remaining pending dependencies. No more retries
+   *    are needed and we can proceed with updating the cache and notifying
+   *    subscribers (if it is the latest execution, otherwise only the cache
+   *    will be updated and subscriptions will not be fired). This is the case
+   *    handled by the attached then() handler.
+   *
+   * 2. The promise will throw because it either has an error or it came across
+   *    an async dependency that has not yet resolved, in which case we will
+   *    call wrapDepdencyPromise(), whose responsibility is to handle dependency
+   *    promises. This case is handled by the attached catch() handler.
+   *
+   * Both branches will eventually resolve to the final result of the selector
+   * (or an error if a real error occurred).
+   *
+   * The execution will run to completion even if it is stale, and its value
+   * will be cached. But stale executions will not update global state or update
+   * executionInfo as that is the responsibility of the 'latest' execution.
+   *
+   * Note this function should not be passed a promise that was thrown--AKA a
+   * dependency promise. Dependency promises should be passed to
+   * wrapPendingDependencyPromise()).
+   */
+
+
+  function wrapResultPromise(store, promise, state, depValues, executionID, loadingDepsState) {
+    return promise.then(value => {
+      if (!selectorIsLive()) {
+        // The selector was released since the request began; ignore the response.
+        clearExecutionInfo(store);
+        throw CANCELED;
+      }
+
+      const loadable = loadableWithValue$2(value);
+      resolveAsync(store, state, executionID, loadable, depValues);
+      return value;
+    }).catch(errorOrPromise => {
+      if (!selectorIsLive()) {
+        // The selector was released since the request began; ignore the response.
+        clearExecutionInfo(store);
+        throw CANCELED;
+      }
+
+      if (Recoil_isPromise(errorOrPromise)) {
+        return wrapPendingDependencyPromise(store, errorOrPromise, state, depValues, executionID, loadingDepsState);
+      }
+
+      const loadable = loadableWithError$1(errorOrPromise);
+      resolveAsync(store, state, executionID, loadable, depValues);
+      throw errorOrPromise;
+    });
+  }
+  /**
+   * This function attaches a then() and a catch() to a promise that was
+   * thrown from a selector's get(). If a selector's get() throws a promise,
+   * we have two possibilities:
+   *
+   * 1. The promise will resolve, meaning one of our selector's dependencies is
+   *    now available and we should "retry" our get() by running it again. This
+   *    is the case handled by the attached then() handler.
+   *
+   * 2. The promise will throw because something went wrong with the dependency
+   *    promise (in other words a real error occurred). This case is handled by
+   *    the attached catch() handler. If the dependency promise throws, it is
+   *    _always_ a real error and not another dependency promise (any dependency
+   *    promises would have been handled upstream).
+   *
+   * The then() branch will eventually resolve to the final result of the
+   * selector (or an error if a real error occurs), and the catch() will always
+   * resolve to an error because the dependency promise is a promise that was
+   * wrapped upstream, meaning it will only resolve to its real value or to a
+   * real error.
+   *
+   * The execution will run to completion even if it is stale, and its value
+   * will be cached. But stale executions will not update global state or update
+   * executionInfo as that is the responsibility of the 'latest' execution.
+   *
+   * Note this function should not be passed a promise that was returned from
+   * get(). The intention is that this function is only passed promises that
+   * were thrown due to a pending dependency. Promises returned by get() should
+   * be passed to wrapResultPromise() instead.
+   */
+
+
+  function wrapPendingDependencyPromise(store, promise, state, existingDeps, executionID, loadingDepsState) {
+    return promise.then(resolvedDep => {
+      if (!selectorIsLive()) {
+        // The selector was released since the request began; ignore the response.
+        clearExecutionInfo(store);
+        throw CANCELED;
+      } // Check if we are handling a pending Recoil dependency or if the user
+      // threw their own Promise to "suspend" a selector evaluation.  We need
+      // to check that the loadingDepPromise actually matches the promise that
+      // we caught in case the selector happened to catch the promise we threw
+      // for a pending Recoil dependency from `getRecoilValue()` and threw
+      // their own promise instead.
+
+
+      if (loadingDepsState.loadingDepKey != null && loadingDepsState.loadingDepPromise === promise) {
+        /**
+         * Note for async atoms, this means we are changing the atom's value
+         * in the store for the given version. This should be alright because
+         * the version of state is now stale and a new version will have
+         * already been triggered by the atom being resolved (see this logic
+         * in Recoil_atom.js)
+         */
+        state.atomValues.set(loadingDepsState.loadingDepKey, loadableWithValue$2(resolvedDep));
+      } else {
+        /**
+         * If resolvedDepKey is not defined, the promise was a user-thrown
+         * promise. User-thrown promises are an advanced feature and they
+         * should be avoided in almost all cases. Using `loadable.map()` inside
+         * of selectors for loading loadables and then throwing that mapped
+         * loadable's promise is an example of a user-thrown promise.
+         *
+         * When we hit a user-thrown promise, we have to bail out of an optimization
+         * where we bypass calculating selector cache keys for selectors that
+         * have been previously seen for a given state (these selectors are saved in
+         * state.atomValues) to avoid stale state as we have no way of knowing
+         * what state changes happened (if any) in result to the promise resolving.
+         *
+         * Ideally we would only bail out selectors that are in the chain of
+         * dependencies for this selector, but there's currently no way to get
+         * a full list of a selector's downstream nodes because the state that
+         * is executing may be a discarded tree (so store.getGraph(state.version)
+         * will be empty), and the full dep tree may not be in the selector
+         * caches in the case where the selector's cache was cleared. To solve
+         * for this we would have to keep track of all running selector
+         * executions and their downstream deps. Because this only covers edge
+         * cases, that complexity might not be justifyable.
+         */
+        store.getState().knownSelectors.forEach(nodeKey => {
+          state.atomValues.delete(nodeKey);
+        });
+      }
+      /**
+       * Optimization: Now that the dependency has resolved, let's try hitting
+       * the cache in case the dep resolved to a value we have previously seen.
+       *
+       * TODO:
+       * Note this optimization is not perfect because it only prevents re-executions
+       * _after_ the point where an async dependency is found. Any code leading
+       * up to the async dependency may have run unnecessarily. The ideal case
+       * would be to wait for the async dependency to resolve first, check the
+       * cache, and prevent _any_ execution of the selector if the resulting
+       * value of the dependency leads to a path that is found in the cache.
+       * The ideal case is more difficult to implement as it would require that
+       * we capture and wait for the the async dependency right after checking
+       * the cache. The current approach takes advantage of the fact that running
+       * the selector already has a code path that lets us exit early when
+       * an async dep resolves.
+       */
+
+
+      const cachedLoadable = getLoadableFromCacheAndUpdateDeps(store, state);
+
+      if (cachedLoadable && cachedLoadable.state !== 'loading') {
+        /**
+         * This has to notify stores of a resolved async, even if there is no
+         * current pending execution for the following case:
+         * 1) A component renders with this pending loadable.
+         * 2) The upstream dependency resolves.
+         * 3) While processing some other selector it reads this one, such as
+         *    while traversing its dependencies.  At this point it gets the
+         *    new resolved value synchronously and clears the current
+         *    execution ID.  The component wasn't getting the value itself,
+         *    though, so it still has the pending loadable.
+         * 4) When this code executes the current execution id was cleared
+         *    and it wouldn't notify the component of the new value.
+         *
+         * I think this is only an issue with "early" rendering since the
+         * components got their value using the in-progress execution.
+         * We don't have a unit test for this case yet.  I'm not sure it is
+         * necessary with recoil_transition_support mode.
+         */
+        if (isLatestExecution(store, executionID) || getExecutionInfo(store) == null) {
+          notifyStoresOfResolvedAsync(store, executionID);
+        }
+
+        if (cachedLoadable.state === 'hasValue') {
+          return cachedLoadable.contents;
+        } else {
+          throw cachedLoadable.contents;
+        }
+      }
+      /**
+       * If this execution is stale, let's check to see if there is some in
+       * progress execution with a matching state. If we find a match, then
+       * we can take the value from that in-progress execution. Note this may
+       * sound like an edge case, but may be very common in cases where a
+       * loading dependency resolves from loading to having a value (thus
+       * possibly triggering a re-render), and React re-renders before the
+       * chained .then() functions run, thus starting a new execution as the
+       * dep has changed value. Without this check we will run the selector
+       * twice (once in the new execution and once again in this .then(), so
+       * this check is necessary to keep unnecessary re-executions to a
+       * minimum).
+       *
+       * Also note this code does not check across all executions that may be
+       * running. It only optimizes for the _latest_ execution per store as
+       * we currently do not maintain a list of all currently running executions.
+       * This means in some cases we may run selectors more than strictly
+       * necessary when there are multiple executions running for the same
+       * selector. This may be a valid tradeoff as checking for dep changes
+       * across all in-progress executions may take longer than just
+       * re-running the selector. This will be app-dependent, and maybe in the
+       * future we can make the behavior configurable. An ideal fix may be
+       * to extend the tree cache to support caching loading states.
+       */
+
+
+      if (!isLatestExecution(store, executionID)) {
+        const executionInfo = getInProgressExecutionInfo(store, state);
+
+        if (executionInfo != null) {
+          /**
+           * Returning promise here without wrapping as the wrapper logic was
+           * already done upstream when this promise was generated.
+           */
+          return executionInfo.loadingLoadable.contents;
+        }
+      } // Retry the selector evaluation now that the dependency has resolved
+
+
+      const [loadable, depValues] = evaluateSelectorGetter(store, state, executionID);
+
+      if (loadable.state !== 'loading') {
+        resolveAsync(store, state, executionID, loadable, depValues);
+      }
+
+      if (loadable.state === 'hasError') {
+        throw loadable.contents;
+      }
+
+      return loadable.contents;
+    }).catch(error => {
+      // The selector was released since the request began; ignore the response.
+      if (error instanceof Canceled) {
+        throw CANCELED;
+      }
+
+      if (!selectorIsLive()) {
+        clearExecutionInfo(store);
+        throw CANCELED;
+      }
+
+      const loadable = loadableWithError$1(error);
+      resolveAsync(store, state, executionID, loadable, existingDeps);
+      throw error;
+    });
+  }
+
+  function updateDeps(store, state, deps, executionID) {
+    var _store$getState, _store$getState$curre, _store$getState2, _store$getState2$next;
+
+    if (isLatestExecution(store, executionID) || state.version === ((_store$getState = store.getState()) === null || _store$getState === void 0 ? void 0 : (_store$getState$curre = _store$getState.currentTree) === null || _store$getState$curre === void 0 ? void 0 : _store$getState$curre.version) || state.version === ((_store$getState2 = store.getState()) === null || _store$getState2 === void 0 ? void 0 : (_store$getState2$next = _store$getState2.nextTree) === null || _store$getState2$next === void 0 ? void 0 : _store$getState2$next.version)) {
+      var _store$getState$nextT, _store$getState3, _store$getState3$next;
+
+      saveDepsToStore$1(key, deps, store, (_store$getState$nextT = (_store$getState3 = store.getState()) === null || _store$getState3 === void 0 ? void 0 : (_store$getState3$next = _store$getState3.nextTree) === null || _store$getState3$next === void 0 ? void 0 : _store$getState3$next.version) !== null && _store$getState$nextT !== void 0 ? _store$getState$nextT : store.getState().currentTree.version);
+    }
+
+    for (const nodeKey of deps) {
+      discoveredDependencyNodeKeys.add(nodeKey);
+    }
+  }
+
+  function evaluateSelectorGetter(store, state, executionID) {
+    const endPerfBlock = startPerfBlock$1(key); // TODO T63965866: use execution ID here
+
+    let duringSynchronousExecution = true;
+    let duringAsynchronousExecution = true;
+
+    const finishEvaluation = () => {
+      endPerfBlock();
+      duringAsynchronousExecution = false;
+    };
+
+    let result;
+    let resultIsError = false;
+    let loadable;
+    const loadingDepsState = {
+      loadingDepKey: null,
+      loadingDepPromise: null
+    };
+    /**
+     * Starting a fresh set of deps that we'll be using to update state. We're
+     * starting a new set versus adding it in existing state deps because
+     * the version of state that we update deps for may be a more recent version
+     * than the version the selector was called with. This is because the latest
+     * execution will update the deps of the current/latest version of state
+     * (This is safe to do because the fact that the selector is the latest
+     * execution means the deps we discover below are our best guess at the
+     * deps for the current/latest state in the store)
+     */
+
+    const depValues = new Map();
+
+    function getRecoilValue({
+      key: depKey
+    }) {
+      const depLoadable = getNodeLoadable$2(store, state, depKey);
+      depValues.set(depKey, depLoadable); // We need to update asynchronous dependencies as we go so the selector
+      // knows if it has to restart evaluation if one of them is updated before
+      // the asynchronous selector completely resolves.
+
+      if (!duringSynchronousExecution) {
+        updateDeps(store, state, new Set(depValues.keys()), executionID);
+        notifyStoresOfNewAsyncDep(store, executionID);
+      }
+
+      switch (depLoadable.state) {
+        case 'hasValue':
+          return depLoadable.contents;
+
+        case 'hasError':
+          throw depLoadable.contents;
+
+        case 'loading':
+          loadingDepsState.loadingDepKey = depKey;
+          loadingDepsState.loadingDepPromise = depLoadable.contents;
+          throw depLoadable.contents;
+      }
+
+      throw Recoil_err('Invalid Loadable state');
+    }
+
+    const getCallback = fn => {
+      return (...args) => {
+        if (duringAsynchronousExecution) {
+          throw Recoil_err('Callbacks from getCallback() should only be called asynchronously after the selector is evalutated.  It can be used for selectors to return objects with callbacks that can work with Recoil state without a subscription.');
+        }
+
+        !(recoilValue != null) ? "development" !== "production" ? Recoil_invariant(false, 'Recoil Value can never be null') : Recoil_invariant(false) : void 0;
+        return recoilCallback$1(store, fn, args, {
+          node: recoilValue
+        } // flowlint-line unclear-type:off
+        );
+      };
+    };
+
+    try {
+      result = get({
+        get: getRecoilValue,
+        getCallback
+      });
+      result = isRecoilValue$3(result) ? getRecoilValue(result) : result;
+
+      if (isLoadable$1(result)) {
+        if (result.state === 'hasError') {
+          resultIsError = true;
+        }
+
+        result = result.contents;
+      }
+
+      if (Recoil_isPromise(result)) {
+        result = wrapResultPromise(store, result, state, depValues, executionID, loadingDepsState).finally(finishEvaluation);
+      } else {
+        finishEvaluation();
+      }
+
+      result = result instanceof WrappedValue$1 ? result.value : result;
+    } catch (errorOrDepPromise) {
+      result = errorOrDepPromise;
+
+      if (Recoil_isPromise(result)) {
+        result = wrapPendingDependencyPromise(store, result, state, depValues, executionID, loadingDepsState).finally(finishEvaluation);
+      } else {
+        resultIsError = true;
+        finishEvaluation();
+      }
+    }
+
+    if (resultIsError) {
+      loadable = loadableWithError$1(result);
+    } else if (Recoil_isPromise(result)) {
+      loadable = loadableWithPromise$1(result);
+    } else {
+      loadable = loadableWithValue$2(result);
+    }
+
+    duringSynchronousExecution = false;
+    updateExecutionInfoDepValues(store, executionID, depValues);
+    updateDeps(store, state, new Set(depValues.keys()), executionID);
+    return [loadable, depValues];
+  }
+
+  function getLoadableFromCacheAndUpdateDeps(store, state) {
+    // First, look up in the state cache
+    // If it's here, then the deps in the store should already be valid.
+    let cachedLoadable = state.atomValues.get(key);
+
+    if (cachedLoadable != null) {
+      return cachedLoadable;
+    } // Second, look up in the selector cache and update the deps in the store
+
+
+    const depsAfterCacheLookup = new Set();
+
+    try {
+      // $FlowFixMe[incompatible-type]
+      cachedLoadable = cache.get(nodeKey => {
+        !(typeof nodeKey === 'string') ? "development" !== "production" ? Recoil_invariant(false, 'Cache nodeKey is type string') : Recoil_invariant(false) : void 0;
+        return getNodeLoadable$2(store, state, nodeKey).contents;
+      }, {
+        onNodeVisit: node => {
+          if (node.type === 'branch' && node.nodeKey !== key) {
+            depsAfterCacheLookup.add(node.nodeKey);
+          }
+        }
+      });
+    } catch (error) {
+      throw Recoil_err(`Problem with cache lookup for selector "${key}": ${error.message}`);
+    }
+
+    if (cachedLoadable) {
+      var _getExecutionInfo; // Cache the results in the state to allow for cheaper lookup than
+      // iterating the tree cache of dependencies.
+
+
+      state.atomValues.set(key, cachedLoadable);
+      /**
+       * Ensure store contains correct dependencies if we hit the cache so that
+       * the store deps and cache are in sync for a given state. This is important
+       * because store deps are normally updated when new executions are created,
+       * but cache hits don't trigger new executions but they still _may_ signify
+       * a change in deps in the store if the store deps for this state are empty
+       * or stale.
+       */
+
+      updateDeps(store, state, depsAfterCacheLookup, (_getExecutionInfo = getExecutionInfo(store)) === null || _getExecutionInfo === void 0 ? void 0 : _getExecutionInfo.executionID);
+    }
+
+    return cachedLoadable;
+  }
+  /**
+   * Given a tree state, this function returns a Loadable of the current state.
+   *
+   * The selector's get() function will only be re-evaluated if _both_ of the
+   * following statements are true:
+   *
+   * 1. The current dep values from the given state produced a cache key that
+   *    was not found in the cache.
+   * 2. There is no currently running async execution OR there is an
+   *    async execution that is running, but after comparing the dep values in
+   *    the given state with the dep values that the execution has discovered so
+   *    far we find that at least one dep value has changed, in which case we
+   *    start a new execution (the previously running execution will continue to
+   *    run to completion, but only the new execution will be deemed the
+   *    'latest' execution, meaning it will be the only execution that will
+   *    update global state when it is finished. Any non-latest executions will
+   *    run to completion and update the selector cache but not global state).
+   */
+
+
+  function getSelectorLoadableAndUpdateDeps(store, state) {
+    // First, see if our current state is cached
+    const cachedVal = getLoadableFromCacheAndUpdateDeps(store, state);
+
+    if (cachedVal != null) {
+      clearExecutionInfo(store);
+      return cachedVal;
+    } // Second, check if there is already an ongoing execution based on the current state
+
+
+    const inProgressExecutionInfo = getInProgressExecutionInfo(store, state);
+
+    if (inProgressExecutionInfo != null) {
+      var _inProgressExecutionI;
+
+      if (((_inProgressExecutionI = inProgressExecutionInfo.loadingLoadable) === null || _inProgressExecutionI === void 0 ? void 0 : _inProgressExecutionI.state) === 'loading') {
+        markStoreWaitingForResolvedAsync(store, inProgressExecutionInfo.executionID);
+      } // FIXME: check after the fact to see if we made the right choice by waiting
+
+
+      return inProgressExecutionInfo.loadingLoadable;
+    } // Third, start a new evaluation of the selector
+
+
+    const newExecutionID = getNewExecutionID();
+    const [loadable, newDepValues] = evaluateSelectorGetter(store, state, newExecutionID);
+    /**
+     * Conditionally updates the cache with a given loadable.
+     *
+     * We only cache loadables that are not loading because our cache keys are
+     * based on dep values, which are in an unfinished state for loadables that
+     * have a 'loading' state (new deps may be discovered while the selector
+     * runs its async code). We never want to cache partial dependencies b/c it
+     * could lead to errors, such as prematurely returning the result based on a
+     * partial list of deps-- we need the full list of deps to ensure that we
+     * are returning the correct result from cache.
+     */
+
+    if (loadable.state === 'loading') {
+      setExecutionInfo(store, newExecutionID, loadable, newDepValues, state);
+      markStoreWaitingForResolvedAsync(store, newExecutionID);
+    } else {
+      clearExecutionInfo(store);
+      setCache(state, loadable, newDepValues);
+    }
+
+    return loadable;
+  }
+  /**
+   * Searches execution info across all stores to see if there is an in-progress
+   * execution whose dependency values match the values of the requesting store.
+   */
+
+
+  function getInProgressExecutionInfo(store, state) {
+    // Sort the pending executions so that our current store is checked first.
+    const pendingExecutions = Recoil_concatIterables([executionInfoMap.has(store) ? [Recoil_nullthrows(executionInfoMap.get(store))] : [], Recoil_mapIterable(Recoil_filterIterable(executionInfoMap, ([s]) => s !== store), ([, execInfo]) => execInfo)]);
+
+    function anyDepChanged(execDepValues) {
+      for (const [depKey, execLoadable] of execDepValues) {
+        if (!getNodeLoadable$2(store, state, depKey).is(execLoadable)) {
+          return true;
+        }
+      }
+
+      return false;
+    }
+
+    for (const execInfo of pendingExecutions) {
+      if ( // If this execution was already checked to be valid with this version
+      // of state, then let's use it!
+      execInfo.stateVersions.get(state.version) || // If the deps for the execution match our current state, then it's valid
+      !anyDepChanged(execInfo.depValuesDiscoveredSoFarDuringAsyncWork)) {
+        execInfo.stateVersions.set(state.version, true);
+        return execInfo;
+      } else {
+        execInfo.stateVersions.set(state.version, false);
+      }
+    }
+
+    return undefined;
+  }
+
+  function getExecutionInfo(store) {
+    return executionInfoMap.get(store);
+  }
+  /**
+   * This function will update the selector's execution info when the selector
+   * has either finished running an execution or has started a new execution. If
+   * the given loadable is in a 'loading' state, the intention is that a new
+   * execution has started. Otherwise, the intention is that an execution has
+   * just finished.
+   */
+
+
+  function setExecutionInfo(store, newExecutionID, loadable, depValues, state) {
+    executionInfoMap.set(store, {
+      depValuesDiscoveredSoFarDuringAsyncWork: depValues,
+      executionID: newExecutionID,
+      loadingLoadable: loadable,
+      stateVersions: new Map([[state.version, true]])
+    });
+  }
+
+  function updateExecutionInfoDepValues(store, executionID, depValues) {
+    // We only need to bother updating the deps for the latest execution because
+    // that's all getInProgressExecutionInfo() will be looking for.
+    if (isLatestExecution(store, executionID)) {
+      const executionInfo = getExecutionInfo(store);
+
+      if (executionInfo != null) {
+        executionInfo.depValuesDiscoveredSoFarDuringAsyncWork = depValues;
+      }
+    }
+  }
+
+  function clearExecutionInfo(store) {
+    executionInfoMap.delete(store);
+  }
+
+  function isLatestExecution(store, executionID) {
+    var _getExecutionInfo2;
+
+    return executionID === ((_getExecutionInfo2 = getExecutionInfo(store)) === null || _getExecutionInfo2 === void 0 ? void 0 : _getExecutionInfo2.executionID);
+  }
+  /**
+   * FIXME: dep keys should take into account the state of the loadable to
+   * prevent the edge case where a loadable with an error and a loadable with
+   * an error as a value are treated as the same thing incorrectly. For example
+   * these two should be treated differently:
+   *
+   * selector({key: '', get: () => new Error('hi')});
+   * selector({key: '', get () => {throw new Error('hi')}});
+   *
+   * With current implementation they are treated the same
+   */
+
+
+  function depValuesToDepRoute(depValues) {
+    return Array.from(depValues.entries()).map(([depKey, valLoadable]) => [depKey, valLoadable.contents]);
+  }
+
+  function setCache(state, loadable, depValues) {
+    if ("development" !== "production") {
+      if (loadable.state !== 'loading' && Boolean(options.dangerouslyAllowMutability) === false) {
+        Recoil_deepFreezeValue(loadable.contents);
+      }
+    }
+
+    state.atomValues.set(key, loadable);
+
+    try {
+      cache.set(depValuesToDepRoute(depValues), loadable);
+    } catch (error) {
+      throw Recoil_err(`Problem with setting cache for selector "${key}": ${error.message}`);
+    }
+  }
+
+  function detectCircularDependencies(fn) {
+    if (dependencyStack.includes(key)) {
+      const message = `Recoil selector has circular dependencies: ${dependencyStack.slice(dependencyStack.indexOf(key)).join(' \u2192 ')}`;
+      return loadableWithError$1(Recoil_err(message));
+    }
+
+    dependencyStack.push(key);
+
+    try {
+      return fn();
+    } finally {
+      dependencyStack.pop();
+    }
+  }
+
+  function selectorPeek(store, state) {
+    const cachedLoadable = state.atomValues.get(key);
+
+    if (cachedLoadable != null) {
+      return cachedLoadable;
+    }
+
+    return cache.get(nodeKey => {
+      var _peekNodeLoadable;
+
+      !(typeof nodeKey === 'string') ? "development" !== "production" ? Recoil_invariant(false, 'Cache nodeKey is type string') : Recoil_invariant(false) : void 0;
+      return (_peekNodeLoadable = peekNodeLoadable$1(store, state, nodeKey)) === null || _peekNodeLoadable === void 0 ? void 0 : _peekNodeLoadable.contents;
+    });
+  }
+
+  function selectorGet(store, state) {
+    return detectCircularDependencies(() => getSelectorLoadableAndUpdateDeps(store, state));
+  }
+
+  function invalidateSelector(state) {
+    state.atomValues.delete(key);
+  }
+
+  function clearSelectorCache(store, treeState) {
+    !(recoilValue != null) ? "development" !== "production" ? Recoil_invariant(false, 'Recoil Value can never be null') : Recoil_invariant(false) : void 0;
+
+    for (const nodeKey of discoveredDependencyNodeKeys) {
+      var _node$clearCache;
+
+      const node = getNode$6(nodeKey);
+      (_node$clearCache = node.clearCache) === null || _node$clearCache === void 0 ? void 0 : _node$clearCache.call(node, store, treeState);
+    }
+
+    discoveredDependencyNodeKeys.clear();
+    invalidateSelector(treeState);
+    cache.clear();
+    markRecoilValueModified$1(store, recoilValue);
+  }
+
+  if (set != null) {
+    /**
+     * ES5 strict mode prohibits defining non-top-level function declarations,
+     * so don't use function declaration syntax here
+     */
+    const selectorSet = (store, state, newValue) => {
+      let syncSelectorSetFinished = false;
+      const writes = new Map();
+
+      function getRecoilValue({
+        key: depKey
+      }) {
+        if (syncSelectorSetFinished) {
+          throw Recoil_err('Recoil: Async selector sets are not currently supported.');
+        }
+
+        const loadable = getNodeLoadable$2(store, state, depKey);
+
+        if (loadable.state === 'hasValue') {
+          return loadable.contents;
+        } else if (loadable.state === 'loading') {
+          throw new RecoilValueNotReady$2(depKey);
+        } else {
+          throw loadable.contents;
+        }
+      }
+
+      function setRecoilState(recoilState, valueOrUpdater) {
+        if (syncSelectorSetFinished) {
+          throw Recoil_err('Recoil: Async selector sets are not currently supported.');
+        }
+
+        const setValue = typeof valueOrUpdater === 'function' ? // cast to any because we can't restrict type S from being a function itself without losing support for opaque types
+        // flowlint-next-line unclear-type:off
+        valueOrUpdater(getRecoilValue(recoilState)) : valueOrUpdater;
+        const upstreamWrites = setNodeValue$3(store, state, recoilState.key, setValue);
+        upstreamWrites.forEach((v, k) => writes.set(k, v));
+      }
+
+      function resetRecoilState(recoilState) {
+        setRecoilState(recoilState, DEFAULT_VALUE$6);
+      }
+
+      const ret = set( // $FlowFixMe[incompatible-call]
+      {
+        set: setRecoilState,
+        get: getRecoilValue,
+        reset: resetRecoilState
+      }, newValue); // set should be a void method, but if the user makes it `async`, then it
+      // will return a Promise, which we don't currently support.
+
+      if (ret !== undefined) {
+        throw Recoil_isPromise(ret) ? Recoil_err('Recoil: Async selector sets are not currently supported.') : Recoil_err('Recoil: selector set should be a void function.');
+      }
+
+      syncSelectorSetFinished = true;
+      return writes;
+    };
+
+    return recoilValue = registerNode$1({
+      key,
+      nodeType: 'selector',
+      peek: selectorPeek,
+      get: selectorGet,
+      set: selectorSet,
+      init: selectorInit,
+      invalidate: invalidateSelector,
+      clearCache: clearSelectorCache,
+      shouldDeleteConfigOnRelease: selectorShouldDeleteConfigOnRelease,
+      dangerouslyAllowMutability: options.dangerouslyAllowMutability,
+      shouldRestoreFromSnapshots: false,
+      retainedBy
+    });
+  } else {
+    return recoilValue = registerNode$1({
+      key,
+      nodeType: 'selector',
+      peek: selectorPeek,
+      get: selectorGet,
+      init: selectorInit,
+      invalidate: invalidateSelector,
+      clearCache: clearSelectorCache,
+      shouldDeleteConfigOnRelease: selectorShouldDeleteConfigOnRelease,
+      dangerouslyAllowMutability: options.dangerouslyAllowMutability,
+      shouldRestoreFromSnapshots: false,
+      retainedBy
+    });
+  }
+}
+/* eslint-enable no-redeclare */
+// $FlowIssue[incompatible-use]
+
+
+selector.value = value => new WrappedValue$1(value);
+
+var Recoil_selector = selector; // @fb-only: import type {ScopeRules} from 'Recoil_ScopedAtom';
+// @fb-only: const {scopedAtom} = require('Recoil_ScopedAtom');
+
+const {
+  isLoadable: isLoadable$2,
+  loadableWithError: loadableWithError$2,
+  loadableWithPromise: loadableWithPromise$2,
+  loadableWithValue: loadableWithValue$3
+} = Recoil_Loadable$1;
+const {
+  WrappedValue: WrappedValue$2
+} = Recoil_Wrapper$1;
+const {
+  peekNodeInfo: peekNodeInfo$3
+} = Recoil_FunctionalCore;
+const {
+  DEFAULT_VALUE: DEFAULT_VALUE$7,
+  DefaultValue: DefaultValue$2,
+  getConfigDeletionHandler: getConfigDeletionHandler$2,
+  registerNode: registerNode$2,
+  setConfigDeletionHandler: setConfigDeletionHandler$1
+} = Recoil_Node;
+const {
+  isRecoilValue: isRecoilValue$4
+} = Recoil_RecoilValue$1;
+const {
+  getRecoilValueAsLoadable: getRecoilValueAsLoadable$4,
+  markRecoilValueModified: markRecoilValueModified$2,
+  setRecoilValue: setRecoilValue$4,
+  setRecoilValueLoadable: setRecoilValueLoadable$2
+} = Recoil_RecoilValueInterface;
+const {
+  retainedByOptionWithDefault: retainedByOptionWithDefault$2
+} = Recoil_Retention;
+
+const unwrap = x => x instanceof WrappedValue$2 ? x.value : x;
+
+function baseAtom(options) {
+  const {
+    key,
+    persistence_UNSTABLE: persistence
+  } = options;
+  const retainedBy = retainedByOptionWithDefault$2(options.retainedBy_UNSTABLE);
+  let liveStoresCount = 0;
+
+  function unwrapPromise(promise) {
+    return loadableWithPromise$2(promise.then(value => {
+      defaultLoadable = loadableWithValue$3(value);
+      return value;
+    }).catch(error => {
+      defaultLoadable = loadableWithError$2(error);
+      throw error;
+    }));
+  }
+
+  let defaultLoadable = Recoil_isPromise(options.default) ? unwrapPromise(options.default) : isLoadable$2(options.default) ? options.default.state === 'loading' ? unwrapPromise(options.default.contents) : options.default : loadableWithValue$3(unwrap(options.default));
+  maybeFreezeValueOrPromise(defaultLoadable.contents);
+  let cachedAnswerForUnvalidatedValue = undefined; // Cleanup handlers for this atom
+  // Rely on stable reference equality of the store to use it as a key per <RecoilRoot>
+
+  const cleanupEffectsByStore = new Map();
+
+  function maybeFreezeValueOrPromise(valueOrPromise) {
+    if ("development" !== "production") {
+      if (options.dangerouslyAllowMutability !== true) {
+        if (Recoil_isPromise(valueOrPromise)) {
+          return valueOrPromise.then(value => {
+            Recoil_deepFreezeValue(value);
+            return value;
+          });
+        } else {
+          Recoil_deepFreezeValue(valueOrPromise);
+          return valueOrPromise;
+        }
+      }
+    }
+
+    return valueOrPromise;
+  }
+
+  function wrapPendingPromise(store, promise) {
+    const wrappedPromise = promise.then(value => {
+      var _store$getState$nextT, _state$atomValues$get;
+
+      const state = (_store$getState$nextT = store.getState().nextTree) !== null && _store$getState$nextT !== void 0 ? _store$getState$nextT : store.getState().currentTree;
+
+      if (((_state$atomValues$get = state.atomValues.get(key)) === null || _state$atomValues$get === void 0 ? void 0 : _state$atomValues$get.contents) === wrappedPromise) {
+        setRecoilValue$4(store, node, value);
+      }
+
+      return value;
+    }).catch(error => {
+      var _store$getState$nextT2, _state$atomValues$get2;
+
+      const state = (_store$getState$nextT2 = store.getState().nextTree) !== null && _store$getState$nextT2 !== void 0 ? _store$getState$nextT2 : store.getState().currentTree;
+
+      if (((_state$atomValues$get2 = state.atomValues.get(key)) === null || _state$atomValues$get2 === void 0 ? void 0 : _state$atomValues$get2.contents) === wrappedPromise) {
+        setRecoilValueLoadable$2(store, node, loadableWithError$2(error));
+      }
+
+      throw error;
+    });
+    return wrappedPromise;
+  }
+
+  function initAtom(store, initState, trigger) {
+    var _options$effects;
+
+    liveStoresCount++;
+
+    const cleanupAtom = () => {
+      var _cleanupEffectsByStor;
+
+      liveStoresCount--;
+      (_cleanupEffectsByStor = cleanupEffectsByStore.get(store)) === null || _cleanupEffectsByStor === void 0 ? void 0 : _cleanupEffectsByStor.forEach(cleanup => cleanup());
+      cleanupEffectsByStore.delete(store);
+    };
+
+    store.getState().knownAtoms.add(key); // Setup async defaults to notify subscribers when they resolve
+
+    if (defaultLoadable.state === 'loading') {
+      const notifyDefaultSubscribers = () => {
+        var _store$getState$nextT3;
+
+        const state = (_store$getState$nextT3 = store.getState().nextTree) !== null && _store$getState$nextT3 !== void 0 ? _store$getState$nextT3 : store.getState().currentTree;
+
+        if (!state.atomValues.has(key)) {
+          markRecoilValueModified$2(store, node);
+        }
+      };
+
+      defaultLoadable.contents.finally(notifyDefaultSubscribers);
+    } ///////////////////
+    // Run Atom Effects
+    ///////////////////
+
+
+    const effects = (_options$effects = options.effects) !== null && _options$effects !== void 0 ? _options$effects : options.effects_UNSTABLE;
+
+    if (effects != null) {
+      // This state is scoped by Store, since this is in the initAtom() closure
+      let initValue = DEFAULT_VALUE$7;
+      let isDuringInit = true;
+      let isInitError = false;
+      let pendingSetSelf = null;
+
+      function getLoadable(recoilValue) {
+        // Normally we can just get the current value of another atom.
+        // But for our own value we need to check if there is a pending
+        // initialized value or get the fallback default value.
+        if (isDuringInit && recoilValue.key === key) {
+          // Cast T to S
+          const retValue = initValue; // flowlint-line unclear-type:off
+
+          return retValue instanceof DefaultValue$2 ? peekAtom(store, initState) // flowlint-line unclear-type:off
+          : Recoil_isPromise(retValue) ? loadableWithPromise$2(retValue.then(v => v instanceof DefaultValue$2 ? // Cast T to S
+          defaultLoadable.toPromise() // flowlint-line unclear-type:off
+          : v)) : loadableWithValue$3(retValue);
+        }
+
+        return getRecoilValueAsLoadable$4(store, recoilValue);
+      }
+
+      function getPromise(recoilValue) {
+        return getLoadable(recoilValue).toPromise();
+      }
+
+      function getInfo_UNSTABLE(recoilValue) {
+        var _store$getState$nextT4;
+
+        const info = peekNodeInfo$3(store, (_store$getState$nextT4 = store.getState().nextTree) !== null && _store$getState$nextT4 !== void 0 ? _store$getState$nextT4 : store.getState().currentTree, recoilValue.key);
+        return isDuringInit && recoilValue.key === key && !(initValue instanceof DefaultValue$2) ? { ...info,
+          isSet: true,
+          loadable: getLoadable(recoilValue)
+        } : info;
+      }
+
+      const setSelf = effect => valueOrUpdater => {
+        if (isDuringInit) {
+          const currentLoadable = getLoadable(node);
+          const currentValue = currentLoadable.state === 'hasValue' ? currentLoadable.contents : DEFAULT_VALUE$7;
+          initValue = typeof valueOrUpdater === 'function' ? // cast to any because we can't restrict T from being a function without losing support for opaque types
+          valueOrUpdater(currentValue) // flowlint-line unclear-type:off
+          : valueOrUpdater;
+
+          if (Recoil_isPromise(initValue)) {
+            initValue = initValue.then(value => {
+              // Avoid calling onSet() when setSelf() initializes with a Promise
+              pendingSetSelf = {
+                effect,
+                value
+              };
+              return value;
+            });
+          }
+        } else {
+          if (Recoil_isPromise(valueOrUpdater)) {
+            throw Recoil_err('Setting atoms to async values is not implemented.');
+          }
+
+          if (typeof valueOrUpdater !== 'function') {
+            pendingSetSelf = {
+              effect,
+              value: unwrap(valueOrUpdater)
+            };
+          }
+
+          setRecoilValue$4(store, node, typeof valueOrUpdater === 'function' ? currentValue => {
+            const newValue = unwrap( // cast to any because we can't restrict T from being a function without losing support for opaque types
+            valueOrUpdater(currentValue) // flowlint-line unclear-type:off
+            );
+            pendingSetSelf = {
+              effect,
+              value: newValue
+            };
+            return newValue;
+          } : unwrap(valueOrUpdater));
+        }
+      };
+
+      const resetSelf = effect => () => setSelf(effect)(DEFAULT_VALUE$7);
+
+      const onSet = effect => handler => {
+        var _cleanupEffectsByStor2;
+
+        const {
+          release
+        } = store.subscribeToTransactions(currentStore => {
+          var _currentTree$atomValu; // eslint-disable-next-line prefer-const
+
+
+          let {
+            currentTree,
+            previousTree
+          } = currentStore.getState();
+
+          if (!previousTree) {
+            Recoil_recoverableViolation('Transaction subscribers notified without a next tree being present -- this is a bug in Recoil');
+            previousTree = currentTree; // attempt to trundle on
+          }
+
+          const newLoadable = (_currentTree$atomValu = currentTree.atomValues.get(key)) !== null && _currentTree$atomValu !== void 0 ? _currentTree$atomValu : defaultLoadable;
+
+          if (newLoadable.state === 'hasValue') {
+            var _previousTree$atomVal, _pendingSetSelf, _pendingSetSelf2, _pendingSetSelf3;
+
+            const newValue = newLoadable.contents;
+            const oldLoadable = (_previousTree$atomVal = previousTree.atomValues.get(key)) !== null && _previousTree$atomVal !== void 0 ? _previousTree$atomVal : defaultLoadable;
+            const oldValue = oldLoadable.state === 'hasValue' ? oldLoadable.contents : DEFAULT_VALUE$7; // TODO This isn't actually valid, use as a placeholder for now.
+            // Ignore atom value changes that were set via setSelf() in the same effect.
+            // We will still properly call the handler if there was a subsequent
+            // set from something other than an atom effect which was batched
+            // with the `setSelf()` call.  However, we may incorrectly ignore
+            // the handler if the subsequent batched call happens to set the
+            // atom to the exact same value as the `setSelf()`.   But, in that
+            // case, it was kind of a noop, so the semantics are debatable..
+
+            if (((_pendingSetSelf = pendingSetSelf) === null || _pendingSetSelf === void 0 ? void 0 : _pendingSetSelf.effect) !== effect || ((_pendingSetSelf2 = pendingSetSelf) === null || _pendingSetSelf2 === void 0 ? void 0 : _pendingSetSelf2.value) !== newValue) {
+              handler(newValue, oldValue, !currentTree.atomValues.has(key));
+            } else if (((_pendingSetSelf3 = pendingSetSelf) === null || _pendingSetSelf3 === void 0 ? void 0 : _pendingSetSelf3.effect) === effect) {
+              pendingSetSelf = null;
+            }
+          }
+        }, key);
+        cleanupEffectsByStore.set(store, [...((_cleanupEffectsByStor2 = cleanupEffectsByStore.get(store)) !== null && _cleanupEffectsByStor2 !== void 0 ? _cleanupEffectsByStor2 : []), release]);
+      };
+
+      for (const effect of effects) {
+        try {
+          const cleanup = effect({
+            node,
+            storeID: store.storeID,
+            parentStoreID_UNSTABLE: store.parentStoreID,
+            trigger,
+            setSelf: setSelf(effect),
+            resetSelf: resetSelf(effect),
+            onSet: onSet(effect),
+            getPromise,
+            getLoadable,
+            getInfo_UNSTABLE
+          });
+
+          if (cleanup != null) {
+            var _cleanupEffectsByStor3;
+
+            cleanupEffectsByStore.set(store, [...((_cleanupEffectsByStor3 = cleanupEffectsByStore.get(store)) !== null && _cleanupEffectsByStor3 !== void 0 ? _cleanupEffectsByStor3 : []), cleanup]);
+          }
+        } catch (error) {
+          initValue = error;
+          isInitError = true;
+        }
+      }
+
+      isDuringInit = false; // Mutate initial state in place since we know there are no other subscribers
+      // since we are the ones initializing on first use.
+
+      if (!(initValue instanceof DefaultValue$2)) {
+        var _store$getState$nextT5;
+
+        const initLoadable = isInitError ? loadableWithError$2(initValue) : Recoil_isPromise(initValue) ? loadableWithPromise$2(wrapPendingPromise(store, initValue)) : loadableWithValue$3(unwrap(initValue));
+        maybeFreezeValueOrPromise(initLoadable.contents);
+        initState.atomValues.set(key, initLoadable); // If there is a pending transaction, then also mutate the next state tree.
+        // This could happen if the atom was first initialized in an action that
+        // also updated some other atom's state.
+
+        (_store$getState$nextT5 = store.getState().nextTree) === null || _store$getState$nextT5 === void 0 ? void 0 : _store$getState$nextT5.atomValues.set(key, initLoadable);
+      }
+    }
+
+    return cleanupAtom;
+  }
+
+  function peekAtom(_store, state) {
+    var _ref, _state$atomValues$get3;
+
+    return (_ref = (_state$atomValues$get3 = state.atomValues.get(key)) !== null && _state$atomValues$get3 !== void 0 ? _state$atomValues$get3 : cachedAnswerForUnvalidatedValue) !== null && _ref !== void 0 ? _ref : defaultLoadable;
+  }
+
+  function getAtom(_store, state) {
+    if (state.atomValues.has(key)) {
+      // Atom value is stored in state:
+      return Recoil_nullthrows(state.atomValues.get(key));
+    } else if (state.nonvalidatedAtoms.has(key)) {
+      // Atom value is stored but needs validation before use.
+      // We might have already validated it and have a cached validated value:
+      if (cachedAnswerForUnvalidatedValue != null) {
+        return cachedAnswerForUnvalidatedValue;
+      }
+
+      if (persistence == null) {
+        Recoil_expectationViolation(`Tried to restore a persisted value for atom ${key} but it has no persistence settings.`);
+        return defaultLoadable;
+      }
+
+      const nonvalidatedValue = state.nonvalidatedAtoms.get(key);
+      const validatorResult = persistence.validator(nonvalidatedValue, DEFAULT_VALUE$7);
+      const validatedValueLoadable = validatorResult instanceof DefaultValue$2 ? defaultLoadable : loadableWithValue$3(validatorResult);
+      cachedAnswerForUnvalidatedValue = validatedValueLoadable;
+      return cachedAnswerForUnvalidatedValue;
+    } else {
+      return defaultLoadable;
+    }
+  }
+
+  function invalidateAtom() {
+    cachedAnswerForUnvalidatedValue = undefined;
+  }
+
+  function setAtom(_store, state, newValue) {
+    // Bail out if we're being set to the existing value, or if we're being
+    // reset but have no stored value (validated or unvalidated) to reset from:
+    if (state.atomValues.has(key)) {
+      const existing = Recoil_nullthrows(state.atomValues.get(key));
+
+      if (existing.state === 'hasValue' && newValue === existing.contents) {
+        return new Map();
+      }
+    } else if (!state.nonvalidatedAtoms.has(key) && newValue instanceof DefaultValue$2) {
+      return new Map();
+    }
+
+    maybeFreezeValueOrPromise(newValue);
+    cachedAnswerForUnvalidatedValue = undefined; // can be released now if it was previously in use
+
+    return new Map().set(key, loadableWithValue$3(newValue));
+  }
+
+  function shouldDeleteConfigOnReleaseAtom() {
+    return getConfigDeletionHandler$2(key) !== undefined && liveStoresCount <= 0;
+  }
+
+  const node = registerNode$2({
+    key,
+    nodeType: 'atom',
+    peek: peekAtom,
+    get: getAtom,
+    set: setAtom,
+    init: initAtom,
+    invalidate: invalidateAtom,
+    shouldDeleteConfigOnRelease: shouldDeleteConfigOnReleaseAtom,
+    dangerouslyAllowMutability: options.dangerouslyAllowMutability,
+    persistence_UNSTABLE: options.persistence_UNSTABLE ? {
+      type: options.persistence_UNSTABLE.type,
+      backButton: options.persistence_UNSTABLE.backButton
+    } : undefined,
+    shouldRestoreFromSnapshots: true,
+    retainedBy
+  });
+  return node;
+} // prettier-ignore
+
+
+function atom(options) {
+  if ("development" !== "production") {
+    if (typeof options.key !== 'string') {
+      throw Recoil_err('A key option with a unique string value must be provided when creating an atom.');
+    }
+  }
+
+  const { // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS,
+    ...restOptions
+  } = options;
+  const optionsDefault = 'default' in options ? // $FlowIssue[prop-missing] No way to refine in Flow that property is not defined
+  // $FlowIssue[incompatible-type] No way to refine in Flow that property is not defined
+  options.default : new Promise(() => {});
+
+  if (isRecoilValue$4(optionsDefault) // Continue to use atomWithFallback for promise defaults for scoped atoms
+  // for now, since scoped atoms don't support async defaults
+  // @fb-only: || (isPromise(optionsDefault) && scopeRules_APPEND_ONLY_READ_THE_DOCS)
+  // @fb-only: || (isLoadable(optionsDefault) && scopeRules_APPEND_ONLY_READ_THE_DOCS)
+  ) {
+    return atomWithFallback({ ...restOptions,
+      default: optionsDefault // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS,
+
+    }); // @fb-only: } else if (scopeRules_APPEND_ONLY_READ_THE_DOCS
+    // @fb-only: && !isPromise(optionsDefault)
+    // @fb-only: && !isLoadable(optionsDefault)
+    // @fb-only: ) {
+    // @fb-only: return scopedAtom<T>({
+    // @fb-only: ...restOptions,
+    // @fb-only: default: unwrap<T>(optionsDefault),
+    // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS,
+    // @fb-only: });
+  } else {
+    return baseAtom({ ...restOptions,
+      default: optionsDefault
+    });
+  }
+}
+
+function atomWithFallback(options) {
+  const base = atom({ ...options,
+    default: DEFAULT_VALUE$7,
+    persistence_UNSTABLE: options.persistence_UNSTABLE === undefined ? undefined : { ...options.persistence_UNSTABLE,
+      validator: storedValue => storedValue instanceof DefaultValue$2 ? storedValue : Recoil_nullthrows(options.persistence_UNSTABLE).validator(storedValue, DEFAULT_VALUE$7)
+    },
+    // TODO Hack for now.
+    effects: options.effects,
+    // flowlint-line unclear-type: off
+    effects_UNSTABLE: options.effects_UNSTABLE // flowlint-line unclear-type: off
+
+  });
+  const sel = Recoil_selector({
+    key: `${options.key}__withFallback`,
+    get: ({
+      get
+    }) => {
+      const baseValue = get(base);
+      return baseValue instanceof DefaultValue$2 ? options.default : baseValue;
+    },
+    set: ({
+      set
+    }, newValue) => set(base, newValue),
+    dangerouslyAllowMutability: options.dangerouslyAllowMutability
+  });
+  setConfigDeletionHandler$1(sel.key, getConfigDeletionHandler$2(options.key));
+  return sel;
+}
+
+atom.value = value => new WrappedValue$2(value);
+
+var Recoil_atom = atom;
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * @emails oncall+recoil
+ * 
+ * @format
+ */
+
+class MapCache {
+  constructor(options) {
+    var _options$mapKey;
+
+    _defineProperty(this, "_map", void 0);
+
+    _defineProperty(this, "_keyMapper", void 0);
+
+    this._map = new Map();
+    this._keyMapper = (_options$mapKey = options === null || options === void 0 ? void 0 : options.mapKey) !== null && _options$mapKey !== void 0 ? _options$mapKey : v => v;
+  }
+
+  size() {
+    return this._map.size;
+  }
+
+  has(key) {
+    return this._map.has(this._keyMapper(key));
+  }
+
+  get(key) {
+    return this._map.get(this._keyMapper(key));
+  }
+
+  set(key, val) {
+    this._map.set(this._keyMapper(key), val);
+  }
+
+  delete(key) {
+    this._map.delete(this._keyMapper(key));
+  }
+
+  clear() {
+    this._map.clear();
+  }
+
+}
+
+var Recoil_MapCache = {
+  MapCache
+};
+var Recoil_MapCache_1 = Recoil_MapCache.MapCache;
+var Recoil_MapCache$1 = /*#__PURE__*/Object.freeze({
+  __proto__: null,
+  MapCache: Recoil_MapCache_1
+});
+const {
+  LRUCache: LRUCache$2
+} = Recoil_LRUCache$1;
+const {
+  MapCache: MapCache$1
+} = Recoil_MapCache$1;
+const defaultPolicy$1 = {
+  equality: 'reference',
+  eviction: 'none',
+  maxSize: Infinity
+};
+
+function cacheFromPolicy({
+  equality = defaultPolicy$1.equality,
+  eviction = defaultPolicy$1.eviction,
+  maxSize = defaultPolicy$1.maxSize
+} = defaultPolicy$1) {
+  const valueMapper = getValueMapper$1(equality);
+  const cache = getCache(eviction, maxSize, valueMapper);
+  return cache;
+}
+
+function getValueMapper$1(equality) {
+  switch (equality) {
+    case 'reference':
+      return val => val;
+
+    case 'value':
+      return val => Recoil_stableStringify(val);
+  }
+
+  throw Recoil_err(`Unrecognized equality policy ${equality}`);
+}
+
+function getCache(eviction, maxSize, mapKey) {
+  switch (eviction) {
+    case 'keep-all':
+      // $FlowFixMe[method-unbinding]
+      return new MapCache$1({
+        mapKey
+      });
+
+    case 'lru':
+      // $FlowFixMe[method-unbinding]
+      return new LRUCache$2({
+        mapKey,
+        maxSize: Recoil_nullthrows(maxSize)
+      });
+
+    case 'most-recent':
+      // $FlowFixMe[method-unbinding]
+      return new LRUCache$2({
+        mapKey,
+        maxSize: 1
+      });
+  }
+
+  throw Recoil_err(`Unrecognized eviction policy ${eviction}`);
+}
+
+var Recoil_cacheFromPolicy = cacheFromPolicy; // @fb-only: import type {ScopeRules} from 'Recoil_ScopedAtom';
+
+const {
+  setConfigDeletionHandler: setConfigDeletionHandler$2
+} = Recoil_Node; // Process scopeRules to handle any entries which are functions taking parameters
+// prettier-ignore
+// @fb-only: function mapScopeRules<P>(
+// @fb-only: scopeRules?: ParameterizedScopeRules<P>,
+// @fb-only: param: P,
+// @fb-only: ): ScopeRules | void {
+// @fb-only: return scopeRules?.map(rule =>
+// @fb-only: Array.isArray(rule)
+// @fb-only: ? rule.map(entry => (typeof entry === 'function' ? entry(param) : entry))
+// @fb-only: : rule,
+// @fb-only: );
+// @fb-only: }
+
+/*
+A function which returns an atom based on the input parameter.
+
+Each unique parameter returns a unique atom. E.g.,
+
+  const f = atomFamily(...);
+  f({a: 1}) => an atom
+  f({a: 2}) => a different atom
+
+This allows components to persist local, private state using atoms.  Each
+instance of the component may have a different key, which it uses as the
+parameter for a family of atoms; in this way, each component will have
+its own atom not shared by other instances.  These state keys may be composed
+into children's state keys as well.
+*/
+
+function atomFamily(options) {
+  var _options$cachePolicyF, _options$cachePolicyF2;
+
+  const atomCache = Recoil_cacheFromPolicy({
+    equality: (_options$cachePolicyF = (_options$cachePolicyF2 = options.cachePolicyForParams_UNSTABLE) === null || _options$cachePolicyF2 === void 0 ? void 0 : _options$cachePolicyF2.equality) !== null && _options$cachePolicyF !== void 0 ? _options$cachePolicyF : 'value',
+    eviction: 'keep-all'
+  }); // Simple atomFamily implementation to cache individual atoms based
+  // on the parameter value equality.
+
+  return params => {
+    var _stableStringify, _options$effects;
+
+    const cachedAtom = atomCache.get(params);
+
+    if (cachedAtom != null) {
+      return cachedAtom;
+    }
+
+    const {
+      cachePolicyForParams_UNSTABLE,
+      ...atomOptions
+    } = options;
+    const optionsDefault = 'default' in options ? // $FlowIssue[prop-missing] No way to refine in Flow that property is not defined
+    // $FlowIssue[incompatible-type] No way to refine in Flow that property is not defined
+    options.default : new Promise(() => {});
+    const newAtom = Recoil_atom({ ...atomOptions,
+      key: `${options.key}__${(_stableStringify = Recoil_stableStringify(params)) !== null && _stableStringify !== void 0 ? _stableStringify : 'void'}`,
+      default: typeof optionsDefault === 'function' ? // The default was parameterized
+      // Flow doesn't know that T isn't a function, so we need to case to any
+      // $FlowIssue[incompatible-use]
+      optionsDefault(params) : // Default may be a static value, promise, or RecoilValue
+      optionsDefault,
+      retainedBy_UNSTABLE: typeof options.retainedBy_UNSTABLE === 'function' ? options.retainedBy_UNSTABLE(params) : options.retainedBy_UNSTABLE,
+      effects: typeof options.effects === 'function' ? options.effects(params) : typeof options.effects_UNSTABLE === 'function' ? options.effects_UNSTABLE(params) : (_options$effects = options.effects) !== null && _options$effects !== void 0 ? _options$effects : options.effects_UNSTABLE // prettier-ignore
+      // @fb-only: scopeRules_APPEND_ONLY_READ_THE_DOCS: mapScopeRules(
+      // @fb-only: options.scopeRules_APPEND_ONLY_READ_THE_DOCS,
+      // @fb-only: params,
+      // @fb-only: ),
+
+    });
+    atomCache.set(params, newAtom);
+    setConfigDeletionHandler$2(newAtom.key, () => {
+      atomCache.delete(params);
+    });
+    return newAtom;
+  };
+}
+
+var Recoil_atomFamily = atomFamily;
+const {
+  setConfigDeletionHandler: setConfigDeletionHandler$3
+} = Recoil_Node; // Keep in mind the parameter needs to be serializable as a cahche key
+// using Recoil_stableStringify
+// Add a unique index to each selector in case the cache implementation allows
+// duplicate keys based on equivalent stringified parameters
+
+let nextIndex = 0;
+/* eslint-disable no-redeclare */
+// Return a function that returns members of a family of selectors of the same type
+// E.g.,
+//
+// const s = selectorFamily(...);
+// s({a: 1}) => a selector
+// s({a: 2}) => a different selector
+//
+// By default, the selectors are distinguished by distinct values of the
+// parameter based on value equality, not reference equality.  This allows using
+// object literals or other equivalent objects at callsites to not create
+// duplicate cache entries.  This behavior may be overridden with the
+// cacheImplementationForParams option.
+
+function selectorFamily(options) {
+  var _options$cachePolicyF, _options$cachePolicyF2;
+
+  const selectorCache = Recoil_cacheFromPolicy({
+    equality: (_options$cachePolicyF = (_options$cachePolicyF2 = options.cachePolicyForParams_UNSTABLE) === null || _options$cachePolicyF2 === void 0 ? void 0 : _options$cachePolicyF2.equality) !== null && _options$cachePolicyF !== void 0 ? _options$cachePolicyF : 'value',
+    eviction: 'keep-all'
+  });
+  return params => {
+    var _stableStringify; // Throw an error with selector key so that it is clear which
+    // selector is causing an error
+
+
+    let cachedSelector;
+
+    try {
+      cachedSelector = selectorCache.get(params);
+    } catch (error) {
+      throw Recoil_err(`Problem with cache lookup for selector ${options.key}: ${error.message}`);
+    }
+
+    if (cachedSelector != null) {
+      return cachedSelector;
+    }
+
+    const myKey = `${options.key}__selectorFamily/${(_stableStringify = Recoil_stableStringify(params, {
+      // It is possible to use functions in parameters if the user uses
+      // a cache with reference equality thanks to the incrementing index.
+      allowFunctions: true
+    })) !== null && _stableStringify !== void 0 ? _stableStringify : 'void'}/${nextIndex++}`; // Append index in case values serialize to the same key string
+
+    const myGet = callbacks => options.get(params)(callbacks);
+
+    const myCachePolicy = options.cachePolicy_UNSTABLE;
+    const retainedBy = typeof options.retainedBy_UNSTABLE === 'function' ? options.retainedBy_UNSTABLE(params) : options.retainedBy_UNSTABLE;
+    let newSelector;
+
+    if (options.set != null) {
+      const set = options.set;
+
+      const mySet = (callbacks, newValue) => set(params)(callbacks, newValue);
+
+      newSelector = Recoil_selector({
+        key: myKey,
+        get: myGet,
+        set: mySet,
+        cachePolicy_UNSTABLE: myCachePolicy,
+        dangerouslyAllowMutability: options.dangerouslyAllowMutability,
+        retainedBy_UNSTABLE: retainedBy
+      });
+    } else {
+      newSelector = Recoil_selector({
+        key: myKey,
+        get: myGet,
+        cachePolicy_UNSTABLE: myCachePolicy,
+        dangerouslyAllowMutability: options.dangerouslyAllowMutability,
+        retainedBy_UNSTABLE: retainedBy
+      });
+    }
+
+    selectorCache.set(params, newSelector);
+    setConfigDeletionHandler$3(newSelector.key, () => {
+      selectorCache.delete(params);
+    });
+    return newSelector;
+  };
+}
+/* eslint-enable no-redeclare */
+
+
+var Recoil_selectorFamily = selectorFamily; // flowlint-next-line unclear-type:off
+
+const constantSelector = Recoil_selectorFamily({
+  key: '__constant',
+  get: constant => () => constant,
+  cachePolicyForParams_UNSTABLE: {
+    equality: 'reference'
+  }
+}); // Function that returns a selector which always produces the
+// same constant value.  It may be called multiple times with the
+// same value, based on reference equality, and will provide the
+// same selector.
+
+function constSelector(constant) {
+  return constantSelector(constant);
+}
+
+var Recoil_constSelector = constSelector; // flowlint-next-line unclear-type:off
+
+const throwingSelector = Recoil_selectorFamily({
+  key: '__error',
+  get: message => () => {
+    throw Recoil_err(message);
+  },
+  // TODO Why?
+  cachePolicyForParams_UNSTABLE: {
+    equality: 'reference'
+  }
+}); // Function that returns a selector which always throws an error
+// with the provided message.
+
+function errorSelector(message) {
+  return throwingSelector(message);
+}
+
+var Recoil_errorSelector = errorSelector;
+/**
+ * Copyright (c) Facebook, Inc. and its affiliates.
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE file in the root directory of this source tree.
+ *
+ * Wraps another recoil value and prevents writing to it.
+ *
+ * @emails oncall+recoil
+ * 
+ * @format
+ */
+
+function readOnlySelector(atom) {
+  // flowlint-next-line unclear-type: off
+  return atom;
+}
+
+var Recoil_readOnlySelector = readOnlySelector;
+const {
+  loadableWithError: loadableWithError$3,
+  loadableWithPromise: loadableWithPromise$3,
+  loadableWithValue: loadableWithValue$4
+} = Recoil_Loadable$1; /////////////////
+//  TRUTH TABLE
+/////////////////
+// Dependencies        waitForNone         waitForAny        waitForAll       waitForAllSettled
+//  [loading, loading]  [Promise, Promise]  Promise           Promise         Promise
+//  [value, loading]    [value, Promise]    [value, Promise]  Promise         Promise
+//  [value, value]      [value, value]      [value, value]    [value, value]  [value, value]
+//
+//  [error, loading]    [Error, Promise]    [Error, Promise]  Error           Promise
+//  [error, error]      [Error, Error]      [Error, Error]    Error           [error, error]
+//  [value, error]      [value, Error]      [value, Error]    Error           [value, error]
+// Issue parallel requests for all dependencies and return the current
+// status if they have results, have some error, or are still pending.
+
+function concurrentRequests(getRecoilValue, deps) {
+  const results = Array(deps.length).fill(undefined);
+  const exceptions = Array(deps.length).fill(undefined);
+
+  for (const [i, dep] of deps.entries()) {
+    try {
+      results[i] = getRecoilValue(dep);
+    } catch (e) {
+      // exceptions can either be Promises of pending results or real errors
+      exceptions[i] = e;
+    }
+  }
+
+  return [results, exceptions];
+}
+
+function isError(exp) {
+  return exp != null && !Recoil_isPromise(exp);
+}
+
+function unwrapDependencies(dependencies) {
+  return Array.isArray(dependencies) ? dependencies : Object.getOwnPropertyNames(dependencies).map(key => dependencies[key]);
+}
+
+function wrapResults(dependencies, results) {
+  return Array.isArray(dependencies) ? results : // Object.getOwnPropertyNames() has consistent key ordering with ES6
+  Object.getOwnPropertyNames(dependencies).reduce((out, key, idx) => ({ ...out,
+    [key]: results[idx]
+  }), {});
+}
+
+function wrapLoadables(dependencies, results, exceptions) {
+  const output = exceptions.map((exception, idx) => exception == null ? loadableWithValue$4(results[idx]) : Recoil_isPromise(exception) ? loadableWithPromise$3(exception) : loadableWithError$3(exception));
+  return wrapResults(dependencies, output);
+}
+
+function combineAsyncResultsWithSyncResults(syncResults, asyncResults) {
+  return asyncResults.map((result, idx) =>
+  /**
+   * it's important we use === undefined as opposed to == null, because the
+   * resolved value of the async promise could be `null`, in which case we
+   * don't want to use syncResults[idx], which would be undefined. If async
+   * promise resolves to `undefined`, that's ok because `syncResults[idx]`
+   * will also be `undefined`. That's a little hacky, but it works.
+   */
+  result === undefined ? syncResults[idx] : result);
+} // Selector that requests all dependencies in parallel and immediately returns
+// current results without waiting.
+
+
+const waitForNone = Recoil_selectorFamily({
+  key: '__waitForNone',
+  get: dependencies => ({
+    get
+  }) => {
+    // Issue requests for all dependencies in parallel.
+    const deps = unwrapDependencies(dependencies);
+    const [results, exceptions] = concurrentRequests(get, deps); // Always return the current status of the results; never block.
+
+    return wrapLoadables(dependencies, results, exceptions);
+  },
+  dangerouslyAllowMutability: true
+}); // Selector that requests all dependencies in parallel and waits for at least
+// one to be available before returning results.  It will only error if all
+// dependencies have errors.
+
+const waitForAny = Recoil_selectorFamily({
+  key: '__waitForAny',
+  get: dependencies => ({
+    get
+  }) => {
+    // Issue requests for all dependencies in parallel.
+    // Exceptions can either be Promises of pending results or real errors
+    const deps = unwrapDependencies(dependencies);
+    const [results, exceptions] = concurrentRequests(get, deps); // If any results are available, value or error, return the current status
+
+    if (exceptions.some(exp => !Recoil_isPromise(exp))) {
+      return wrapLoadables(dependencies, results, exceptions);
+    } // Otherwise, return a promise that will resolve when the next result is
+    // available, whichever one happens to be next.  But, if all pending
+    // dependencies end up with errors, then reject the promise.
+
+
+    return new Promise(resolve => {
+      for (const [i, exp] of exceptions.entries()) {
+        if (Recoil_isPromise(exp)) {
+          exp.then(result => {
+            results[i] = result;
+            exceptions[i] = undefined;
+            resolve(wrapLoadables(dependencies, results, exceptions));
+          }).catch(error => {
+            exceptions[i] = error;
+            resolve(wrapLoadables(dependencies, results, exceptions));
+          });
+        }
+      }
+    });
+  },
+  dangerouslyAllowMutability: true
+}); // Selector that requests all dependencies in parallel and waits for all to be
+// available before returning a value.  It will error if any dependencies error.
+
+const waitForAll = Recoil_selectorFamily({
+  key: '__waitForAll',
+  get: dependencies => ({
+    get
+  }) => {
+    // Issue requests for all dependencies in parallel.
+    // Exceptions can either be Promises of pending results or real errors
+    const deps = unwrapDependencies(dependencies);
+    const [results, exceptions] = concurrentRequests(get, deps); // If all results are available, return the results
+
+    if (exceptions.every(exp => exp == null)) {
+      return wrapResults(dependencies, results);
+    } // If we have any errors, throw the first error
+
+
+    const error = exceptions.find(isError);
+
+    if (error != null) {
+      throw error;
+    } // Otherwise, return a promise that will resolve when all results are available
+
+
+    return Promise.all(exceptions).then(exceptionResults => wrapResults(dependencies, combineAsyncResultsWithSyncResults(results, exceptionResults)));
+  },
+  dangerouslyAllowMutability: true
+});
+const waitForAllSettled = Recoil_selectorFamily({
+  key: '__waitForAllSettled',
+  get: dependencies => ({
+    get
+  }) => {
+    // Issue requests for all dependencies in parallel.
+    // Exceptions can either be Promises of pending results or real errors
+    const deps = unwrapDependencies(dependencies);
+    const [results, exceptions] = concurrentRequests(get, deps); // If all results are available, return the results
+
+    if (exceptions.every(exp => !Recoil_isPromise(exp))) {
+      return wrapLoadables(dependencies, results, exceptions);
+    } // Wait for all results to settle
+
+
+    return Promise.all(exceptions.map((exp, i) => Recoil_isPromise(exp) ? exp.then(result => {
+      results[i] = result;
+      exceptions[i] = undefined;
+    }).catch(error => {
+      results[i] = undefined;
+      exceptions[i] = error;
+    }) : null)) // Then wrap them as loadables
+    .then(() => wrapLoadables(dependencies, results, exceptions));
+  },
+  dangerouslyAllowMutability: true
+});
+const noWait = Recoil_selectorFamily({
+  key: '__noWait',
+  get: dependency => ({
+    get
+  }) => {
+    try {
+      return Recoil_selector.value(loadableWithValue$4(get(dependency)));
+    } catch (exception) {
+      return Recoil_selector.value(Recoil_isPromise(exception) ? loadableWithPromise$3(exception) : loadableWithError$3(exception));
+    }
+  },
+  dangerouslyAllowMutability: true
+});
+var Recoil_WaitFor = {
+  waitForNone,
+  waitForAny,
+  waitForAll,
+  waitForAllSettled,
+  noWait
+};
+const {
+  RecoilLoadable
+} = Recoil_Loadable$1;
+const {
+  DefaultValue: DefaultValue$3
+} = Recoil_Node;
+const {
+  RecoilRoot: RecoilRoot$2,
+  useRecoilStoreID: useRecoilStoreID$1
+} = Recoil_RecoilRoot;
+const {
+  isRecoilValue: isRecoilValue$5
+} = Recoil_RecoilValue$1;
+const {
+  retentionZone: retentionZone$1
+} = Recoil_RetentionZone;
+const {
+  freshSnapshot: freshSnapshot$2
+} = Recoil_Snapshot$1;
+const {
+  useRecoilState: useRecoilState$1,
+  useRecoilState_TRANSITION_SUPPORT_UNSTABLE: useRecoilState_TRANSITION_SUPPORT_UNSTABLE$1,
+  useRecoilStateLoadable: useRecoilStateLoadable$1,
+  useRecoilValue: useRecoilValue$1,
+  useRecoilValue_TRANSITION_SUPPORT_UNSTABLE: useRecoilValue_TRANSITION_SUPPORT_UNSTABLE$1,
+  useRecoilValueLoadable: useRecoilValueLoadable$1,
+  useRecoilValueLoadable_TRANSITION_SUPPORT_UNSTABLE: useRecoilValueLoadable_TRANSITION_SUPPORT_UNSTABLE$1,
+  useResetRecoilState: useResetRecoilState$1,
+  useSetRecoilState: useSetRecoilState$1
+} = Recoil_Hooks;
+const {
+  useGotoRecoilSnapshot: useGotoRecoilSnapshot$1,
+  useRecoilSnapshot: useRecoilSnapshot$1,
+  useRecoilTransactionObserver: useRecoilTransactionObserver$1
+} = Recoil_SnapshotHooks;
+const {
+  useRecoilCallback: useRecoilCallback$1
+} = Recoil_useRecoilCallback;
+const {
+  noWait: noWait$1,
+  waitForAll: waitForAll$1,
+  waitForAllSettled: waitForAllSettled$1,
+  waitForAny: waitForAny$1,
+  waitForNone: waitForNone$1
+} = Recoil_WaitFor;
+var Recoil_index = {
+  // Types
+  DefaultValue: DefaultValue$3,
+  isRecoilValue: isRecoilValue$5,
+  RecoilLoadable,
+  // Recoil Root
+  RecoilRoot: RecoilRoot$2,
+  useRecoilStoreID: useRecoilStoreID$1,
+  useRecoilBridgeAcrossReactRoots_UNSTABLE: Recoil_useRecoilBridgeAcrossReactRoots,
+  // Atoms/Selectors
+  atom: Recoil_atom,
+  selector: Recoil_selector,
+  // Convenience Atoms/Selectors
+  atomFamily: Recoil_atomFamily,
+  selectorFamily: Recoil_selectorFamily,
+  constSelector: Recoil_constSelector,
+  errorSelector: Recoil_errorSelector,
+  readOnlySelector: Recoil_readOnlySelector,
+  // Concurrency Helpers for Atoms/Selectors
+  noWait: noWait$1,
+  waitForNone: waitForNone$1,
+  waitForAny: waitForAny$1,
+  waitForAll: waitForAll$1,
+  waitForAllSettled: waitForAllSettled$1,
+  // Hooks for Atoms/Selectors
+  useRecoilValue: useRecoilValue$1,
+  useRecoilValueLoadable: useRecoilValueLoadable$1,
+  useRecoilState: useRecoilState$1,
+  useRecoilStateLoadable: useRecoilStateLoadable$1,
+  useSetRecoilState: useSetRecoilState$1,
+  useResetRecoilState: useResetRecoilState$1,
+  useGetRecoilValueInfo_UNSTABLE: Recoil_useGetRecoilValueInfo,
+  useRecoilRefresher_UNSTABLE: Recoil_useRecoilRefresher,
+  useRecoilValueLoadable_TRANSITION_SUPPORT_UNSTABLE: useRecoilValueLoadable_TRANSITION_SUPPORT_UNSTABLE$1,
+  useRecoilValue_TRANSITION_SUPPORT_UNSTABLE: useRecoilValue_TRANSITION_SUPPORT_UNSTABLE$1,
+  useRecoilState_TRANSITION_SUPPORT_UNSTABLE: useRecoilState_TRANSITION_SUPPORT_UNSTABLE$1,
+  // Hooks for complex operations
+  useRecoilCallback: useRecoilCallback$1,
+  useRecoilTransaction_UNSTABLE: Recoil_useRecoilTransaction,
+  // Snapshots
+  useGotoRecoilSnapshot: useGotoRecoilSnapshot$1,
+  useRecoilSnapshot: useRecoilSnapshot$1,
+  useRecoilTransactionObserver_UNSTABLE: useRecoilTransactionObserver$1,
+  snapshot_UNSTABLE: freshSnapshot$2,
+  // Memory Management
+  useRetain: Recoil_useRetain,
+  retentionZone: retentionZone$1
+};
+var Recoil_index_1 = Recoil_index.DefaultValue;
+exports.DefaultValue = Recoil_index_1;
+var Recoil_index_2 = Recoil_index.isRecoilValue;
+exports.isRecoilValue = Recoil_index_2;
+var Recoil_index_3 = Recoil_index.RecoilLoadable;
+exports.RecoilLoadable = Recoil_index_3;
+var Recoil_index_4 = Recoil_index.RecoilRoot;
+exports.RecoilRoot = Recoil_index_4;
+var Recoil_index_5 = Recoil_index.useRecoilStoreID;
+exports.useRecoilStoreID = Recoil_index_5;
+var Recoil_index_6 = Recoil_index.useRecoilBridgeAcrossReactRoots_UNSTABLE;
+exports.useRecoilBridgeAcrossReactRoots_UNSTABLE = Recoil_index_6;
+var Recoil_index_7 = Recoil_index.atom;
+exports.atom = Recoil_index_7;
+var Recoil_index_8 = Recoil_index.selector;
+exports.selector = Recoil_index_8;
+var Recoil_index_9 = Recoil_index.atomFamily;
+exports.atomFamily = Recoil_index_9;
+var Recoil_index_10 = Recoil_index.selectorFamily;
+exports.selectorFamily = Recoil_index_10;
+var Recoil_index_11 = Recoil_index.constSelector;
+exports.constSelector = Recoil_index_11;
+var Recoil_index_12 = Recoil_index.errorSelector;
+exports.errorSelector = Recoil_index_12;
+var Recoil_index_13 = Recoil_index.readOnlySelector;
+exports.readOnlySelector = Recoil_index_13;
+var Recoil_index_14 = Recoil_index.noWait;
+exports.noWait = Recoil_index_14;
+var Recoil_index_15 = Recoil_index.waitForNone;
+exports.waitForNone = Recoil_index_15;
+var Recoil_index_16 = Recoil_index.waitForAny;
+exports.waitForAny = Recoil_index_16;
+var Recoil_index_17 = Recoil_index.waitForAll;
+exports.waitForAll = Recoil_index_17;
+var Recoil_index_18 = Recoil_index.waitForAllSettled;
+exports.waitForAllSettled = Recoil_index_18;
+var Recoil_index_19 = Recoil_index.useRecoilValue;
+exports.useRecoilValue = Recoil_index_19;
+var Recoil_index_20 = Recoil_index.useRecoilValueLoadable;
+exports.useRecoilValueLoadable = Recoil_index_20;
+var Recoil_index_21 = Recoil_index.useRecoilState;
+exports.useRecoilState = Recoil_index_21;
+var Recoil_index_22 = Recoil_index.useRecoilStateLoadable;
+exports.useRecoilStateLoadable = Recoil_index_22;
+var Recoil_index_23 = Recoil_index.useSetRecoilState;
+exports.useSetRecoilState = Recoil_index_23;
+var Recoil_index_24 = Recoil_index.useResetRecoilState;
+exports.useResetRecoilState = Recoil_index_24;
+var Recoil_index_25 = Recoil_index.useGetRecoilValueInfo_UNSTABLE;
+exports.useGetRecoilValueInfo_UNSTABLE = Recoil_index_25;
+var Recoil_index_26 = Recoil_index.useRecoilRefresher_UNSTABLE;
+exports.useRecoilRefresher_UNSTABLE = Recoil_index_26;
+var Recoil_index_27 = Recoil_index.useRecoilValueLoadable_TRANSITION_SUPPORT_UNSTABLE;
+exports.useRecoilValueLoadable_TRANSITION_SUPPORT_UNSTABLE = Recoil_index_27;
+var Recoil_index_28 = Recoil_index.useRecoilValue_TRANSITION_SUPPORT_UNSTABLE;
+exports.useRecoilValue_TRANSITION_SUPPORT_UNSTABLE = Recoil_index_28;
+var Recoil_index_29 = Recoil_index.useRecoilState_TRANSITION_SUPPORT_UNSTABLE;
+exports.useRecoilState_TRANSITION_SUPPORT_UNSTABLE = Recoil_index_29;
+var Recoil_index_30 = Recoil_index.useRecoilCallback;
+exports.useRecoilCallback = Recoil_index_30;
+var Recoil_index_31 = Recoil_index.useRecoilTransaction_UNSTABLE;
+exports.useRecoilTransaction_UNSTABLE = Recoil_index_31;
+var Recoil_index_32 = Recoil_index.useGotoRecoilSnapshot;
+exports.useGotoRecoilSnapshot = Recoil_index_32;
+var Recoil_index_33 = Recoil_index.useRecoilSnapshot;
+exports.useRecoilSnapshot = Recoil_index_33;
+var Recoil_index_34 = Recoil_index.useRecoilTransactionObserver_UNSTABLE;
+exports.useRecoilTransactionObserver_UNSTABLE = Recoil_index_34;
+var Recoil_index_35 = Recoil_index.snapshot_UNSTABLE;
+exports.snapshot_UNSTABLE = Recoil_index_35;
+var Recoil_index_36 = Recoil_index.useRetain;
+exports.useRetain = Recoil_index_36;
+var Recoil_index_37 = Recoil_index.retentionZone;
+exports.retentionZone = Recoil_index_37;
+var _default = Recoil_index;
+exports.default = _default;
+},{"react":"../node_modules/react/index.js","react-dom":"../node_modules/react-dom/index.js"}],"../src/index.tsx":[function(require,module,exports) {
+"use strict";
+
+var _jsxDevRuntime = require("@emotion/react/jsx-dev-runtime");
+
+var _react = _interopRequireDefault(require("react"));
+
+var _client = _interopRequireDefault(require("react-dom/client"));
+
+var _App = _interopRequireDefault(require("./App"));
+
+var _reactQuery = require("react-query");
+
+var _devtools = require("react-query/devtools");
+
+var _recoil = require("recoil");
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var __assign = void 0 && (void 0).__assign || function () {
+  __assign = Object.assign || function (t) {
+    for (var s, i = 1, n = arguments.length; i < n; i++) {
+      s = arguments[i];
+
+      for (var p in s) {
+        if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
+      }
+    }
+
+    return t;
+  };
+
+  return __assign.apply(this, arguments);
+};
+
 var _jsxFileName = "../src/index.tsx";
-(0, _reactDom.render)((0, _jsxDevRuntime.jsxDEV)(_react.StrictMode, {
-  children: [(0, _jsxDevRuntime.jsxDEV)("h1", {
-    children: "Hello Parcel Bundler"
-  }, void 0, false, {
+// import { ThemeProvider } from "@emotion/react";
+// import { theme } from "./styles/theme";
+var rootElement = document.getElementById('root');
+if (!rootElement) throw new Error('Failed to find the root element');
+
+var root = _client.default.createRoot(rootElement);
+
+var queryClient = new _reactQuery.QueryClient();
+root.render((0, _jsxDevRuntime.jsxDEV)(_react.default.StrictMode, {
+  children: (0, _jsxDevRuntime.jsxDEV)(_reactQuery.QueryClientProvider, __assign({
+    client: queryClient
+  }, {
+    children: [(0, _jsxDevRuntime.jsxDEV)(_devtools.ReactQueryDevtools, {
+      initialIsOpen: true
+    }, void 0, false, {
+      fileName: _jsxFileName,
+      lineNumber: 18,
+      columnNumber: 7
+    }, void 0), (0, _jsxDevRuntime.jsxDEV)(_recoil.RecoilRoot, {
+      children: (0, _jsxDevRuntime.jsxDEV)(_App.default, {}, void 0, false, {
+        fileName: _jsxFileName,
+        lineNumber: 20,
+        columnNumber: 9
+      }, void 0)
+    }, void 0, false, {
+      fileName: _jsxFileName,
+      lineNumber: 19,
+      columnNumber: 7
+    }, void 0)]
+  }), void 0, true, {
     fileName: _jsxFileName,
-    lineNumber: 7,
+    lineNumber: 17,
     columnNumber: 5
-  }, void 0), (0, _jsxDevRuntime.jsxDEV)(_App.default, {}, void 0, false, {
-    fileName: _jsxFileName,
-    lineNumber: 8,
-    columnNumber: 5
-  }, void 0)]
-}, void 0, true, {
+  }, void 0)
+}, void 0, false, {
   fileName: _jsxFileName,
-  lineNumber: 5,
-  columnNumber: 8
-}, void 0), document.getElementById('root'));
-},{"react/jsx-dev-runtime":"../node_modules/react/jsx-dev-runtime.js","react":"../node_modules/react/index.js","react-dom":"../node_modules/react-dom/index.js","./App":"../src/App.tsx"}],"../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
+  lineNumber: 15,
+  columnNumber: 13
+}, void 0));
+},{"@emotion/react/jsx-dev-runtime":"../node_modules/@emotion/react/jsx-dev-runtime/dist/emotion-react-jsx-dev-runtime.browser.esm.js","react":"../node_modules/react/index.js","react-dom/client":"../node_modules/react-dom/client.js","./App":"../src/App.tsx","react-query":"../node_modules/react-query/es/index.js","react-query/devtools":"../node_modules/react-query/devtools/index.js","recoil":"../node_modules/recoil/es/recoil.js"}],"../node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';
 var OldModule = module.bundle.Module;
@@ -34329,7 +52597,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = "" || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + "2721" + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + "2195" + '/');
 
   ws.onmessage = function (event) {
     checkedAssets = {};

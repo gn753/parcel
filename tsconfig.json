@@ -4,16 +4,22 @@
       "module": "esnext",
       "lib": ["ESNext", "DOM"],
       "jsx": "react-jsxdev",
+      "jsxImportSource": "@emotion/react",
+      "skipLibCheck": true, //임시 이상하다싶으면 지운다.
       "sourceMap": true,
       "strict": true,
       "moduleResolution": "node",
       "baseUrl": "./src",
       "paths": {
-        "~/*": ["./*"]
+        "@src/*": ["src/*"],
+        "@public/*": ["public/*"]
       },
+      "types": ["react/next", "react-dom/next"],
       "typeRoots": ["node_modules/@types"],
       "allowSyntheticDefaultImports": true,
       "esModuleInterop": true
+      
     },
-    "include": ["src/**/*"]
+    "include": ["src/**/*"],
+    "exclude": ["/node_module"]
   }
